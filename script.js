@@ -9,7 +9,7 @@ function redoBuilder(){if(!builder.future.length)return toast("Nothing to redo")
 function duplicateSelected(){const b=builder.blocks.find(x=>x.id===builder.selected);if(!b)return toast("Select a block first");pushHistory();const copy=JSON.parse(JSON.stringify(b));copy.id=Date.now()+Math.random();builder.blocks.splice(builder.blocks.indexOf(b)+1,0,copy);builder.selected=copy.id;renderBuilder();selectBlock(copy.id)}
 function moveSelected(dir){const i=builder.blocks.findIndex(x=>x.id===builder.selected);if(i<0)return toast("Select a block first");const n=i+dir;if(n<0||n>=builder.blocks.length)return;pushHistory();[builder.blocks[i],builder.blocks[n]]=[builder.blocks[n],builder.blocks[i]];renderBuilder();selectBlock(builder.blocks[n].id)}
 
-const state={
+const state={assets:[],
   projects:JSON.parse(localStorage.getItem("cmbai_projects")||"[]"),
   active:null,
   files:{
@@ -289,3 +289,16 @@ function exportCssFile(){downloadFile("style.css",state.files["style.css"]||"","
 function exportJsFile(){downloadFile("script.js",state.files["script.js"]||"","text/javascript");toast("JavaScript downloaded")}
 function exportWebsite(){const files=[["index.html",getGeneratedHtml()],["style.css",state.files["style.css"]||""],["script.js",state.files["script.js"]||""]];const text=files.map(([n,c])=>"===== "+n+" =====\n"+c).join("\n\n");downloadFile("cmb-ai-website.txt",text,"text/plain");toast("Website package downloaded")}
 if($("#exportHtml"))$("#exportHtml").onclick=exportHtmlFile;if($("#exportCss"))$("#exportCss").onclick=exportCssFile;if($("#exportJs"))$("#exportJs").onclick=exportJsFile;if($("#exportZip"))$("#exportZip").onclick=exportWebsite;
+
+function renderAssets(){
+ const list=$("#assetList");if(!list)return;
+ list.innerHTML="";
+ if(!state.assets.length){list.innerHTML="<div class='asset-empty'>No assets yet. Upload images, logos, icons, or text files.</div>";return}
+ state.assets.forEach((a,i)=>{const el=document.createElement("div");el.className="asset-item";el.innerHTML="<div class='asset-thumb'></div><div class='asset-info'><b></b><small></small></div><button class='btn'>Use</button><button class='btn'>×</button>";el.querySelector("b").textContent=a.name;el.querySelector("small").textContent=Math.max(1,Math.round(a.size/1024))+" KB";const thumb=el.querySelector(".asset-thumb");if(a.type.startsWith("image/"))thumb.style.backgroundImage="url('"+a.data+"')";el.querySelectorAll(".btn")[0].onclick=()=>{const b=builder.blocks.find(x=>x.id===builder.selected);if(b&&b.kind==="image"){b.src=a.data;renderBuilder();selectBlock(b.id);toast("Asset added to image") }else toast("Select an Image block first")};el.querySelectorAll(".btn")[1].onclick=()=>{state.assets.splice(i,1);save();renderAssets()};list.appendChild(el)})
+}
+function handleAssets(files){
+ [...files].forEach(file=>{const r=new FileReader();r.onload=()=>{state.assets.push({name:file.name,size:file.size,type:file.type||"application/octet-stream",data:r.result});save();renderAssets()};r.readAsDataURL(file)});
+}
+if($("#assetUpload"))$("#assetUpload").onchange=e=>{handleAssets(e.target.files);e.target.value=""};
+if($("#clearAssets"))$("#clearAssets").onclick=()=>{state.assets=[];save();renderAssets();toast("Assets cleared")};
+renderAssets();
