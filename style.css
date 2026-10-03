@@ -60,3 +60,28 @@ body{font-family:var(--site-font)}
 .workspace-section{margin:0 0 18px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.dashboard-head h2{margin:5px 0}.dashboard-head p{margin:0;color:var(--muted)}.eyebrow{font-size:10px;font-weight:900;letter-spacing:.12em;color:var(--accent)}.dashboard-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.dashboard-stats>div{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}.dashboard-stats b,.dashboard-stats span{display:block}.dashboard-stats b{font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dashboard-stats span{margin-top:3px;color:var(--muted);font-size:10px}.dashboard-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.project-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}.project-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:var(--accent);color:#fff;font-weight:900}.project-card-main{min-width:0;flex:1}.project-card h3,.project-card p,.project-card small{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.project-card p{font-size:11px;color:var(--muted);margin-top:3px}.project-card small{display:block;font-size:9px;color:var(--muted);margin-top:5px}.project-actions{display:flex;gap:6px}.dashboard-empty{grid-column:1/-1;text-align:center;padding:28px;border:1px dashed var(--line);border-radius:12px}.dashboard-empty p{color:var(--muted)}@media(max-width:700px){.dashboard-stats,.dashboard-projects{grid-template-columns:1fr}.dashboard-head{align-items:flex-start;flex-direction:column}.project-card{align-items:flex-start;flex-wrap:wrap}.project-actions{width:100%}}
 
 .backend-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:11px;font-weight:800}.backend-bar>span:first-child{margin-right:auto}.backend-status{color:var(--muted)}.backend-status.online{color:#16a34a}.backend-project-count{color:var(--muted);font-weight:700}
+
+/* CMB-AI ambient lighting */
+body.cmb-ai-lighting,
+body{
+  --cmb-glow-1:rgba(99,102,241,.28);
+  --cmb-glow-2:rgba(14,165,233,.22);
+}
+body::before{
+  animation:cmbAmbientGlow 10s ease-in-out infinite alternate;
+}
+body::after{
+  box-shadow:
+    inset 0 0 140px rgba(99,102,241,.08),
+    inset 0 0 70px rgba(14,165,233,.05);
+}
+@keyframes cmbAmbientGlow{
+  0%{
+    filter:brightness(.9);
+    transform:scale(1);
+  }
+  100%{
+    filter:brightness(1.12);
+    transform:scale(1.035);
+  }
+}
