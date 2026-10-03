@@ -381,3 +381,19 @@ function updateBackendProjectCount(){
 }
 $("#checkBackend")?.addEventListener("click",updateBackendProjectCount);
 updateBackendProjectCount();
+
+async function askPythonAI(){
+ const input=$("#aiPrompt"),out=$("#aiResponse"),button=$("#sendAiPrompt");
+ if(!input||!out)return;
+ const prompt=input.value.trim();
+ if(!prompt){toast("Enter a prompt first");return}
+ button.disabled=true;button.textContent="Thinking...";
+ out.textContent="Connecting to Python AI...";
+ try{
+  const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt})});
+  const data=await r.json();
+  out.textContent=data.ok?data.answer:(data.error||"AI request failed");
+ }catch(e){out.textContent="Python backend is offline. Start the Flask server first."}
+ finally{button.disabled=false;button.textContent="Ask AI"}
+}
+$("#sendAiPrompt")?.addEventListener("click",askPythonAI);
