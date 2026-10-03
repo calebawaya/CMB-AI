@@ -90,6 +90,9 @@ def patch_project(project_id):
 def ai_message():
     data = request.get_json(silent=True) or {}
     prompt = str(data.get("prompt", "")).strip()
+    project = data.get("project", {}) or {}
+    project_name = str(project.get("name", "CMB-AI project"))
+    project_files = project.get("files", {}) or {}
     if not prompt:
         return jsonify({"ok": False, "error": "Prompt is required"}), 400
     if OpenAI is None:
@@ -98,9 +101,22 @@ def ai_message():
         return jsonify({"ok": False, "error": "OPENAI_API_KEY is not configured on the server"}), 503
     try:
         client = OpenAI()
+        context = f"""You are helping build a web project in CMB-AI.
+Project name: {project_name}
+Current files:
+HTML:
+{str(project_files.get("index.html", ""))[:12000]}
+CSS:
+{str(project_files.get("style.css", ""))[:12000]}
+JavaScript:
+{str(project_files.get("script.js", ""))[:12000]}
+
+User request:
+{prompt}
+"""
         response = client.responses.create(
-            model=os.getenv("OPENAI_MODEL", "gpt-6-luna"),
-            input=prompt
+            model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna"),
+            input=context
         )
         return jsonify({"ok": True, "answer": response.output_text})
     except Exception as exc:
