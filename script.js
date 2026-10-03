@@ -1,6 +1,14 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
-const builder={blocks:[],selected:null};
+const builder={blocks:[],selected:null,history:[],future:[],historyLock:false};
+function snapshot(){return JSON.stringify(builder.blocks)}
+function pushHistory(){if(builder.historyLock)return;const s=snapshot();if(builder.history[builder.history.length-1]!==s)builder.history.push(s);if(builder.history.length>30)builder.history.shift();builder.future=[]}
+function restoreSnapshot(s){builder.historyLock=true;builder.blocks=JSON.parse(s||"[]");builder.selected=null;renderBuilder();$("#inspector")?.classList.add("hidden");$("#inspectorEmpty")?.classList.remove("hidden");builder.historyLock=false}
+function undoBuilder(){if(builder.history.length<2)return toast("Nothing to undo");const current=builder.history.pop();builder.future.push(current);restoreSnapshot(builder.history[builder.history.length-1])}
+function redoBuilder(){if(!builder.future.length)return toast("Nothing to redo");const next=builder.future.pop();builder.history.push(next);restoreSnapshot(next)}
+function duplicateSelected(){const b=builder.blocks.find(x=>x.id===builder.selected);if(!b)return toast("Select a block first");pushHistory();const copy=JSON.parse(JSON.stringify(b));copy.id=Date.now()+Math.random();builder.blocks.splice(builder.blocks.indexOf(b)+1,0,copy);builder.selected=copy.id;renderBuilder();selectBlock(copy.id)}
+function moveSelected(dir){const i=builder.blocks.findIndex(x=>x.id===builder.selected);if(i<0)return toast("Select a block first");const n=i+dir;if(n<0||n>=builder.blocks.length)return;pushHistory();[builder.blocks[i],builder.blocks[n]]=[builder.blocks[n],builder.blocks[i]];renderBuilder();selectBlock(builder.blocks[n].id)}
+
 const state={
   projects:JSON.parse(localStorage.getItem("cmbai_projects")||"[]"),
   active:null,
@@ -187,7 +195,7 @@ function updateSelected(){
  if(b.kind==="navbar"){b.logo=$("#propLogo").value.trim();b.links=$("#propLinks").value.trim();b.button=$("#propNavButton").value.trim();b.title=b.logo||"CMB AI";b.text=b.links||""}
  renderBuilder();
 }
-function deleteSelected(){if(builder.selected==null)return;builder.blocks=builder.blocks.filter(x=>x.id!==builder.selected);builder.selected=null;$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden");renderBuilder()}
+function deleteSelected(){if(builder.selected==null)return;pushHistory();builder.blocks=builder.blocks.filter(x=>x.id!==builder.selected);builder.selected=null;$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden");renderBuilder()}
 function applyBuilder(){
  if(!builder.blocks.length){toast("Add a component first");return}
  const sections=builder.blocks.map(b=>{
@@ -205,7 +213,7 @@ function applyBuilder(){
  state.files["style.css"]+=`\n.cmb-columns-grid{display:grid;grid-template-columns:repeat(var(--cmb-cols),minmax(0,1fr));gap:18px;max-width:1100px;margin:0 auto}.cmb-columns-grid article{padding:24px;border:1px solid #d9e1ec;border-radius:14px;background:#fff;text-align:left;box-shadow:0 8px 25px rgba(16,24,40,.06)}.cmb-columns-grid h3{margin:0 0 8px;font-size:20px}.cmb-columns-grid p{margin:0;color:#667085;line-height:1.6}.cmb-columns-scroll .cmb-columns-grid{overflow-x:auto;grid-template-columns:repeat(var(--cmb-cols),minmax(220px,1fr));padding-bottom:8px}`;
  if(state.active){state.active.files=state.files;save()}renderFiles();toast("Responsive layout applied to index.html");
 }
-$$(".component").forEach(x=>x.onclick=()=>{builder.blocks.push(builderBlock(x.dataset.component));renderBuilder()});
+$(".component").forEach(x=>x.onclick=()=>{pushHistory();builder.blocks.push(builderBlock(x.dataset.component));renderBuilder()});
 if($("#propText"))$("#propText").oninput=updateSelected;if($("#propSize"))$("#propSize").onchange=updateSelected;if($("#propAlign"))$("#propAlign").onchange=updateSelected;if($("#propColor"))$("#propColor").oninput=updateSelected;if($("#propBg"))$("#propBg").oninput=updateSelected;if($("#propPadding"))$("#propPadding").onchange=updateSelected;if($("#propFont"))$("#propFont").onchange=updateSelected;
 if($("#propSectionHeading"))$("#propSectionHeading").oninput=updateSelected;if($("#propSectionText"))$("#propSectionText").oninput=updateSelected;if($("#propSectionItems"))$("#propSectionItems").oninput=updateSelected;
 if($("#propColumns"))$("#propColumns").onchange=updateSelected;if($("#propColumnText"))$("#propColumnText").oninput=updateSelected;if($("#propResponsive"))$("#propResponsive").onchange=updateSelected;
@@ -239,4 +247,6 @@ function applyTheme(){
 if($("#applyTheme"))$("#applyTheme").onclick=applyTheme;
 if($("#themePreset"))$("#themePreset").onchange=()=>applyTheme();
 if($("#propImageFile"))$("#propImageFile").onchange=e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const b=builder.blocks.find(x=>x.id===builder.selected);if(!b||b.kind!=="image")return;b.src=reader.result;renderBuilder();selectBlock(b.id);toast("Image added to the builder")};reader.readAsDataURL(file)};
-if($("#deleteBlock"))$("#deleteBlock").onclick=deleteSelected;if($("#clearBuilder"))$("#clearBuilder").onclick=()=>{builder.blocks=[];builder.selected=null;renderBuilder();$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden")};if($("#applyBuilder"))$("#applyBuilder").onclick=applyBuilder;renderBuilder();
+if($("#deleteBlock"))$("#deleteBlock").onclick=deleteSelected;if($("#undoBuilder"))$("#undoBuilder").onclick=undoBuilder;if($("#redoBuilder"))$("#redoBuilder").onclick=redoBuilder;if($("#duplicateBlock"))$("#duplicateBlock").onclick=duplicateSelected;if($("#moveUpBlock"))$("#moveUpBlock").onclick=()=>moveSelected(-1);if($("#moveDownBlock"))$("#moveDownBlock").onclick=()=>moveSelected(1);if($("#clearBuilder"))$("#clearBuilder").onclick=()=>{builder.blocks=[];builder.selected=null;renderBuilder();$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden")};if($("#applyBuilder"))$("#applyBuilder").onclick=applyBuilder;renderBuilder();
+
+if(!builder.history.length)builder.history=[snapshot()];
