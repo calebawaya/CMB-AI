@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const state={projects:JSON.parse(localStorage.getItem("cmbai_projects")||"[]"),active:null,files:{"index.html":"<!doctype html>\n<html>\n<body><h1>Hello from CMB AI</h1></body>\n</html>","style.css":"body{font-family:system-ui;margin:0}","script.js":"console.log('CMB AI ready');"},currentFile:"index.html"};
+const state={projects:JSON.parse(localStorage.getItem("cmbai_projects")||"[]"),active:null,files:{"index.html":"<!doctype html>\n<html>\n<body><h1>Hello from CMB AI</h1></body>\n</html>","style.css":"body{font-family:system-ui;margin:0}","script.js":"console.log('CMB AI ready');"},currentFile:"index.html",currentFolder:""};
 function save(){localStorage.setItem("cmbai_projects",JSON.stringify(state.projects))}
 function toast(x){const t=$("#toast");t.textContent=x;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
 function view(n){$$(".view").forEach(x=>x.classList.add("hidden"));$("#"+n).classList.remove("hidden");$$(".nav").forEach(x=>x.classList.toggle("active",x.dataset.view===n));const names={dashboard:"Build something great.",workspace:"Your project workspace.",projects:"Your projects.",github:"Connect and deploy.",settings:"Make CMB AI yours."};$("#title").textContent=names[n];$("#eyebrow").textContent=n.toUpperCase();if(n==="projects")renderProjects()}
@@ -9,11 +9,28 @@ function setProgress(v){if(state.active){state.active.progress=v;save()}$("#prog
 function makePlan(){let idea=$("#idea").value.trim();if(!idea){toast("Describe your project first");return}if(!state.active){newProject();return}state.active.idea=idea;state.active.name=idea.split(/\s+/).slice(0,4).join(" ")+" Project";$("#projectName").textContent=state.active.name;const tasks=["Define the main user problem","Design the page structure","Build the HTML interface","Style the responsive UI","Add JavaScript interactions","Test desktop and mobile","Prepare for GitHub"];$("#tasks").innerHTML=tasks.map(x=>"<label class='task'><input type='checkbox'> "+x+"</label>").join("");$$(".task input").forEach(x=>x.onchange=()=>setProgress(Math.round($$(".task input:checked").length/tasks.length*100)));save();addChat("CMB AI","I created a 7-step build plan for your idea. Complete each task to track progress.");toast("Build plan created")}
 function addChat(who,msg){const a=document.createElement("article");const b=document.createElement("b");b.textContent=who;const p=document.createElement("p");p.textContent=msg;a.append(b,p);$("#chatLog").appendChild(a);$("#chatLog").scrollTop=$("#chatLog").scrollHeight}
 function answer(q){const s=q.toLowerCase();let a=s.includes("html")?"Use semantic HTML for the page structure, then connect style.css and script.js.":s.includes("css")?"Keep layout, spacing, colors, and responsive rules in style.css.":s.includes("javascript")||s.includes("js")?"Use script.js for buttons, forms, interactions, and project state.":s.includes("github")?"Your CMB-AI repository is connected to GitHub Pages. Keep frontend files in the repository root.":"Start with a small first version, test it, then add features one at a time.";addChat("CMB AI",a)}
-function renderFiles(){$("#fileList").innerHTML=Object.keys(state.files).map(f=>"<div class='file-item "+(f===state.currentFile?"active":"")+"' data-file='"+f+"'>▱ "+f+" <span>›</span></div>").join("");$$(".file-item").forEach(x=>x.onclick=()=>openFile(x.dataset.file));openFile(state.currentFile)}
+function renderFiles(){
+  const folders=[...new Set(Object.keys(state.files).filter(f=>f.includes("/")).map(f=>f.split("/")[0]))];
+  const fileNames=Object.keys(state.files);
+  const grouped=folders.map(folder=>"<div class='folder'>▾ "+folder+"</div>"+fileNames.filter(f=>f.startsWith(folder+"/")).map(f=>fileRow(f)).join("")).join("");
+  const root=fileNames.filter(f=>!f.includes("/")).map(fileRow).join("");
+  $("#fileList").innerHTML=grouped+root;
+  $(".file-item").forEach(x=>x.onclick=()=>openFile(x.dataset.file));
+  openFile(state.currentFile);
+}
+function fileRow(f){return "<div class='file-item "+(f===state.currentFile?"active":"")+"' data-file='"+f+"'>▱ "+f+" <span>›</span></div>"}
+function addFolder(){
+  const n=prompt("Folder name, e.g. components");
+  if(!n||/[<>:"\\|?*]/.test(n)||n.includes("/"))return;
+  const marker=n+"/.gitkeep";
+  if(!state.files[marker]){state.files[marker]="";renderFiles();toast("Folder created")}
+}
+$("#fileList").innerHTML=Object.keys(state.files).map(f=>"<div class='file-item "+(f===state.currentFile?"active":"")+"' data-file='"+f+"'>▱ "+f+" <span>›</span></div>").join("");$$(".file-item").forEach(x=>x.onclick=()=>openFile(x.dataset.file));openFile(state.currentFile)}
 function openFile(f){state.currentFile=f;$("#editorTitle").textContent=f;$("#code").value=state.files[f]||"";$$(".file-item").forEach(x=>x.classList.toggle("active",x.dataset.file===f))}
 function renderProjects(){const b=$("#projectsList");b.innerHTML="";if(!state.projects.length){b.innerHTML="<div class='panel'><h3>No projects yet</h3><p>Start a new project to create your first workspace.</p></div>";return}state.projects.forEach(p=>{const d=document.createElement("div");d.className="project-card";d.innerHTML="<small>PROJECT</small><h3></h3><p></p><small>"+p.progress+"% complete · "+p.created+"</small><br><button class='small'>Open →</button>";d.querySelector("h3").textContent=p.name;d.querySelector("p").textContent=p.idea||"No description yet.";d.querySelector("button").onclick=()=>{openProject(p);view("workspace")};b.appendChild(d)})}
 $$(".nav").forEach(x=>x.onclick=()=>view(x.dataset.view));$$("[data-open]").forEach(x=>x.onclick=()=>view(x.dataset.open));
 $("#newProject").onclick=newProject;$("#newProject2").onclick=newProject;$("#start").onclick=newProject;$("#plan").onclick=makePlan;
+if($("#addFolder"))$("#addFolder").onclick=addFolder;
 $("#addFile").onclick=()=>{const n=prompt("File name, e.g. about.html");if(!n||state.files[n])return;state.files[n]="";state.currentFile=n;renderFiles();toast("File added")};
 $("#saveCode").onclick=()=>{state.files[state.currentFile]=$("#code").value;toast("File saved in workspace")};
 $("#chatForm").onsubmit=e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";setTimeout(()=>answer(q),220)};
