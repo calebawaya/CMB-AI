@@ -442,3 +442,15 @@ function applyPendingAi(){
 $("#applyAiCode")?.removeEventListener("click",applyAiCodeChange);
 $("#applyAiCode")?.addEventListener("click",previewAiCodeChange);
 $("#applyPendingAi")?.addEventListener("click",applyPendingAi);
+
+let lastAiFiles=null;
+const originalApplyPendingAi=applyPendingAi;
+applyPendingAi=function(){
+ lastAiFiles={...state.files};
+ originalApplyPendingAi();
+};
+function undoLastAiChange(){
+ if(!lastAiFiles){toast("No AI change to undo");return}
+ state.files={...lastAiFiles};save();renderFiles();loadCodeEditor();refreshLivePreviewNow();lastAiFiles=null;toast("AI change undone");
+}
+$("#undoAiChange")?.addEventListener("click",undoLastAiChange);
