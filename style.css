@@ -5,3 +5,4 @@
 .preview-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
 .preview-head h2{margin:4px 0 0;font-size:17px}.preview-actions{display:flex;gap:8px}
 #previewFrame{flex:1;width:100%;border:0;background:#fff}
+\n.file-actions{display:flex;gap:8px;margin-top:12px}.folder{padding:9px 10px;color:var(--muted);font-size:11px;font-weight:800;border-bottom:1px solid var(--line);margin-top:6px}
