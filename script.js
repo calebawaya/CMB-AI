@@ -437,7 +437,7 @@ async function previewAiCodeChange(){
 function applyPendingAi(){
  if(!pendingAiFiles)return;
  ["index.html","style.css","script.js"].forEach(f=>{if(typeof pendingAiFiles[f]==="string")state.files[f]=pendingAiFiles[f]});
- save();renderFiles();loadCodeEditor();refreshLivePreviewNow();pendingAiFiles=null;$("#aiChangePreview")?.classList.add("hidden");toast("Approved AI changes applied");
+ recordAiAction($("#aiPrompt")?.value.trim()||"AI code change",pendingAiFiles);save();renderFiles();loadCodeEditor();refreshLivePreviewNow();pendingAiFiles=null;$("#aiChangePreview")?.classList.add("hidden");toast("Approved AI changes applied");
 }
 $("#applyAiCode")?.removeEventListener("click",applyAiCodeChange);
 $("#applyAiCode")?.addEventListener("click",previewAiCodeChange);
