@@ -42,3 +42,26 @@ def create_project():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
+
+@app.put("/api/project/<int:project_id>")
+def update_project(project_id):
+    data = request.get_json(silent=True) or {}
+    projects = load_projects()
+    project = next((p for p in projects if p.get("id") == project_id), None)
+    if not project:
+        return jsonify({"ok": False, "error": "Project not found"}), 404
+    if "name" in data:
+        project["name"] = str(data["name"]).strip() or project["name"]
+    if "status" in data:
+        project["status"] = str(data["status"])
+    save_projects(projects)
+    return jsonify({"ok": True, "project": project})
+
+@app.delete("/api/project/<int:project_id>")
+def delete_project(project_id):
+    projects = load_projects()
+    remaining = [p for p in projects if p.get("id") != project_id]
+    if len(remaining) == len(projects):
+        return jsonify({"ok": False, "error": "Project not found"}), 404
+    save_projects(remaining)
+    return jsonify({"ok": True, "deleted": project_id})
