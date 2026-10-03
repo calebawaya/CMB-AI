@@ -48,6 +48,11 @@
 </div></div>
 <div class="panel builder-canvas"><div class="panel-head"><div><small>CANVAS</small><h2>Page design</h2></div><button class="small" id="clearBuilder">Clear</button></div><div id="builderCanvas" class="builder-canvas-inner"><div class="builder-empty">Choose a component to start designing.</div></div><button class="primary full" id="applyBuilder">✓ Apply design to index.html</button></div>
 <div class="panel inspector"><div class="panel-head"><div><small>INSPECTOR</small><h2>Customize</h2></div></div><div id="inspectorEmpty" class="builder-empty">Select a block on the canvas.</div><div id="inspector" class="hidden"><label>Text<input id="propText" class="input"></label><label>Size<select id="propSize" class="input"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></label><label>Alignment<select id="propAlign" class="input"><option>left</option><option selected>center</option><option>right</option></select></label><label>Text color<input id="propColor" class="input" type="color" value="#172033"></label><label>Background<input id="propBg" class="input" type="color" value="#ffffff"></label><label>Padding<select id="propPadding" class="input"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></label><label>Font<select id="propFont" class="input"><option value="system" selected>System</option><option value="serif">Serif</option><option value="mono">Mono</option></select></label>
+<div id="sectionProps" class="hidden">
+<label>Section heading<input id="propSectionHeading" class="input" placeholder="Section heading"></label>
+<label>Section text<textarea id="propSectionText" class="input" rows="4" placeholder="Describe this section"></textarea></label>
+<label>Items<textarea id="propSectionItems" class="input" rows="5" placeholder="One item per line"></textarea></label>
+</div>
 <div id="columnsProps" class="hidden">
 <label>Columns<select id="propColumns" class="input"><option value="2">2 columns</option><option value="3" selected>3 columns</option><option value="4">4 columns</option></select></label>
 <label>Column content<input id="propColumnText" class="input" placeholder="Fast, Secure, Affordable"></label>
