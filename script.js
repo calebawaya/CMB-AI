@@ -503,3 +503,18 @@ $("#aiTimeline")?.addEventListener("click",e=>{
  const row=e.target.closest("[data-ai-timeline]"); if(!row)return;
  const h=getAiHistory().slice().reverse(); showAiHistoryDetails(h[Number(row.dataset.aiTimeline)]);
 });
+
+function snapshotKey(){return "cmbai_ai_snapshot_"+(state.active?.id||"default")}
+function createAiSnapshot(){
+ localStorage.setItem(snapshotKey(),JSON.stringify({files:{...state.files},time:new Date().toISOString()}));
+ toast("AI snapshot created");
+}
+function restoreAiSnapshot(){
+ try{
+  const s=JSON.parse(localStorage.getItem(snapshotKey())||"null");
+  if(!s){toast("No AI snapshot found");return}
+  state.files={...s.files};save();renderFiles();loadCodeEditor();refreshLivePreviewNow();toast("AI snapshot restored");
+ }catch{toast("Could not restore snapshot")}
+}
+$("#aiSnapshot")?.addEventListener("click",createAiSnapshot);
+$("#restoreAiSnapshot")?.addEventListener("click",restoreAiSnapshot);
