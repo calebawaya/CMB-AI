@@ -566,3 +566,14 @@ $("#aiSnapshotsList")?.addEventListener("click",e=>{
  state.files={...s.files};save();renderFiles();loadCodeEditor();refreshLivePreviewNow();toast("Snapshot restored");
 });
 renderAiSnapshots();
+
+function createNamedSnapshot(){
+ const name=$("#snapshotName")?.value.trim()||"Snapshot "+(getAiSnapshots().length+1);
+ const list=getAiSnapshots();
+ list.push({name,files:{...state.files},time:new Date().toISOString(),automatic:false});
+ saveAiSnapshots(list);
+ localStorage.setItem(snapshotKey(),JSON.stringify(list[list.length-1]));
+ if($("#snapshotName"))$("#snapshotName").value="";
+ toast("Named snapshot saved");renderAiSnapshotStatus();renderAiSnapshots();
+}
+$("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
