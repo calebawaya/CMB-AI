@@ -65,3 +65,16 @@ def delete_project(project_id):
         return jsonify({"ok": False, "error": "Project not found"}), 404
     save_projects(remaining)
     return jsonify({"ok": True, "deleted": project_id})
+
+
+@app.patch("/api/project/<int:project_id>")
+def patch_project(project_id):
+    data = request.get_json(silent=True) or {}
+    projects = load_projects()
+    project = next((p for p in projects if p.get("id") == project_id), None)
+    if project is None:
+        return jsonify({"ok": False, "error": "Project not found"}), 404
+    if data.get("name"):
+        project["name"] = str(data["name"]).strip()
+    save_projects(projects)
+    return jsonify({"ok": True, "project": project})
