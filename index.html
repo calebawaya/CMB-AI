@@ -38,9 +38,15 @@
 <button class="component" data-component="contact"><b>@</b><span>Contact</span><small>Contact section</small></button>
 <button class="component" data-component="footer"><b>⌄</b><span>Footer</span><small>Page footer</small></button>
 <button class="component" data-component="image"><b>▧</b><span>Image</span><small>Photo or graphic</small></button>
+<button class="component" data-component="navbar"><b>☰</b><span>Navbar</span><small>Site navigation</small></button>
 </div></div>
 <div class="panel builder-canvas"><div class="panel-head"><div><small>CANVAS</small><h2>Page design</h2></div><button class="small" id="clearBuilder">Clear</button></div><div id="builderCanvas" class="builder-canvas-inner"><div class="builder-empty">Choose a component to start designing.</div></div><button class="primary full" id="applyBuilder">✓ Apply design to index.html</button></div>
 <div class="panel inspector"><div class="panel-head"><div><small>INSPECTOR</small><h2>Customize</h2></div></div><div id="inspectorEmpty" class="builder-empty">Select a block on the canvas.</div><div id="inspector" class="hidden"><label>Text<input id="propText" class="input"></label><label>Size<select id="propSize" class="input"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></label><label>Alignment<select id="propAlign" class="input"><option>left</option><option selected>center</option><option>right</option></select></label><label>Text color<input id="propColor" class="input" type="color" value="#172033"></label><label>Background<input id="propBg" class="input" type="color" value="#ffffff"></label><label>Padding<select id="propPadding" class="input"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></label><label>Font<select id="propFont" class="input"><option value="system" selected>System</option><option value="serif">Serif</option><option value="mono">Mono</option></select></label>
+<div id="navbarProps" class="hidden">
+<label>Logo<input id="propLogo" class="input" placeholder="Your brand"></label>
+<label>Links<input id="propLinks" class="input" placeholder="Home, About, Services, Contact"></label>
+<label>Button text<input id="propNavButton" class="input" placeholder="Get started"></label>
+</div>
 <div id="imageProps" class="hidden">
 <label>Image URL<input id="propImageUrl" class="input" placeholder="https://example.com/photo.jpg"></label>
 <label>Upload image<input id="propImageFile" class="input" type="file" accept="image/*"></label>
