@@ -21,3 +21,18 @@ $("#rename").onclick=()=>{if(!state.active){toast("Create a project first");retu
 $("#theme").onclick=()=>{document.body.classList.toggle("light");localStorage.setItem("cmbai_theme",document.body.classList.contains("light")?"light":"dark")};
 if(localStorage.getItem("cmbai_theme")==="light")document.body.classList.add("light");
 if(state.projects.length)openProject(state.projects[0]);renderFiles();renderProjects();$("#projectCount").textContent=state.projects.length;
+function buildPreview(){
+  const html=state.files["index.html"]||"";
+  const css=state.files["style.css"]||"";
+  const script=state.files["script.js"]||"";
+  const doc=html.includes("<html")?html:"<!doctype html><html><head></head><body>"+html+"</body></html>";
+  const withCss=doc.replace("</head>", "<style>"+css.replace(/<\\/style/gi,"<\\\\/style")+"<\\/style></head>");
+  const withJs=withCss.replace("</body>", "<script>"+script.replace(/<\\/script/gi,"<\\\\/script")+"<\\/script></body>");
+  const frame=$("#previewFrame");
+  frame.srcdoc=withJs;
+  $("#previewModal").classList.remove("hidden");
+}
+$("#preview").onclick=()=>{state.files[state.currentFile]=$("#code").value;buildPreview()};
+$("#refreshPreview").onclick=buildPreview;
+$("#closePreview").onclick=()=>$("#previewModal").classList.add("hidden");
+$("#previewModal").addEventListener("click",e=>{if(e.target.id==="previewModal")$("#previewModal").classList.add("hidden")});
