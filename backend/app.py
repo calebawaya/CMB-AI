@@ -121,3 +121,36 @@ User request:
         return jsonify({"ok": True, "answer": response.output_text})
     except Exception as exc:
         return jsonify({"ok": False, "error": "AI request failed"}), 502
+
+@app.post("/api/ai/apply")
+def apply_ai_change():
+    data = request.get_json(silent=True) or {}
+    request_text = str(data.get("request", "")).strip()
+    files = data.get("files", {}) or {}
+    if not request_text:
+        return jsonify({"ok": False, "error": "Change request is required"}), 400
+    if OpenAI is None or not os.getenv("OPENAI_API_KEY"):
+        return jsonify({"ok": False, "error": "AI backend is not configured"}), 503
+    prompt = f"""You are a code assistant for CMB-AI.
+User request: {request_text}
+
+Return JSON only with exactly these keys:
+index.html, style.css, script.js
+For each key, return either null if that file should not change, or the complete replacement file content.
+Do not use markdown fences.
+Current files:
+HTML:
+{str(files.get("index.html",""))[:14000]}
+CSS:
+{str(files.get("style.css",""))[:14000]}
+JavaScript:
+{str(files.get("script.js",""))[:14000]}
+"""
+    try:
+        client = OpenAI()
+        response = client.responses.create(model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna"), input=prompt)
+        raw = response.output_text.strip()
+        result = json.loads(raw)
+        return jsonify({"ok": True, "files": result})
+    except Exception:
+        return jsonify({"ok": False, "error": "Could not generate a safe code change"}), 502
