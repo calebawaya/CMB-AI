@@ -435,7 +435,7 @@ async function previewAiCodeChange(){
  }catch(e){out.textContent="Python backend is offline."}
 }
 function applyPendingAi(){
- autoAiSnapshot(state.files);
+ autoAiSnapshot(state.files);renderAiSnapshotStatus();
  if(!pendingAiFiles)return;
  ["index.html","style.css","script.js"].forEach(f=>{if(typeof pendingAiFiles[f]==="string")state.files[f]=pendingAiFiles[f]});
  recordAiAction($("#aiPrompt")?.value.trim()||"AI code change",pendingAiFiles);save();renderFiles();loadCodeEditor();refreshLivePreviewNow();pendingAiFiles=null;$("#aiChangePreview")?.classList.add("hidden");toast("Approved AI changes applied");
@@ -508,7 +508,7 @@ $("#aiTimeline")?.addEventListener("click",e=>{
 function snapshotKey(){return "cmbai_ai_snapshot_"+(state.active?.id||"default")}
 function createAiSnapshot(){
  localStorage.setItem(snapshotKey(),JSON.stringify({files:{...state.files},time:new Date().toISOString()}));
- toast("AI snapshot created");
+ toast("AI snapshot created");renderAiSnapshotStatus();
 }
 function restoreAiSnapshot(){
  try{
@@ -523,3 +523,12 @@ $("#restoreAiSnapshot")?.addEventListener("click",restoreAiSnapshot);
 function autoAiSnapshot(files){
  localStorage.setItem(snapshotKey(),JSON.stringify({files:{...(files||state.files)},time:new Date().toISOString(),automatic:true}));
 }
+
+function renderAiSnapshotStatus(){
+ const box=$("#aiSnapshotStatus"); if(!box)return;
+ try{
+  const s=JSON.parse(localStorage.getItem(snapshotKey())||"null");
+  box.textContent=s?"Latest snapshot: "+new Date(s.time).toLocaleString():"No snapshot created yet.";
+ }catch{box.textContent="No snapshot created yet."}
+}
+renderAiSnapshotStatus();
