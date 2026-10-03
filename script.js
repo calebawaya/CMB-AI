@@ -113,7 +113,7 @@ function buildPreview(){
   const script=state.files["script.js"]||"";
   const doc=html.includes("<html")?html:"<!doctype html><html><head></head><body>"+html+"</body></html>";
   const withCss=doc.replace("</head>","<style>"+css+"</style></head>");
-  const withJs=withCss.replace("</body>","<script>"+script.replace(/<\\/script/gi,"<\\\\/script")+"</script></body>");
+  const withJs=withCss.replace("</body>","<script>"+script.replace(/<\/script/gi,"<\\/script")+"</script></body>");
   $("#previewFrame").srcdoc=withJs;$("#previewModal").classList.remove("hidden");
 }
 $$(".nav").forEach(x=>x.onclick=()=>view(x.dataset.view));
