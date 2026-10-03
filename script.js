@@ -397,3 +397,24 @@ async function askPythonAI(){
  finally{button.disabled=false;button.textContent="Ask AI"}
 }
 $("#sendAiPrompt")?.addEventListener("click",askPythonAI);
+
+async function applyAiCodeChange(){
+ const input=$("#aiPrompt"),out=$("#aiResponse"),button=$("#sendAiPrompt");
+ if(!input||!out)return;
+ const prompt=input.value.trim();
+ if(!prompt){toast("Enter a change request first");return}
+ button.disabled=true;button.textContent="Building...";
+ out.textContent="AI is preparing project changes...";
+ try{
+  const r=await fetch("http://127.0.0.1:5000/api/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request:prompt,files:state.files})});
+  const data=await r.json();
+  if(!data.ok){out.textContent=data.error||"Could not apply changes";return}
+  ["index.html","style.css","script.js"].forEach(f=>{if(typeof data.files?.[f]==="string")state.files[f]=data.files[f]});
+  save();renderFiles();loadCodeEditor();refreshLivePreviewNow();
+  out.textContent="AI changes applied to the project.";
+  toast("AI code changes applied");
+ }catch(e){out.textContent="Python backend is offline."}
+ finally{button.disabled=false;button.textContent="Ask AI"}
+}
+
+$("#applyAiCode")?.addEventListener("click",applyAiCodeChange);
