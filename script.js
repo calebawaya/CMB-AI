@@ -348,3 +348,15 @@ async function createProjectOnBackend(project){
   return data;
  }catch(e){return null}
 }
+
+async function loadProjectsFromBackend(){
+ try{
+  const r=await fetch("http://127.0.0.1:5000/api/projects");
+  const data=await r.json();
+  if(data.ok && Array.isArray(data.projects) && data.projects.length){
+   data.projects.forEach(p=>{if(!state.projects.some(x=>x.backendId===p.id)){state.projects.push({id:Date.now()+Math.random(),backendId:p.id,name:p.name,description:"Python backend project",updatedAt:Date.now()})}});
+   save();renderProjects();renderDashboard();
+  }
+ }catch(e){}
+}
+loadProjectsFromBackend();
