@@ -473,3 +473,14 @@ function recordAiHistory(prompt,answer){const h=getAiHistory();h.push({prompt,an
 $("#clearAiHistory")?.addEventListener("click",()=>{saveAiHistory([]);renderAiHistory();toast("AI history cleared")});
 $("#aiHistoryList")?.addEventListener("click",e=>{const b=e.target.closest("[data-ai-history]");if(!b)return;const h=getAiHistory();const item=h[Number(b.dataset.aiHistory)];if(item&&$("#aiPrompt")){$("#aiPrompt").value=item.prompt;$("#aiPrompt").focus();toast("Previous request loaded")}});
 renderAiHistory();
+
+function showAiHistoryDetails(item){
+ const box=$("#aiHistoryDetails"); if(!box)return;
+ if(!item){box.classList.add("hidden");return}
+ box.classList.remove("hidden");
+ box.innerHTML="";
+ const title=document.createElement("h4"); title.textContent="AI action details"; box.appendChild(title);
+ const p=document.createElement("p"); p.textContent="Request: "+(item.prompt||""); box.appendChild(p);
+ const f=document.createElement("p"); f.textContent="Changed files: "+((item.changedFiles||[]).join(", ")||"None listed"); box.appendChild(f);
+ const t=document.createElement("small"); t.textContent=item.time?new Date(item.time).toLocaleString():""; box.appendChild(t);
+}
