@@ -282,3 +282,10 @@ $$(".device").forEach(b=>b.onclick=()=>setDevice(b.dataset.device));
 if($("#openLivePreview"))$("#openLivePreview").onclick=openLivePreview;
 if($("#refreshLivePreview"))$("#refreshLivePreview").onclick=refreshLivePreview;
 if($("#closeLivePreview"))$("#closeLivePreview").onclick=closeLivePreview;
+
+function downloadFile(name,content,type="text/plain"){const blob=new Blob([content],{type});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function exportHtmlFile(){downloadFile("index.html",getGeneratedHtml(),"text/html");toast("HTML downloaded")}
+function exportCssFile(){downloadFile("style.css",state.files["style.css"]||"","text/css");toast("CSS downloaded")}
+function exportJsFile(){downloadFile("script.js",state.files["script.js"]||"","text/javascript");toast("JavaScript downloaded")}
+function exportWebsite(){const files=[["index.html",getGeneratedHtml()],["style.css",state.files["style.css"]||""],["script.js",state.files["script.js"]||""]];const text=files.map(([n,c])=>"===== "+n+" =====\n"+c).join("\n\n");downloadFile("cmb-ai-website.txt",text,"text/plain");toast("Website package downloaded")}
+if($("#exportHtml"))$("#exportHtml").onclick=exportHtmlFile;if($("#exportCss"))$("#exportCss").onclick=exportCssFile;if($("#exportJs"))$("#exportJs").onclick=exportJsFile;if($("#exportZip"))$("#exportZip").onclick=exportWebsite;
