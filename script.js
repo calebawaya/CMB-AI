@@ -458,6 +458,11 @@ $("#undoAiChange")?.addEventListener("click",undoLastAiChange);
 function aiHistoryKey(){return "cmbai_ai_history_"+(state.active?.id||"default")}
 function getAiHistory(){try{return JSON.parse(localStorage.getItem(aiHistoryKey())||"[]")}catch{return[]}}
 function saveAiHistory(h){localStorage.setItem(aiHistoryKey(),JSON.stringify(h.slice(-30)))}
+function recordAiAction(prompt,files){
+ const h=getAiHistory();
+ h.push({prompt:prompt,answer:"Approved AI code change.",changedFiles:Object.keys(files||{}).filter(f=>typeof files[f]==="string"),time:new Date().toISOString()});
+ saveAiHistory(h);renderAiHistory();
+}
 function renderAiHistory(){
  const box=$("#aiHistoryList"); if(!box)return;
  const h=getAiHistory();
