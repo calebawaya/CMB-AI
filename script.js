@@ -360,3 +360,15 @@ async function loadProjectsFromBackend(){
  }catch(e){}
 }
 loadProjectsFromBackend();
+
+
+async function syncProjectName(project){
+ if(!project || !project.backendId || !project.name) return;
+ try{
+  await fetch("http://127.0.0.1:5000/api/project/"+encodeURIComponent(project.backendId),{
+   method:"PATCH",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({name:project.name})
+  });
+ }catch(e){}
+}
