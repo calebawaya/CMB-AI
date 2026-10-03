@@ -134,7 +134,12 @@ function builderBlock(type){
   footer:{title:"CMB AI",text:"Built with CMB AI.",kind:"footer"},
   image:{title:"Project image",text:"Add a photo or graphic.",src:"",alt:"Project image",fit:"cover",kind:"image"},
   navbar:{title:"CMB AI",text:"Home, About, Services, Contact",logo:"CMB AI",links:"Home, About, Services, Contact",button:"Get started",kind:"navbar"},
-  columns:{title:"Three column section",text:"Fast, Secure, Affordable",columns:3,columnText:"Fast, Secure, Affordable",responsive:"stack",kind:"columns"}
+  columns:{title:"Three column section",text:"Fast, Secure, Affordable",columns:3,columnText:"Fast, Secure, Affordable",responsive:"stack",kind:"columns"},
+pricing:{title:"Simple pricing",text:"Starter, Pro, Business",kind:"pricing"},
+testimonials:{title:"What customers say",text:"“A simple way to turn ideas into websites.”, “The builder makes creating pages much easier.”, “Clean, fast, and easy to use.”",kind:"testimonials"},
+faq:{title:"Frequently asked questions",text:"What is this?,How does it work?,Can I customize it?",kind:"faq"},
+features:{title:"Everything you need",text:"Visual builder,Responsive layouts,Project management",kind:"features"},
+about:{title:"About our project",text:"Explain your mission, story, or the problem your project solves.",kind:"about"}
  };
  return {id:Date.now()+Math.random(),...data[type]};
 }
@@ -187,6 +192,11 @@ function applyBuilder(){
   if(b.kind==="image")return `<section class="cmb-block cmb-image"><img src="${b.src||""}" alt="${b.alt||"Project image"}" style="object-fit:${b.fit||"cover"}"></section>`;
   if(b.kind==="navbar"){const links=(b.links||"Home, About, Services, Contact").split(",").map(x=>x.trim()).filter(Boolean).map(x=>`<a href="#">${x}</a>`).join("");return `<header class="cmb-navbar"><a class="cmb-logo" href="#">${b.logo||"CMB AI"}</a><nav>${links}</nav><a class="cmb-nav-cta" href="#">${b.button||"Get started"}</a></header>`;}
   if(b.kind==="columns"){const count=Math.max(2,Math.min(4,Number(b.columns)||3));const items=(b.columnText||"Fast, Secure, Affordable").split(",").map(x=>x.trim()).filter(Boolean);while(items.length<count)items.push("Feature "+(items.length+1));const cards=items.slice(0,count).map(x=>`<article><h3>${x}</h3><p>Describe this feature, service, or benefit.</p></article>`).join("");return `<section class="cmb-block cmb-columns ${b.responsive==="scroll"?"cmb-columns-scroll":""}"><div class="cmb-columns-grid" style="--cmb-cols:${count}">${cards}</div></section>`;}
+  if(b.kind==="pricing"){const plans=["Starter","Pro","Business"];return `<section class="cmb-block cmb-library cmb-pricing"><small>PRICING</small><h2>${b.title}</h2><div class="cmb-pricing-grid">${plans.map((p,i)=>`<article><h3>${p}</h3><strong>${i===0?"$9":i===1?"$29":"$79"}</strong><p>Useful tools and features for your project.</p><a href="#">Choose plan</a></article>`).join("")}</div></section>`;}
+  if(b.kind==="testimonials"){const quotes=(b.text||"Great product,Easy to use,Highly recommended").split(",").map(x=>x.trim()).filter(Boolean);return `<section class="cmb-block cmb-library cmb-testimonials"><small>TESTIMONIALS</small><h2>${b.title}</h2><div class="cmb-testimonial-grid">${quotes.slice(0,3).map(q=>`<article><div>★★★★★</div><p>${q}</p><b>Happy customer</b></article>`).join("")}</div></section>`;}
+  if(b.kind==="faq"){const qs=(b.text||"What is this?,How does it work?,Can I customize it?").split(",").map(x=>x.trim()).filter(Boolean);return `<section class="cmb-block cmb-library cmb-faq"><small>FAQ</small><h2>${b.title}</h2>${qs.slice(0,6).map(q=>`<details><summary>${q}</summary><p>Write a clear answer to this question for your visitors.</p></details>`).join("")}</section>`;}
+  if(b.kind==="features"){const items=(b.text||"Visual builder,Responsive layouts,Project management").split(",").map(x=>x.trim()).filter(Boolean);return `<section class="cmb-block cmb-library cmb-features"><small>FEATURES</small><h2>${b.title}</h2><div class="cmb-feature-grid">${items.slice(0,6).map(x=>`<article><span>✦</span><h3>${x}</h3><p>Explain the value of this feature in a short sentence.</p></article>`).join("")}</div></section>`;}
+  if(b.kind==="about")return `<section class="cmb-block cmb-library cmb-about"><small>ABOUT</small><h2>${b.title}</h2><p>${b.text}</p></section>`;
   return `<section class="cmb-block cmb-${b.kind}"><small>${b.kind.toUpperCase()}</small><h2>${b.title}</h2><p>${b.text}</p>${b.kind==="button"?'<a href="#">Get started →</a>':""}</section>`;
  }).join("\n");
  state.files["index.html"]=`<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CMB AI Project</title><link rel="stylesheet" href="style.css"></head><body>${sections}<script src="script.js"><\\/script></body></html>`;
