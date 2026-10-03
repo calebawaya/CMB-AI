@@ -85,3 +85,35 @@ body::after{
     transform:scale(1.035);
   }
 }
+
+/* Strong visible lighting */
+body{position:relative;overflow-x:hidden;}
+body::before{
+  content:"";
+  position:fixed;
+  inset:-15%;
+  z-index:-2;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(80,120,255,.38) 0,rgba(80,120,255,.16) 16%,transparent 38%),
+    radial-gradient(circle at 88% 22%,rgba(0,220,255,.28) 0,rgba(0,220,255,.10) 15%,transparent 35%),
+    radial-gradient(circle at 52% 90%,rgba(150,70,255,.30) 0,rgba(150,70,255,.09) 18%,transparent 40%);
+  filter:blur(22px);
+  opacity:1;
+  animation:cmbLightMove 9s ease-in-out infinite alternate;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    linear-gradient(120deg,transparent 0 42%,rgba(90,160,255,.055) 50%,transparent 58%),
+    radial-gradient(circle at 50% 45%,transparent 0 34%,rgba(70,110,255,.07) 72%,rgba(20,30,70,.18) 100%);
+  mix-blend-mode:screen;
+}
+@keyframes cmbLightMove{
+  0%{transform:translate(-2%,0) scale(1);}
+  100%{transform:translate(2%,1%) scale(1.06);}
+}
