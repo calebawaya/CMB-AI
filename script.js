@@ -133,7 +133,8 @@ function builderBlock(type){
   contact:{title:"Let's work together",text:"Contact us to learn more.",kind:"contact"},
   footer:{title:"CMB AI",text:"Built with CMB AI.",kind:"footer"},
   image:{title:"Project image",text:"Add a photo or graphic.",src:"",alt:"Project image",fit:"cover",kind:"image"},
-  navbar:{title:"CMB AI",text:"Home, About, Services, Contact",logo:"CMB AI",links:"Home, About, Services, Contact",button:"Get started",kind:"navbar"}
+  navbar:{title:"CMB AI",text:"Home, About, Services, Contact",logo:"CMB AI",links:"Home, About, Services, Contact",button:"Get started",kind:"navbar"},
+  columns:{title:"Three column section",text:"Fast, Secure, Affordable",columns:3,columnText:"Fast, Secure, Affordable",responsive:"stack",kind:"columns"}
  };
  return {id:Date.now()+Math.random(),...data[type]};
 }
@@ -149,32 +150,32 @@ function renderBuilder(){
   }else if(b.kind==="navbar"){
     const links=(b.links||"Home, About, Services, Contact").split(",").map(x=>x.trim()).filter(Boolean);
     el.innerHTML="<small>NAVBAR</small><div class='builder-nav'><strong></strong><nav></nav><a class='builder-nav-cta'></a></div>";
-    el.querySelector("strong").textContent=b.logo||"CMB AI";
-    el.querySelector("nav").innerHTML=links.map(x=>"<a href='#'>"+x+"</a>").join("");
-    el.querySelector(".builder-nav-cta").textContent=b.button||"Get started";
+    el.querySelector("strong").textContent=b.logo||"CMB AI";el.querySelector("nav").innerHTML=links.map(x=>"<a href='#'>"+x+"</a>").join("");el.querySelector(".builder-nav-cta").textContent=b.button||"Get started";
+  }else if(b.kind==="columns"){
+    const count=Math.max(2,Math.min(4,Number(b.columns)||3));const items=(b.columnText||"Fast, Secure, Affordable").split(",").map(x=>x.trim()).filter(Boolean);
+    while(items.length<count)items.push("Feature "+(items.length+1));
+    el.innerHTML="<small>LAYOUT</small><div class='builder-columns'></div>";
+    const grid=el.querySelector(".builder-columns");grid.style.gridTemplateColumns="repeat("+count+",minmax(0,1fr))";if(b.responsive==="scroll")grid.classList.add("scroll-mobile");
+    for(let i=0;i<count;i++){const card=document.createElement("div");card.className="builder-column";card.innerHTML="<b></b><p>Describe this feature, service, or benefit.</p>";card.querySelector("b").textContent=items[i];grid.appendChild(card)}
   }else{
-    el.innerHTML="<small>"+b.kind.toUpperCase()+"</small><h3></h3><p></p>";
-    el.querySelector("h3").textContent=b.title;el.querySelector("p").textContent=b.text;
-    el.querySelector("h3").style.fontSize=b.size==="large"?"32px":b.size==="small"?"18px":"24px";
+    el.innerHTML="<small>"+b.kind.toUpperCase()+"</small><h3></h3><p></p>";el.querySelector("h3").textContent=b.title;el.querySelector("p").textContent=b.text;el.querySelector("h3").style.fontSize=b.size==="large"?"32px":b.size==="small"?"18px":"24px";
   }
-  el.draggable=true;
-  el.ondragstart=e=>e.dataTransfer.setData("text/plain",b.id);
-  el.ondragover=e=>e.preventDefault();
-  el.ondrop=e=>{e.preventDefault();const from=builder.blocks.findIndex(x=>String(x.id)===e.dataTransfer.getData("text/plain"));const to=builder.blocks.findIndex(x=>x.id===b.id);if(from>-1&&to>-1){const moved=builder.blocks.splice(from,1)[0];builder.blocks.splice(to,0,moved);renderBuilder()}};
-  el.onclick=()=>selectBlock(b.id);c.appendChild(el);
+  el.draggable=true;el.ondragstart=e=>e.dataTransfer.setData("text/plain",b.id);el.ondragover=e=>e.preventDefault();el.ondrop=e=>{e.preventDefault();const from=builder.blocks.findIndex(x=>String(x.id)===e.dataTransfer.getData("text/plain"));const to=builder.blocks.findIndex(x=>x.id===b.id);if(from>-1&&to>-1){const moved=builder.blocks.splice(from,1)[0];builder.blocks.splice(to,0,moved);renderBuilder()}};el.onclick=()=>selectBlock(b.id);c.appendChild(el);
  });
 }
 function selectBlock(id){
  builder.selected=id;renderBuilder();const b=builder.blocks.find(x=>x.id===id);if(!b)return;
  $("#inspectorEmpty").classList.add("hidden");$("#inspector").classList.remove("hidden");
  $("#propText").value=b.title||"";$("#propSize").value=b.size||"medium";$("#propAlign").value=b.align||"center";$("#propColor").value=b.color||"#172033";$("#propBg").value=b.bg||"#ffffff";$("#propPadding").value=b.padding||"medium";$("#propFont").value=b.font||"system";
- const ip=$("#imageProps"),np=$("#navbarProps");if(ip)ip.classList.toggle("hidden",b.kind!=="image");if(np)np.classList.toggle("hidden",b.kind!=="navbar");
+ const cp=$("#columnsProps"),np=$("#navbarProps"),ip=$("#imageProps");if(cp)cp.classList.toggle("hidden",b.kind!=="columns");if(np)np.classList.toggle("hidden",b.kind!=="navbar");if(ip)ip.classList.toggle("hidden",b.kind!=="image");
+ if(b.kind==="columns"){$("#propColumns").value=b.columns||3;$("#propColumnText").value=b.columnText||"";$("#propResponsive").value=b.responsive||"stack"}
  if(b.kind==="image"){$("#propImageUrl").value=b.src&&b.src.startsWith("data:")?"":(b.src||"");$("#propAlt").value=b.alt||"";$("#propFit").value=b.fit||"cover"}
  if(b.kind==="navbar"){$("#propLogo").value=b.logo||"";$("#propLinks").value=b.links||"";$("#propNavButton").value=b.button||""}
 }
 function updateSelected(){
  const b=builder.blocks.find(x=>x.id===builder.selected);if(!b)return;
  b.title=$("#propText").value;b.size=$("#propSize").value;b.align=$("#propAlign").value;b.color=$("#propColor").value;b.bg=$("#propBg").value;b.padding=$("#propPadding").value;b.font=$("#propFont").value;
+ if(b.kind==="columns"){b.columns=Number($("#propColumns").value);b.columnText=$("#propColumnText").value;b.responsive=$("#propResponsive").value}
  if(b.kind==="image"){const url=$("#propImageUrl").value.trim();if(url)b.src=url;b.alt=$("#propAlt").value.trim();b.fit=$("#propFit").value}
  if(b.kind==="navbar"){b.logo=$("#propLogo").value.trim();b.links=$("#propLinks").value.trim();b.button=$("#propNavButton").value.trim();b.title=b.logo||"CMB AI";b.text=b.links||""}
  renderBuilder();
@@ -183,19 +184,18 @@ function deleteSelected(){if(builder.selected==null)return;builder.blocks=builde
 function applyBuilder(){
  if(!builder.blocks.length){toast("Add a component first");return}
  const sections=builder.blocks.map(b=>{
-   if(b.kind==="image") return `<section class="cmb-block cmb-image"><img src="${b.src||""}" alt="${b.alt||"Project image"}" style="object-fit:${b.fit||"cover"}"></section>`;
-   if(b.kind==="navbar"){
-     const links=(b.links||"Home, About, Services, Contact").split(",").map(x=>x.trim()).filter(Boolean).map(x=>`<a href="#">${x}</a>`).join("");
-     return `<header class="cmb-navbar"><a class="cmb-logo" href="#">${b.logo||"CMB AI"}</a><nav>${links}</nav><a class="cmb-nav-cta" href="#">${b.button||"Get started"}</a></header>`;
-   }
-   return `<section class="cmb-block cmb-${b.kind}"><small>${b.kind.toUpperCase()}</small><h2>${b.title}</h2><p>${b.text}</p>${b.kind==="button"?'<a href="#">Get started →</a>':""}</section>`;
+  if(b.kind==="image")return `<section class="cmb-block cmb-image"><img src="${b.src||""}" alt="${b.alt||"Project image"}" style="object-fit:${b.fit||"cover"}"></section>`;
+  if(b.kind==="navbar"){const links=(b.links||"Home, About, Services, Contact").split(",").map(x=>x.trim()).filter(Boolean).map(x=>`<a href="#">${x}</a>`).join("");return `<header class="cmb-navbar"><a class="cmb-logo" href="#">${b.logo||"CMB AI"}</a><nav>${links}</nav><a class="cmb-nav-cta" href="#">${b.button||"Get started"}</a></header>`;}
+  if(b.kind==="columns"){const count=Math.max(2,Math.min(4,Number(b.columns)||3));const items=(b.columnText||"Fast, Secure, Affordable").split(",").map(x=>x.trim()).filter(Boolean);while(items.length<count)items.push("Feature "+(items.length+1));const cards=items.slice(0,count).map(x=>`<article><h3>${x}</h3><p>Describe this feature, service, or benefit.</p></article>`).join("");return `<section class="cmb-block cmb-columns ${b.responsive==="scroll"?"cmb-columns-scroll":""}"><div class="cmb-columns-grid" style="--cmb-cols:${count}">${cards}</div></section>`;}
+  return `<section class="cmb-block cmb-${b.kind}"><small>${b.kind.toUpperCase()}</small><h2>${b.title}</h2><p>${b.text}</p>${b.kind==="button"?'<a href="#">Get started →</a>':""}</section>`;
  }).join("\n");
  state.files["index.html"]=`<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CMB AI Project</title><link rel="stylesheet" href="style.css"></head><body>${sections}<script src="script.js"><\\/script></body></html>`;
- state.files["style.css"]+=`\n.cmb-navbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 24px;background:rgba(255,255,255,.94);border-bottom:1px solid #e5e7eb;backdrop-filter:blur(10px)}.cmb-logo{font-weight:900;color:#172033;text-decoration:none}.cmb-navbar nav{display:flex;gap:20px;flex-wrap:wrap}.cmb-navbar nav a{color:#475467;text-decoration:none;font-weight:600;font-size:14px}.cmb-nav-cta{background:#786bff;color:#fff;text-decoration:none;padding:10px 15px;border-radius:9px;font-weight:800;font-size:13px}.cmb-navbar a:hover{opacity:.8}`;
- if(state.active){state.active.files=state.files;save()}renderFiles();toast("Design applied to index.html");
+ state.files["style.css"]+=`\n.cmb-columns-grid{display:grid;grid-template-columns:repeat(var(--cmb-cols),minmax(0,1fr));gap:18px;max-width:1100px;margin:0 auto}.cmb-columns-grid article{padding:24px;border:1px solid #d9e1ec;border-radius:14px;background:#fff;text-align:left;box-shadow:0 8px 25px rgba(16,24,40,.06)}.cmb-columns-grid h3{margin:0 0 8px;font-size:20px}.cmb-columns-grid p{margin:0;color:#667085;line-height:1.6}.cmb-columns-scroll .cmb-columns-grid{overflow-x:auto;grid-template-columns:repeat(var(--cmb-cols),minmax(220px,1fr));padding-bottom:8px}`;
+ if(state.active){state.active.files=state.files;save()}renderFiles();toast("Responsive layout applied to index.html");
 }
 $$(".component").forEach(x=>x.onclick=()=>{builder.blocks.push(builderBlock(x.dataset.component));renderBuilder()});
 if($("#propText"))$("#propText").oninput=updateSelected;if($("#propSize"))$("#propSize").onchange=updateSelected;if($("#propAlign"))$("#propAlign").onchange=updateSelected;if($("#propColor"))$("#propColor").oninput=updateSelected;if($("#propBg"))$("#propBg").oninput=updateSelected;if($("#propPadding"))$("#propPadding").onchange=updateSelected;if($("#propFont"))$("#propFont").onchange=updateSelected;
+if($("#propColumns"))$("#propColumns").onchange=updateSelected;if($("#propColumnText"))$("#propColumnText").oninput=updateSelected;if($("#propResponsive"))$("#propResponsive").onchange=updateSelected;
 if($("#propLogo"))$("#propLogo").oninput=updateSelected;if($("#propLinks"))$("#propLinks").oninput=updateSelected;if($("#propNavButton"))$("#propNavButton").oninput=updateSelected;
 if($("#propImageUrl"))$("#propImageUrl").oninput=updateSelected;if($("#propAlt"))$("#propAlt").oninput=updateSelected;if($("#propFit"))$("#propFit").onchange=updateSelected;
 if($("#propImageFile"))$("#propImageFile").onchange=e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const b=builder.blocks.find(x=>x.id===builder.selected);if(!b||b.kind!=="image")return;b.src=reader.result;renderBuilder();selectBlock(b.id);toast("Image added to the builder")};reader.readAsDataURL(file)};
