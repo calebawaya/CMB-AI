@@ -435,6 +435,7 @@ async function previewAiCodeChange(){
  }catch(e){out.textContent="Python backend is offline."}
 }
 function applyPendingAi(){
+ autoAiSnapshot(state.files);
  if(!pendingAiFiles)return;
  ["index.html","style.css","script.js"].forEach(f=>{if(typeof pendingAiFiles[f]==="string")state.files[f]=pendingAiFiles[f]});
  recordAiAction($("#aiPrompt")?.value.trim()||"AI code change",pendingAiFiles);save();renderFiles();loadCodeEditor();refreshLivePreviewNow();pendingAiFiles=null;$("#aiChangePreview")?.classList.add("hidden");toast("Approved AI changes applied");
@@ -518,3 +519,7 @@ function restoreAiSnapshot(){
 }
 $("#aiSnapshot")?.addEventListener("click",createAiSnapshot);
 $("#restoreAiSnapshot")?.addEventListener("click",restoreAiSnapshot);
+
+function autoAiSnapshot(files){
+ localStorage.setItem(snapshotKey(),JSON.stringify({files:{...(files||state.files)},time:new Date().toISOString(),automatic:true}));
+}
