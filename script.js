@@ -198,5 +198,32 @@ if($("#propText"))$("#propText").oninput=updateSelected;if($("#propSize"))$("#pr
 if($("#propColumns"))$("#propColumns").onchange=updateSelected;if($("#propColumnText"))$("#propColumnText").oninput=updateSelected;if($("#propResponsive"))$("#propResponsive").onchange=updateSelected;
 if($("#propLogo"))$("#propLogo").oninput=updateSelected;if($("#propLinks"))$("#propLinks").oninput=updateSelected;if($("#propNavButton"))$("#propNavButton").oninput=updateSelected;
 if($("#propImageUrl"))$("#propImageUrl").oninput=updateSelected;if($("#propAlt"))$("#propAlt").oninput=updateSelected;if($("#propFit"))$("#propFit").onchange=updateSelected;
+
+// Theme system
+const themes={
+ default:{accent:"#786bff",accent2:"#5b4fe9",bg:"#f8fafc",panel:"#ffffff",text:"#172033",muted:"#667085",radius:"14px",font:"system"},
+ ocean:{accent:"#0ea5e9",accent2:"#0284c7",bg:"#f0f9ff",panel:"#ffffff",text:"#0c2d48",muted:"#486581",radius:"16px",font:"system"},
+ sunset:{accent:"#f97316",accent2:"#ea580c",bg:"#fff7ed",panel:"#ffffff",text:"#431407",muted:"#9a3412",radius:"18px",font:"system"},
+ forest:{accent:"#16a34a",accent2:"#15803d",bg:"#f0fdf4",panel:"#ffffff",text:"#14351f",muted:"#4b6351",radius:"12px",font:"system"},
+ midnight:{accent:"#a78bfa",accent2:"#7c3aed",bg:"#0f172a",panel:"#182235",text:"#f8fafc",muted:"#b6c2d2",radius:"14px",font:"system"}
+};
+function applyTheme(){
+ const name=$("#themePreset")?.value||"default",t=themes[name];if(!t)return;
+ document.documentElement.style.setProperty("--accent",t.accent);
+ document.documentElement.style.setProperty("--accent2",t.accent2);
+ document.documentElement.style.setProperty("--bg",t.bg);
+ document.documentElement.style.setProperty("--panel",t.panel);
+ document.documentElement.style.setProperty("--text",t.text);
+ document.documentElement.style.setProperty("--muted",t.muted);
+ document.documentElement.style.setProperty("--radius",t.radius);
+ const f=t.font==="serif"?"Georgia,serif":"system-ui,sans-serif";
+ document.documentElement.style.setProperty("--site-font",f);
+ if(state.active){
+  state.active.theme=name;state.active.themeConfig=t;state.active.files=state.files;save();
+ }
+ toast(name.charAt(0).toUpperCase()+name.slice(1)+" theme applied");
+}
+if($("#applyTheme"))$("#applyTheme").onclick=applyTheme;
+if($("#themePreset"))$("#themePreset").onchange=()=>applyTheme();
 if($("#propImageFile"))$("#propImageFile").onchange=e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const b=builder.blocks.find(x=>x.id===builder.selected);if(!b||b.kind!=="image")return;b.src=reader.result;renderBuilder();selectBlock(b.id);toast("Image added to the builder")};reader.readAsDataURL(file)};
 if($("#deleteBlock"))$("#deleteBlock").onclick=deleteSelected;if($("#clearBuilder"))$("#clearBuilder").onclick=()=>{builder.blocks=[];builder.selected=null;renderBuilder();$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden")};if($("#applyBuilder"))$("#applyBuilder").onclick=applyBuilder;renderBuilder();
