@@ -461,7 +461,7 @@ function saveAiHistory(h){localStorage.setItem(aiHistoryKey(),JSON.stringify(h.s
 function recordAiAction(prompt,files){
  const h=getAiHistory();
  h.push({prompt:prompt,answer:"Approved AI code change.",changedFiles:Object.keys(files||{}).filter(f=>typeof files[f]==="string"),time:new Date().toISOString()});
- saveAiHistory(h);renderAiHistory();
+ saveAiHistory(h);renderAiHistory();renderAiTimeline();
 }
 function renderAiHistory(){
  const box=$("#aiHistoryList"); if(!box)return;
@@ -484,3 +484,17 @@ function showAiHistoryDetails(item){
  const f=document.createElement("p"); f.textContent="Changed files: "+((item.changedFiles||[]).join(", ")||"None listed"); box.appendChild(f);
  const t=document.createElement("small"); t.textContent=item.time?new Date(item.time).toLocaleString():""; box.appendChild(t);
 }
+
+function renderAiTimeline(){
+ const box=$("#aiTimeline"); if(!box)return;
+ const h=getAiHistory().slice().reverse();
+ box.innerHTML="";
+ if(!h.length){box.textContent="No AI activity yet.";return}
+ h.forEach((item,i)=>{
+  const row=document.createElement("div"); row.className="ai-timeline-item";
+  const title=document.createElement("b"); title.textContent=item.prompt||"AI action";
+  const meta=document.createElement("small"); meta.textContent=(item.time?new Date(item.time).toLocaleString():"")+" • "+((item.changedFiles||[]).join(", ")||"conversation");
+  row.append(title,meta); box.appendChild(row);
+ });
+}
+renderAiTimeline();
