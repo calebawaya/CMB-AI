@@ -313,3 +313,17 @@ loadCodeEditor();
 function refreshLivePreviewNow(){const wrap=$("#livePreviewWrap"),frame=$("#livePreviewFrame");if(!frame)return;frame.srcdoc=getGeneratedHtml();if(wrap)wrap.classList.remove("hidden")}
 
 $("#previewCode")?.addEventListener("click",refreshLivePreviewNow);
+
+function renderDashboard(){
+ const box=$("#dashboardProjects"),stats=$("#dashboardStats"); if(!box||!stats)return;
+ const projects=state.projects||[];
+ const active=state.active;
+ const total=projects.length;
+ const blocks=active?.builder?.blocks?.length || builder.blocks.length || 0;
+ stats.innerHTML="<div><b>"+total+"</b><span>Projects</span></div><div><b>"+blocks+"</b><span>Current blocks</span></div><div><b>"+(active?.name||"None")+"</b><span>Active project</span></div>";
+ box.innerHTML="";
+ if(!projects.length){box.innerHTML="<div class='dashboard-empty'><h3>No projects yet</h3><p>Create your first project to start building.</p><button id='emptyNewProject' class='btn primary'>Create Project</button></div>";$("#emptyNewProject")?.addEventListener("click",newProject);return}
+ projects.forEach((p,i)=>{const card=document.createElement("article");card.className="project-card";const edited=p.updatedAt?new Date(p.updatedAt).toLocaleString():"Not edited yet";card.innerHTML="<div class='project-icon'>⌘</div><div class='project-card-main'><h3></h3><p></p><small></small></div><div class='project-actions'><button class='btn primary'>Open</button><button class='btn'>Duplicate</button></div>";card.querySelector("h3").textContent=p.name||"Untitled Project";card.querySelector("p").textContent=p.description||"CMB-AI website project";card.querySelector("small").textContent="Last edited: "+edited;card.querySelector(".project-actions .primary").onclick=()=>{openProject(p.id);renderDashboard()};card.querySelector(".project-actions .btn:not(.primary)").onclick=()=>{const copy=JSON.parse(JSON.stringify(p));copy.id=Date.now();copy.name=(p.name||"Project")+" Copy";copy.updatedAt=Date.now();state.projects.push(copy);save();renderProjects();renderDashboard();toast("Project duplicated")};box.appendChild(card)});
+}
+$("#dashboardNewProject")?.addEventListener("click",newProject);
+renderDashboard();
