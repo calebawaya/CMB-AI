@@ -196,6 +196,27 @@ function updateSelected(){
  renderBuilder();
 }
 function deleteSelected(){if(builder.selected==null)return;pushHistory();builder.blocks=builder.blocks.filter(x=>x.id!==builder.selected);builder.selected=null;$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden");renderBuilder()}
+
+function getGeneratedHtml(){
+ const sections=builder.blocks.map(b=>{
+  if(b.kind==="image")return `<section class="cmb-block cmb-image"><img src="${b.src||""}" alt="${b.alt||"Project image"}" style="object-fit:${b.fit||"cover"}"></section>`;
+  if(b.kind==="navbar"){const links=(b.links||"Home, About, Services, Contact").split(",").map(x=>x.trim()).filter(Boolean).map(x=>`<a href="#">${x}</a>`).join("");return `<header class="cmb-navbar"><a class="cmb-logo" href="#">${b.logo||"CMB AI"}</a><nav>${links}</nav><a class="cmb-nav-cta" href="#">${b.button||"Get started"}</a></header>`;}
+  if(b.kind==="columns"){const count=Math.max(2,Math.min(4,Number(b.columns)||3));const items=(b.columnText||"Fast, Secure, Affordable").split(",").map(x=>x.trim()).filter(Boolean);while(items.length<count)items.push("Feature "+(items.length+1));return `<section class="cmb-block cmb-columns"><div class="cmb-columns-grid" style="--cmb-cols:${count}">${items.slice(0,count).map(x=>`<article><h3>${x}</h3><p>Describe this feature, service, or benefit.</p></article>`).join("")}</div></section>`;}
+  if(b.kind==="pricing"){const plans=b.items?.length?b.items.slice(0,3):["Starter","Pro","Business"];return `<section class="cmb-block cmb-library cmb-pricing"><small>PRICING</small><h2>${b.title}</h2><p>${b.text||""}</p><div class="cmb-pricing-grid">${plans.map((p,i)=>`<article><h3>${p}</h3><strong>${i===0?"$9":i===1?"$29":"$79"}</strong><p>Useful tools and features for your project.</p><a href="#">Choose plan</a></article>`).join("")}</div></section>`;}
+  if(b.kind==="testimonials"){const q=(b.items?.length?b.items:(b.text||"Great product,Easy to use,Highly recommended").split(",")).slice(0,3);return `<section class="cmb-block cmb-library cmb-testimonials"><small>TESTIMONIALS</small><h2>${b.title}</h2><div class="cmb-testimonial-grid">${q.map(x=>`<article><div>★★★★★</div><p>${x}</p><b>Happy customer</b></article>`).join("")}</div></section>`;}
+  if(b.kind==="faq"){const q=(b.items?.length?b.items:(b.text||"What is this?,How does it work?,Can I customize it?").split(",")).slice(0,6);return `<section class="cmb-block cmb-library cmb-faq"><small>FAQ</small><h2>${b.title}</h2>${q.map(x=>`<details><summary>${x}</summary><p>Write a clear answer to this question for your visitors.</p></details>`).join("")}</section>`;}
+  if(b.kind==="features"){const q=(b.items?.length?b.items:(b.text||"Visual builder,Responsive layouts,Project management").split(",")).slice(0,6);return `<section class="cmb-block cmb-library cmb-features"><small>FEATURES</small><h2>${b.title}</h2><div class="cmb-feature-grid">${q.map(x=>`<article><span>✦</span><h3>${x}</h3><p>Explain the value of this feature in a short sentence.</p></article>`).join("")}</div></section>`;}
+  if(b.kind==="about")return `<section class="cmb-block cmb-library cmb-about"><small>ABOUT</small><h2>${b.title}</h2><p>${b.text}</p></section>`;
+  return `<section class="cmb-block cmb-${b.kind}"><small>${b.kind.toUpperCase()}</small><h2>${b.title}</h2><p>${b.text}</p>${b.kind==="button"?'<a href="#">Get started →</a>':""}</section>`;
+ }).join("\n");
+ return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>${state.files["style.css"]||""}body{margin:0}</style></head><body>${sections}</body></html>`;
+}
+function refreshLivePreview(){
+ const f=$("#livePreviewFrame");if(!f)return;
+ f.srcdoc=getGeneratedHtml();
+}
+function openLivePreview(){const w=$("#livePreviewWrap");if(!w)return;w.classList.remove("hidden");refreshLivePreview()}
+function closeLivePreview(){$("#livePreviewWrap")?.classList.add("hidden")}
 function applyBuilder(){
  if(!builder.blocks.length){toast("Add a component first");return}
  const sections=builder.blocks.map(b=>{
@@ -257,3 +278,7 @@ function setDevice(device){
  $$(".device").forEach(b=>b.classList.toggle("active",b.dataset.device===device));
 }
 $$(".device").forEach(b=>b.onclick=()=>setDevice(b.dataset.device));
+
+if($("#openLivePreview"))$("#openLivePreview").onclick=openLivePreview;
+if($("#refreshLivePreview"))$("#refreshLivePreview").onclick=refreshLivePreview;
+if($("#closeLivePreview"))$("#closeLivePreview").onclick=closeLivePreview;
