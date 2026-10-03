@@ -170,31 +170,14 @@ body::after{
 }
 
 /* Glowing sci-fi reactor centerpiece */
-#cmbReactor{
-  position:fixed;
-  left:50%;
-  top:50%;
-  width:230px;
-  height:230px;
-  transform:translate(-50%,-50%);
-  z-index:-5;
-  pointer-events:none;
-  opacity:.72;
-  filter:drop-shadow(0 0 28px rgba(0,180,255,.65));
-}
-.reactor-ring,.reactor-core{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
-}
+#cmbReactor{position:fixed;left:50%;top:50%;width:520px;height:520px;transform:translate(-50%,-50%);z-index:-5;pointer-events:none;opacity:.82;filter:drop-shadow(0 0 55px rgba(0,190,255,.72))}
+.reactor-ring,.reactor-core{width:150px;height:150px;background:radial-gradient(circle,#ffffff 0 7%,#9ff5ff 18%,#18cfff 42%,#1744a7 68%,transparent 72%);box-shadow:0 0 45px #36d8ff,0 0 110px rgba(0,180,255,.72);animation:reactorPulse 2.4s ease-in-out infinite}
 .reactor-ring{
   border:2px solid rgba(75,210,255,.55);
   box-shadow:0 0 18px rgba(0,190,255,.5),inset 0 0 18px rgba(0,190,255,.25);
 }
-.reactor-ring-1{width:190px;height:190px;animation:reactorSpin 12s linear infinite;}
-.reactor-ring-2{width:145px;height:145px;border-color:rgba(160,90,255,.6);animation:reactorSpinReverse 8s linear infinite;}
+.reactor-ring-1{width:440px;height:440px;animation:reactorSpin 12s linear infinite}
+.reactor-ring-2{width:330px;height:330px;border-color:rgba(160,90,255,.6);animation:reactorSpinReverse 8s linear infinite}
 .reactor-core{
   width:72px;
   height:72px;
