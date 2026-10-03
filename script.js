@@ -250,3 +250,10 @@ if($("#propImageFile"))$("#propImageFile").onchange=e=>{const file=e.target.file
 if($("#deleteBlock"))$("#deleteBlock").onclick=deleteSelected;if($("#undoBuilder"))$("#undoBuilder").onclick=undoBuilder;if($("#redoBuilder"))$("#redoBuilder").onclick=redoBuilder;if($("#duplicateBlock"))$("#duplicateBlock").onclick=duplicateSelected;if($("#moveUpBlock"))$("#moveUpBlock").onclick=()=>moveSelected(-1);if($("#moveDownBlock"))$("#moveDownBlock").onclick=()=>moveSelected(1);if($("#clearBuilder"))$("#clearBuilder").onclick=()=>{builder.blocks=[];builder.selected=null;renderBuilder();$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden")};if($("#applyBuilder"))$("#applyBuilder").onclick=applyBuilder;renderBuilder();
 
 if(!builder.history.length)builder.history=[snapshot()];
+
+function setDevice(device){
+ const canvas=$("#builderCanvas");if(!canvas)return;
+ canvas.classList.remove("device-desktop","device-tablet","device-mobile");canvas.classList.add("device-"+device);
+ $$(".device").forEach(b=>b.classList.toggle("active",b.dataset.device===device));
+}
+$$(".device").forEach(b=>b.onclick=()=>setDevice(b.dataset.device));
