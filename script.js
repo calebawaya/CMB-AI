@@ -132,84 +132,71 @@ function builderBlock(type){
   services:{title:"Our Services",text:"Web Design • Development • AI Solutions",kind:"services"},
   contact:{title:"Let's work together",text:"Contact us to learn more.",kind:"contact"},
   footer:{title:"CMB AI",text:"Built with CMB AI.",kind:"footer"},
-  image:{title:"Project image",text:"Add a photo or graphic.",src:"",alt:"Project image",fit:"cover",kind:"image"}
+  image:{title:"Project image",text:"Add a photo or graphic.",src:"",alt:"Project image",fit:"cover",kind:"image"},
+  navbar:{title:"CMB AI",text:"Home, About, Services, Contact",logo:"CMB AI",links:"Home, About, Services, Contact",button:"Get started",kind:"navbar"}
  };
  return {id:Date.now()+Math.random(),...data[type]};
 }
 function renderBuilder(){
- const c=$("#builderCanvas");if(!c)return;
- c.innerHTML="";
+ const c=$("#builderCanvas");if(!c)return;c.innerHTML="";
  if(!builder.blocks.length){c.innerHTML="<div class='builder-empty'>Choose a component to start designing.</div>";return}
  builder.blocks.forEach(b=>{
-  const el=document.createElement("div");el.className="builder-block "+b.kind+(builder.selected===b.id?" selected":"");
+  const el=document.createElement("div");el.className="builder-block "+b.kind+(builder.selected===b.id?" selected":"");el.dataset.id=b.id;
   el.style.textAlign=b.align||"center";el.style.color=b.color||"#172033";el.style.background=b.bg||"#ffffff";el.style.padding=b.padding==="large"?"55px 28px":b.padding==="small"?"18px":"32px";el.style.fontFamily=b.font==="serif"?"Georgia,serif":b.font==="mono"?"Consolas,monospace":"system-ui,sans-serif";
-  const size=b.size||"medium";el.dataset.id=b.id;
-  el.innerHTML=b.kind==="image"
-    ? "<small>IMAGE</small><img class='builder-image' alt=''>"
-    : "<small>"+b.kind.toUpperCase()+"</small><h3></h3><p></p>";
   if(b.kind==="image"){
+    el.innerHTML="<small>IMAGE</small><img class='builder-image' alt=''>";
     const img=el.querySelector("img");img.src=b.src||"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='800' height='450'><rect width='100%' height='100%' fill='#e9eef6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#667085' font-size='28'>Add an image</text></svg>");img.alt=b.alt||"Project image";img.style.objectFit=b.fit||"cover";
+  }else if(b.kind==="navbar"){
+    const links=(b.links||"Home, About, Services, Contact").split(",").map(x=>x.trim()).filter(Boolean);
+    el.innerHTML="<small>NAVBAR</small><div class='builder-nav'><strong></strong><nav></nav><a class='builder-nav-cta'></a></div>";
+    el.querySelector("strong").textContent=b.logo||"CMB AI";
+    el.querySelector("nav").innerHTML=links.map(x=>"<a href='#'>"+x+"</a>").join("");
+    el.querySelector(".builder-nav-cta").textContent=b.button||"Get started";
   }else{
+    el.innerHTML="<small>"+b.kind.toUpperCase()+"</small><h3></h3><p></p>";
     el.querySelector("h3").textContent=b.title;el.querySelector("p").textContent=b.text;
+    el.querySelector("h3").style.fontSize=b.size==="large"?"32px":b.size==="small"?"18px":"24px";
   }
-  el.querySelector("h3").style.fontSize=size==="large"?"32px":size==="small"?"18px":"24px";
-  el.draggable=true;el.ondragstart=e=>e.dataTransfer.setData("text/plain",b.id);el.ondragover=e=>e.preventDefault();el.ondrop=e=>{e.preventDefault();const from=builder.blocks.findIndex(x=>String(x.id)===e.dataTransfer.getData("text/plain"));const to=builder.blocks.findIndex(x=>x.id===b.id);if(from>-1&&to>-1){const moved=builder.blocks.splice(from,1)[0];builder.blocks.splice(to,0,moved);renderBuilder()}};el.onclick=()=>selectBlock(b.id);c.appendChild(el);
+  el.draggable=true;
+  el.ondragstart=e=>e.dataTransfer.setData("text/plain",b.id);
+  el.ondragover=e=>e.preventDefault();
+  el.ondrop=e=>{e.preventDefault();const from=builder.blocks.findIndex(x=>String(x.id)===e.dataTransfer.getData("text/plain"));const to=builder.blocks.findIndex(x=>x.id===b.id);if(from>-1&&to>-1){const moved=builder.blocks.splice(from,1)[0];builder.blocks.splice(to,0,moved);renderBuilder()}};
+  el.onclick=()=>selectBlock(b.id);c.appendChild(el);
  });
 }
 function selectBlock(id){
- builder.selected=id;renderBuilder();
- const b=builder.blocks.find(x=>x.id===id);if(!b)return;
+ builder.selected=id;renderBuilder();const b=builder.blocks.find(x=>x.id===id);if(!b)return;
  $("#inspectorEmpty").classList.add("hidden");$("#inspector").classList.remove("hidden");
- $("#propText").value=b.title;$("#propSize").value=b.size||"medium";$("#propAlign").value=b.align||"center";$("#propColor").value=b.color||"#172033";$("#propBg").value=b.bg||"#ffffff";$("#propPadding").value=b.padding||"medium";$("#propFont").value=b.font||"system";
-  const imageProps=$("#imageProps");
-  if(imageProps) imageProps.classList.toggle("hidden",b.kind!=="image");
-  if(b.kind==="image"){
-    $("#propImageUrl").value=b.src&&b.src.startsWith("data:")?"":(b.src||"");
-    $("#propAlt").value=b.alt||"";
-    $("#propFit").value=b.fit||"cover";
-  }
+ $("#propText").value=b.title||"";$("#propSize").value=b.size||"medium";$("#propAlign").value=b.align||"center";$("#propColor").value=b.color||"#172033";$("#propBg").value=b.bg||"#ffffff";$("#propPadding").value=b.padding||"medium";$("#propFont").value=b.font||"system";
+ const ip=$("#imageProps"),np=$("#navbarProps");if(ip)ip.classList.toggle("hidden",b.kind!=="image");if(np)np.classList.toggle("hidden",b.kind!=="navbar");
+ if(b.kind==="image"){$("#propImageUrl").value=b.src&&b.src.startsWith("data:")?"":(b.src||"");$("#propAlt").value=b.alt||"";$("#propFit").value=b.fit||"cover"}
+ if(b.kind==="navbar"){$("#propLogo").value=b.logo||"";$("#propLinks").value=b.links||"";$("#propNavButton").value=b.button||""}
 }
 function updateSelected(){
  const b=builder.blocks.find(x=>x.id===builder.selected);if(!b)return;
  b.title=$("#propText").value;b.size=$("#propSize").value;b.align=$("#propAlign").value;b.color=$("#propColor").value;b.bg=$("#propBg").value;b.padding=$("#propPadding").value;b.font=$("#propFont").value;
-  if(b.kind==="image"){
-    const url=$("#propImageUrl").value.trim();
-    if(url)b.src=url;
-    b.alt=$("#propAlt").value.trim();
-    b.fit=$("#propFit").value;
-  }
-  renderBuilder();
+ if(b.kind==="image"){const url=$("#propImageUrl").value.trim();if(url)b.src=url;b.alt=$("#propAlt").value.trim();b.fit=$("#propFit").value}
+ if(b.kind==="navbar"){b.logo=$("#propLogo").value.trim();b.links=$("#propLinks").value.trim();b.button=$("#propNavButton").value.trim();b.title=b.logo||"CMB AI";b.text=b.links||""}
+ renderBuilder();
 }
-function deleteSelected(){
- if(builder.selected==null)return;
- builder.blocks=builder.blocks.filter(x=>x.id!==builder.selected);builder.selected=null;
- $("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden");renderBuilder();
-}
+function deleteSelected(){if(builder.selected==null)return;builder.blocks=builder.blocks.filter(x=>x.id!==builder.selected);builder.selected=null;$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden");renderBuilder()}
 function applyBuilder(){
  if(!builder.blocks.length){toast("Add a component first");return}
  const sections=builder.blocks.map(b=>{
-    if(b.kind==="image") return `<section class="cmb-block cmb-image"><img src="${b.src||""}" alt="${b.alt||"Project image"}" style="object-fit:${b.fit||"cover"}"></section>`;
-    return `<section class="cmb-block cmb-${b.kind}"><small>${b.kind.toUpperCase()}</small><h2>${b.title}</h2><p>${b.text}</p>${b.kind==="button"?'<a href="#">Get started →</a>':""}</section>`;
-  }).join("\n");
+   if(b.kind==="image") return `<section class="cmb-block cmb-image"><img src="${b.src||""}" alt="${b.alt||"Project image"}" style="object-fit:${b.fit||"cover"}"></section>`;
+   if(b.kind==="navbar"){
+     const links=(b.links||"Home, About, Services, Contact").split(",").map(x=>x.trim()).filter(Boolean).map(x=>`<a href="#">${x}</a>`).join("");
+     return `<header class="cmb-navbar"><a class="cmb-logo" href="#">${b.logo||"CMB AI"}</a><nav>${links}</nav><a class="cmb-nav-cta" href="#">${b.button||"Get started"}</a></header>`;
+   }
+   return `<section class="cmb-block cmb-${b.kind}"><small>${b.kind.toUpperCase()}</small><h2>${b.title}</h2><p>${b.text}</p>${b.kind==="button"?'<a href="#">Get started →</a>':""}</section>`;
+ }).join("\n");
  state.files["index.html"]=`<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CMB AI Project</title><link rel="stylesheet" href="style.css"></head><body>${sections}<script src="script.js"><\\/script></body></html>`;
- state.files["style.css"]+=`\n.cmb-block{padding:70px 24px;text-align:center;font-family:system-ui,sans-serif}.cmb-block h2{font-size:40px;margin:12px 0}.cmb-block p{max-width:650px;margin:0 auto;line-height:1.7;color:#667085}.cmb-hero{padding:110px 24px;background:linear-gradient(135deg,#17173d,#0d1422);color:white}.cmb-button a{display:inline-block;margin-top:20px;padding:12px 20px;border-radius:10px;background:#786bff;color:white;text-decoration:none}.cmb-card,.cmb-services{border:1px solid #d9e1ec}.cmb-footer{padding:35px}`;
+ state.files["style.css"]+=`\n.cmb-navbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 24px;background:rgba(255,255,255,.94);border-bottom:1px solid #e5e7eb;backdrop-filter:blur(10px)}.cmb-logo{font-weight:900;color:#172033;text-decoration:none}.cmb-navbar nav{display:flex;gap:20px;flex-wrap:wrap}.cmb-navbar nav a{color:#475467;text-decoration:none;font-weight:600;font-size:14px}.cmb-nav-cta{background:#786bff;color:#fff;text-decoration:none;padding:10px 15px;border-radius:9px;font-weight:800;font-size:13px}.cmb-navbar a:hover{opacity:.8}`;
  if(state.active){state.active.files=state.files;save()}renderFiles();toast("Design applied to index.html");
 }
 $$(".component").forEach(x=>x.onclick=()=>{builder.blocks.push(builderBlock(x.dataset.component));renderBuilder()});
-if($("#propText"))$("#propText").oninput=updateSelected;
-if($("#propSize"))$("#propSize").onchange=updateSelected;
-if($("#propAlign"))$("#propAlign").onchange=updateSelected;if($("#propColor"))$("#propColor").oninput=updateSelected;if($("#propBg"))$("#propBg").oninput=updateSelected;if($("#propPadding"))$("#propPadding").onchange=updateSelected;if($("#propFont"))$("#propFont").onchange=updateSelected;
-if($("#propImageUrl"))$("#propImageUrl").oninput=updateSelected;
-if($("#propAlt"))$("#propAlt").oninput=updateSelected;
-if($("#propFit"))$("#propFit").onchange=updateSelected;
-if($("#propImageFile"))$("#propImageFile").onchange=e=>{
-  const file=e.target.files?.[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=()=>{const b=builder.blocks.find(x=>x.id===builder.selected);if(!b||b.kind!=="image")return;b.src=reader.result;renderBuilder();selectBlock(b.id);toast("Image added to the builder")};
-  reader.readAsDataURL(file);
-};
-if($("#deleteBlock"))$("#deleteBlock").onclick=deleteSelected;
-if($("#clearBuilder"))$("#clearBuilder").onclick=()=>{builder.blocks=[];builder.selected=null;renderBuilder();$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden")};
-if($("#applyBuilder"))$("#applyBuilder").onclick=applyBuilder;
-renderBuilder();
-
+if($("#propText"))$("#propText").oninput=updateSelected;if($("#propSize"))$("#propSize").onchange=updateSelected;if($("#propAlign"))$("#propAlign").onchange=updateSelected;if($("#propColor"))$("#propColor").oninput=updateSelected;if($("#propBg"))$("#propBg").oninput=updateSelected;if($("#propPadding"))$("#propPadding").onchange=updateSelected;if($("#propFont"))$("#propFont").onchange=updateSelected;
+if($("#propLogo"))$("#propLogo").oninput=updateSelected;if($("#propLinks"))$("#propLinks").oninput=updateSelected;if($("#propNavButton"))$("#propNavButton").oninput=updateSelected;
+if($("#propImageUrl"))$("#propImageUrl").oninput=updateSelected;if($("#propAlt"))$("#propAlt").oninput=updateSelected;if($("#propFit"))$("#propFit").onchange=updateSelected;
+if($("#propImageFile"))$("#propImageFile").onchange=e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const b=builder.blocks.find(x=>x.id===builder.selected);if(!b||b.kind!=="image")return;b.src=reader.result;renderBuilder();selectBlock(b.id);toast("Image added to the builder")};reader.readAsDataURL(file)};
+if($("#deleteBlock"))$("#deleteBlock").onclick=deleteSelected;if($("#clearBuilder"))$("#clearBuilder").onclick=()=>{builder.blocks=[];builder.selected=null;renderBuilder();$("#inspector").classList.add("hidden");$("#inspectorEmpty").classList.remove("hidden")};if($("#applyBuilder"))$("#applyBuilder").onclick=applyBuilder;renderBuilder();
