@@ -372,3 +372,12 @@ async function syncProjectName(project){
   });
  }catch(e){}
 }
+
+function updateBackendProjectCount(){
+ const el=$("#backendProjects"); if(!el)return;
+ fetch("http://127.0.0.1:5000/api/projects").then(r=>r.json()).then(d=>{
+  el.textContent=d.ok?"Backend: "+d.projects.length:"Backend: --";
+ }).catch(()=>{el.textContent="Backend: offline"});
+}
+$("#checkBackend")?.addEventListener("click",updateBackendProjectCount);
+updateBackendProjectCount();
