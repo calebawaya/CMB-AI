@@ -1,23 +1,30 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CMB AI</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#070b14;color:#fff;font-family:Arial,sans-serif}
-    main{text-align:center;padding:40px;max-width:720px}
-    h1{font-size:clamp(42px,8vw,76px);margin:0 0 14px}
-    p{color:#aeb8cc;font-size:18px;line-height:1.6}
-    .status{display:inline-block;margin-top:18px;padding:10px 16px;border:1px solid #26324a;border-radius:999px;background:#10182a;color:#7dd3fc}
-  </style>
-</head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CMB AI — an AI-powered project workspace."><title>CMB AI — Project Workspace</title>
+<link rel="stylesheet" href="style.css"></head>
 <body>
-  <main>
-    <h1>CMB AI</h1>
-    <p>The CMB-AI GitHub Pages site is connected and ready. The repository deployment has been repaired.</p>
-    <div class="status">GitHub Pages deployment ready</div>
-  </main>
-</body>
-</html>
+<div class="app"><aside class="sidebar">
+<div class="brand"><b>C</b><span>CMB<span>AI</span></span></div>
+<button class="new-project" id="newProject">＋ New project</button>
+<nav><button class="nav active" data-view="dashboard">⌂ <span>Dashboard</span></button><button class="nav" data-view="workspace">▣ <span>Workspace</span></button><button class="nav" data-view="projects">◫ <span>Projects</span></button><button class="nav" data-view="github">◉ <span>GitHub</span></button><button class="nav" data-view="settings">⚙ <span>Settings</span></button></nav>
+<div class="side-bottom"><div class="plan"><small>FREE PLAN</small><strong>CMB AI Workspace</strong><p>Projects are saved locally.</p></div><button class="theme" id="theme">☼ Theme</button></div>
+</aside>
+<main class="main"><header><div><small id="eyebrow">DASHBOARD</small><h1 id="title">Build something great.</h1></div><div class="ready"><i></i> AI workspace ready</div></header>
+<section id="dashboard" class="view">
+<div class="hero"><div><label>✦ CMB AI WORKSPACE</label><h2>Turn an idea into a <em>real project.</em></h2><p>Plan, code, track progress, and prepare projects for GitHub from one connected workspace.</p><button class="primary" id="start">Start building →</button></div><div class="orb"><b>AI</b></div></div>
+<div class="stats"><div><small>PROJECTS</small><b id="projectCount">0</b></div><div><small>FILES</small><b id="fileCount">3</b></div><div><small>PROGRESS</small><b id="progressCount">0%</b></div><div><small>STATUS</small><b class="green">READY</b></div></div>
+<div class="section"><h3>Quick start</h3><p>Choose what you want to work on.</p></div>
+<div class="cards"><button class="card" data-open="workspace"><b>⌘</b><h3>Project Workspace</h3><p>Organize files, code, notes, and progress.</p><span>Open workspace →</span></button><button class="card" data-open="workspace"><b>✦</b><h3>AI Project Guide</h3><p>Describe an idea and create a practical build plan.</p><span>Ask CMB AI →</span></button><button class="card" data-open="github"><b>◉</b><h3>GitHub Ready</h3><p>Keep your project structured for GitHub Pages.</p><span>View connection →</span></button></div>
+</section>
+<section id="workspace" class="view hidden"><div class="workspace">
+<div class="panel project"><div class="panel-head"><div><small>PROJECT</small><h2 id="projectName">Untitled Project</h2></div><button class="small" id="rename">Edit</button></div><input id="idea" class="input" maxlength="300" placeholder="Describe what you want to build..."><button class="primary full" id="plan">✦ Create build plan</button><div class="progress-head"><span>Project progress</span><b id="progressText">0%</b></div><div class="progress"><i id="progressBar"></i></div><div id="tasks"></div></div>
+<div class="panel chat"><div class="panel-head"><div><small>CMB AI</small><h2>Project Guide</h2></div><span class="live">● LIVE</span></div><div id="chatLog" class="chat-log"><article><b>CMB AI</b><p>Tell me what you are building. I will help break it into clear steps.</p></article></div><form id="chatForm"><input id="chatInput" placeholder="Ask about your project..."><button>→</button></form></div>
+<div class="panel files"><div class="panel-head"><div><small>PROJECT FILES</small><h2>File explorer</h2></div><button class="small" id="addFile">＋ File</button></div><div id="fileList"></div></div>
+<div class="panel editor"><div class="panel-head"><div><small>CODE EDITOR</small><h2 id="editorTitle">index.html</h2></div><button class="small" id="saveCode">Save</button></div><textarea id="code" spellcheck="false"></textarea></div>
+</div></section>
+<section id="projects" class="view hidden"><div class="section-row"><div><h2>Your projects</h2><p>Projects created in this browser.</p></div><button class="primary" id="newProject2">＋ New project</button></div><div id="projectsList" class="project-list"></div></section>
+<section id="github" class="view hidden"><div class="panel connection"><div class="github-icon">◉</div><div><small>GITHUB</small><h2>Repository connection</h2><p>CMB AI is deployed through GitHub Pages and the current repository is ready for the project.</p><div class="repo"><b>calebawaya/CMB-AI</b><span>● Connected</span></div><a class="primary link" href="https://github.com/calebawaya/CMB-AI" target="_blank" rel="noopener">Open repository →</a></div></div><div class="two"><div class="panel"><small>DEPLOYMENT</small><h3>GitHub Pages</h3><p>Frontend files can be published automatically through the existing Pages workflow.</p></div><div class="panel"><small>AI BACKEND</small><h3>Next stage</h3><p>A secure backend can later handle real AI API calls without exposing API keys in the browser.</p></div></div></section>
+<section id="settings" class="view hidden"><div class="panel settings"><small>SETTINGS</small><h2>CMB AI preferences</h2><label><span><b>Local project saving</b><small>Keep workspace data in this browser.</small></span><input type="checkbox" id="localSave" checked></label><label><span><b>Animations</b><small>Use subtle interface motion.</small></span><input type="checkbox" id="animations" checked></label></div></section>
+</main></div><div id="toast" class="toast"></div><script src="script.js"></script></body></html>
