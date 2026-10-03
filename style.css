@@ -145,3 +145,26 @@ body::after{
   background-size:42px 42px !important;
   box-shadow:inset 0 0 180px rgba(76,100,255,.16),inset 0 0 90px rgba(0,220,255,.08) !important;
 }
+
+/* Guaranteed visible background layer */
+#cmbVisibleBackground{
+  position:fixed;
+  inset:0;
+  z-index:-10;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 15% 20%,#253b9a 0%,transparent 32%),
+    radial-gradient(circle at 85% 18%,#075985 0%,transparent 30%),
+    radial-gradient(circle at 78% 82%,#4c1d95 0%,transparent 34%),
+    radial-gradient(circle at 18% 82%,#134e4a 0%,transparent 30%),
+    linear-gradient(135deg,#020617,#0b1026 50%,#080313);
+}
+#cmbVisibleBackground::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 39px,rgba(120,170,255,.055) 40px),
+    repeating-linear-gradient(90deg,transparent 0 39px,rgba(120,170,255,.055) 40px);
+  box-shadow:inset 0 0 180px rgba(40,80,255,.35);
+}
