@@ -532,3 +532,37 @@ function renderAiSnapshotStatus(){
  }catch{box.textContent="No snapshot created yet."}
 }
 renderAiSnapshotStatus();
+
+function snapshotListKey(){return "cmbai_ai_snapshots_"+(state.active?.id||"default")}
+function getAiSnapshots(){try{return JSON.parse(localStorage.getItem(snapshotListKey())||"[]")}catch{return[]}}
+function saveAiSnapshots(list){localStorage.setItem(snapshotListKey(),JSON.stringify(list.slice(-10)))}
+function createAiSnapshot(){
+ const list=getAiSnapshots();
+ list.push({files:{...state.files},time:new Date().toISOString(),automatic:false});
+ saveAiSnapshots(list);
+ localStorage.setItem(snapshotKey(),JSON.stringify(list[list.length-1]));
+ toast("AI snapshot created");renderAiSnapshotStatus();renderAiSnapshots();
+}
+function autoAiSnapshot(files){
+ const list=getAiSnapshots();
+ list.push({files:{...(files||state.files)},time:new Date().toISOString(),automatic:true});
+ saveAiSnapshots(list);
+ localStorage.setItem(snapshotKey(),JSON.stringify(list[list.length-1]));
+}
+function renderAiSnapshots(){
+ const box=$("#aiSnapshotsList");if(!box)return;
+ const list=getAiSnapshots().slice().reverse();box.innerHTML="";
+ list.forEach((s,i)=>{
+  const row=document.createElement("div");row.className="ai-snapshot-item";
+  const b=document.createElement("b");b.textContent=new Date(s.time).toLocaleString();
+  const small=document.createElement("small");small.textContent=s.automatic?"Automatic snapshot":"Manual snapshot";
+  const btn=document.createElement("button");btn.className="btn";btn.textContent="Restore";btn.dataset.snapshot=String(list.length-1-i);
+  row.append(b,small,btn);box.appendChild(row);
+ });
+}
+$("#aiSnapshotsList")?.addEventListener("click",e=>{
+ const b=e.target.closest("[data-snapshot]");if(!b)return;
+ const list=getAiSnapshots();const s=list[Number(b.dataset.snapshot)];if(!s)return;
+ state.files={...s.files};save();renderFiles();loadCodeEditor();refreshLivePreviewNow();toast("Snapshot restored");
+});
+renderAiSnapshots();
