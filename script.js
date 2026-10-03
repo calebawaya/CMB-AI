@@ -454,3 +454,17 @@ function undoLastAiChange(){
  state.files={...lastAiFiles};save();renderFiles();loadCodeEditor();refreshLivePreviewNow();lastAiFiles=null;toast("AI change undone");
 }
 $("#undoAiChange")?.addEventListener("click",undoLastAiChange);
+
+function aiHistoryKey(){return "cmbai_ai_history_"+(state.active?.id||"default")}
+function getAiHistory(){try{return JSON.parse(localStorage.getItem(aiHistoryKey())||"[]")}catch{return[]}}
+function saveAiHistory(h){localStorage.setItem(aiHistoryKey(),JSON.stringify(h.slice(-30)))}
+function renderAiHistory(){
+ const box=$("#aiHistoryList"); if(!box)return;
+ const h=getAiHistory();
+ box.innerHTML=h.length?h.slice().reverse().map((x,i)=>'<div class="ai-history-item"><div><b></b><small></small></div><button class="btn" data-ai-history="'+(h.length-1-i)+'">Use</button></div>').join(""):'<p class="muted">No AI conversations yet.</p>';
+ h.slice().reverse().forEach((x,i)=>{const row=box.querySelectorAll(".ai-history-item")[i]; if(row){row.querySelector("b").textContent=x.prompt;row.querySelector("small").textContent=x.answer||"Code change request";}});
+}
+function recordAiHistory(prompt,answer){const h=getAiHistory();h.push({prompt,answer:answer||"",time:new Date().toISOString()});saveAiHistory(h);renderAiHistory()}
+$("#clearAiHistory")?.addEventListener("click",()=>{saveAiHistory([]);renderAiHistory();toast("AI history cleared")});
+$("#aiHistoryList")?.addEventListener("click",e=>{const b=e.target.closest("[data-ai-history]");if(!b)return;const h=getAiHistory();const item=h[Number(b.dataset.aiHistory)];if(item&&$("#aiPrompt")){$("#aiPrompt").value=item.prompt;$("#aiPrompt").focus();toast("Previous request loaded")}});
+renderAiHistory();
