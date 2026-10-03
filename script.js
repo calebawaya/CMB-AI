@@ -304,8 +304,12 @@ if($("#clearAssets"))$("#clearAssets").onclick=()=>{state.assets=[];save();rende
 renderAssets();
 
 function loadCodeEditor(){const f=$("#codeFile")?.value||"index.html";if($("#codeEditor"))$("#codeEditor").value=state.files[f]||""}
-function saveCodeEditor(){const f=$("#codeFile")?.value||"index.html";if(!$("#codeEditor"))return;state.files[f]=$("#codeEditor").value;save();if(f==="style.css")applyTheme();renderFiles();toast(f+" saved")}
+function saveCodeEditor(){const f=$("#codeFile")?.value||"index.html";if(!$("#codeEditor"))return;state.files[f]=$("#codeEditor").value;save();if(f==="style.css")applyTheme();renderFiles();refreshLivePreviewNow();toast(f+" saved and preview updated")}
 $("#codeFile")?.addEventListener("change",loadCodeEditor);
 $("#loadCode")?.addEventListener("click",loadCodeEditor);
 $("#saveCode")?.addEventListener("click",saveCodeEditor);
 loadCodeEditor();
+
+function refreshLivePreviewNow(){const wrap=$("#livePreviewWrap"),frame=$("#livePreviewFrame");if(!frame)return;frame.srcdoc=getGeneratedHtml();if(wrap)wrap.classList.remove("hidden")}
+
+$("#previewCode")?.addEventListener("click",refreshLivePreviewNow);
