@@ -418,3 +418,27 @@ async function applyAiCodeChange(){
 }
 
 $("#applyAiCode")?.addEventListener("click",applyAiCodeChange);
+
+let pendingAiFiles=null;
+async function previewAiCodeChange(){
+ const input=$("#aiPrompt"),out=$("#aiResponse"),details=$("#aiChangeDetails"),wrap=$("#aiChangePreview");
+ if(!input||!details||!wrap)return;
+ const prompt=input.value.trim(); if(!prompt){toast("Enter a change request first");return}
+ out.textContent="Preparing proposed changes...";
+ try{
+  const r=await fetch("http://127.0.0.1:5000/api/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request:prompt,files:state.files})});
+  const data=await r.json(); if(!data.ok){out.textContent=data.error||"Could not prepare changes";return}
+  pendingAiFiles=data.files||{};
+  details.innerHTML="";
+  ["index.html","style.css","script.js"].forEach(f=>{if(typeof pendingAiFiles[f]==="string"){const row=document.createElement("div");row.className="ai-change-row";row.innerHTML="<b></b><span>Updated</span>";row.querySelector("b").textContent=f;details.appendChild(row)}});
+  wrap.classList.remove("hidden");out.textContent="Review the proposed file changes before applying them.";
+ }catch(e){out.textContent="Python backend is offline."}
+}
+function applyPendingAi(){
+ if(!pendingAiFiles)return;
+ ["index.html","style.css","script.js"].forEach(f=>{if(typeof pendingAiFiles[f]==="string")state.files[f]=pendingAiFiles[f]});
+ save();renderFiles();loadCodeEditor();refreshLivePreviewNow();pendingAiFiles=null;$("#aiChangePreview")?.classList.add("hidden");toast("Approved AI changes applied");
+}
+$("#applyAiCode")?.removeEventListener("click",applyAiCodeChange);
+$("#applyAiCode")?.addEventListener("click",previewAiCodeChange);
+$("#applyPendingAi")?.addEventListener("click",applyPendingAi);
