@@ -339,3 +339,12 @@ async function checkBackendStatus(){
  }catch(e){el.textContent="● Offline";el.classList.remove("online")}
 }
 $("#checkBackend")?.addEventListener("click",checkBackendStatus);
+
+async function createProjectOnBackend(project){
+ try{
+  const r=await fetch("http://127.0.0.1:5000/api/project",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:project.name})});
+  const data=await r.json();
+  if(data.ok) toast("Project synced with Python backend");
+  return data;
+ }catch(e){return null}
+}
