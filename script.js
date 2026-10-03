@@ -327,3 +327,15 @@ function renderDashboard(){
 }
 $("#dashboardNewProject")?.addEventListener("click",newProject);
 renderDashboard();
+
+async function checkBackendStatus(){
+ const el=$("#backendStatus"); if(!el)return;
+ el.textContent="Checking...";
+ try{
+  const r=await fetch("http://127.0.0.1:5000/api/health",{method:"GET"});
+  const data=await r.json();
+  el.textContent=data.ok?"● Online":"● Offline";
+  el.classList.toggle("online",!!data.ok);
+ }catch(e){el.textContent="● Offline";el.classList.remove("online")}
+}
+$("#checkBackend")?.addEventListener("click",checkBackendStatus);
