@@ -302,3 +302,10 @@ function handleAssets(files){
 if($("#assetUpload"))$("#assetUpload").onchange=e=>{handleAssets(e.target.files);e.target.value=""};
 if($("#clearAssets"))$("#clearAssets").onclick=()=>{state.assets=[];save();renderAssets();toast("Assets cleared")};
 renderAssets();
+
+function loadCodeEditor(){const f=$("#codeFile")?.value||"index.html";if($("#codeEditor"))$("#codeEditor").value=state.files[f]||""}
+function saveCodeEditor(){const f=$("#codeFile")?.value||"index.html";if(!$("#codeEditor"))return;state.files[f]=$("#codeEditor").value;save();if(f==="style.css")applyTheme();renderFiles();toast(f+" saved")}
+$("#codeFile")?.addEventListener("change",loadCodeEditor);
+$("#loadCode")?.addEventListener("click",loadCodeEditor);
+$("#saveCode")?.addEventListener("click",saveCodeEditor);
+loadCodeEditor();
