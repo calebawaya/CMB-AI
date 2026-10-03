@@ -554,8 +554,8 @@ function renderAiSnapshots(){
  const list=getAiSnapshots().slice().reverse();box.innerHTML="";
  list.forEach((s,i)=>{
   const row=document.createElement("div");row.className="ai-snapshot-item";
-  const b=document.createElement("b");b.textContent=new Date(s.time).toLocaleString();
-  const small=document.createElement("small");small.textContent=s.automatic?"Automatic snapshot":"Manual snapshot";
+  const b=document.createElement("b");b.textContent=s.name||"Unnamed snapshot";
+  const small=document.createElement("small");small.textContent=(s.automatic?"Automatic snapshot":"Manual snapshot")+" • "+new Date(s.time).toLocaleString();
   const btn=document.createElement("button");btn.className="btn";btn.textContent="Restore";btn.dataset.snapshot=String(list.length-1-i);
   row.append(b,small,btn);box.appendChild(row);
  });
