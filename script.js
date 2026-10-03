@@ -491,10 +491,15 @@ function renderAiTimeline(){
  box.innerHTML="";
  if(!h.length){box.textContent="No AI activity yet.";return}
  h.forEach((item,i)=>{
-  const row=document.createElement("div"); row.className="ai-timeline-item";
+  const row=document.createElement("div"); row.className="ai-timeline-item";row.dataset.aiTimeline=String(i);row.tabIndex=0;
   const title=document.createElement("b"); title.textContent=item.prompt||"AI action";
   const meta=document.createElement("small"); meta.textContent=(item.time?new Date(item.time).toLocaleString():"")+" • "+((item.changedFiles||[]).join(", ")||"conversation");
   row.append(title,meta); box.appendChild(row);
  });
 }
 renderAiTimeline();
+
+$("#aiTimeline")?.addEventListener("click",e=>{
+ const row=e.target.closest("[data-ai-timeline]"); if(!row)return;
+ const h=getAiHistory().slice().reverse(); showAiHistoryDetails(h[Number(row.dataset.aiTimeline)]);
+});
