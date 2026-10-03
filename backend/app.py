@@ -1,9 +1,15 @@
 from flask import Flask, jsonify, request
 import json
 from pathlib import Path
+import os
 from flask_cors import CORS
 
 app = Flask(__name__)
+
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
 DATA_FILE = Path(__file__).with_name("projects.json")
 
 def load_projects():
@@ -78,3 +84,24 @@ def patch_project(project_id):
         project["name"] = str(data["name"]).strip()
     save_projects(projects)
     return jsonify({"ok": True, "project": project})
+
+
+@app.post("/api/ai")
+def ai_message():
+    data = request.get_json(silent=True) or {}
+    prompt = str(data.get("prompt", "")).strip()
+    if not prompt:
+        return jsonify({"ok": False, "error": "Prompt is required"}), 400
+    if OpenAI is None:
+        return jsonify({"ok": False, "error": "OpenAI package is not installed"}), 503
+    if not os.getenv("OPENAI_API_KEY"):
+        return jsonify({"ok": False, "error": "OPENAI_API_KEY is not configured on the server"}), 503
+    try:
+        client = OpenAI()
+        response = client.responses.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-6-luna"),
+            input=prompt
+        )
+        return jsonify({"ok": True, "answer": response.output_text})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": "AI request failed"}), 502
