@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const $=s=>document.querySelector(s),$=s=>[...document.querySelectorAll(s)];\n\n/* CMB AI reactor state — visual feedback for the AI core */\nfunction setReactorState(state){\n  const reactor=document.getElementById("cmbReactor");\n  if(!reactor)return;\n  reactor.dataset.state=state;\n  reactor.classList.remove("reactor-ready","reactor-thinking","reactor-responding","reactor-error");\n  reactor.classList.add("reactor-"+state);\n}\nsetReactorState("ready");\n\nfunction reactorThinking(){setReactorState("thinking")}\nfunction reactorResponding(){setReactorState("responding")}\nfunction reactorError(){setReactorState("error")}\n
 
 const builder={blocks:[],selected:null,history:[],future:[],historyLock:false};
 function snapshot(){return JSON.stringify(builder.blocks)}
@@ -133,7 +133,7 @@ $$(".nav").forEach(x=>x.onclick=()=>view(x.dataset.view));
 $$("[data-open]").forEach(x=>x.onclick=()=>view(x.dataset.open));
 $("#newProject").onclick=newProject;$("#newProject2").onclick=newProject;$("#start").onclick=newProject;$("#plan").onclick=makePlan;
 $("#addFile").onclick=addFile;$("#addFolder").onclick=addFolder;$("#saveCode").onclick=saveCurrent;
-$("#chatForm").onsubmit=e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";setTimeout(()=>answer(q),220)};
+$("#chatForm").onsubmit=e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";reactorThinking();setTimeout(()=>{answer(q);reactorResponding();setTimeout(()=>setReactorState("ready"),900)},220)};
 $("#rename").onclick=()=>{if(!state.active){toast("Create a project first");return}const n=prompt("Project name",state.active.name);if(n){state.active.name=n;$("#projectName").textContent=n;save();toast("Project renamed")}};
 $("#theme").onclick=()=>{document.body.classList.toggle("light");localStorage.setItem("cmbai_theme",document.body.classList.contains("light")?"light":"dark")};
 $("#preview").onclick=buildPreview;$("#refreshPreview").onclick=buildPreview;
@@ -405,9 +405,9 @@ async function askPythonAI(){
  try{
   const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,project:{name:state.active?.name||"CMB-AI project",files:state.files}})});
   const data=await r.json();
-  out.textContent=data.ok?data.answer:(data.error||"AI request failed");
- }catch(e){out.textContent="Python backend is offline. Start the Flask server first."}
- finally{button.disabled=false;button.textContent="Ask AI"}
+  out.textContent=data.ok?data.answer:(data.error||"AI request failed");\n  if(data.ok) reactorResponding(); else reactorError();
+ }catch(e){out.textContent="Python backend is offline. Start the Flask server first.";reactorError()}
+ finally{button.disabled=false;button.textContent="Ask AI";setTimeout(()=>setReactorState("ready"),900)}
 }
 $("#sendAiPrompt")?.addEventListener("click",askPythonAI);
 
