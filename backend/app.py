@@ -46,9 +46,6 @@ def create_project():
     save_projects(projects)
     return jsonify({"ok": True, "project": project})
 
-if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
-
 @app.put("/api/project/<int:project_id>")
 def update_project(project_id):
     data = request.get_json(silent=True) or {}
@@ -164,3 +161,7 @@ JavaScript:
         return jsonify({"ok": True, "files": result})
     except Exception:
         return jsonify({"ok": False, "error": "Could not generate a safe code change"}), 502
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
+
