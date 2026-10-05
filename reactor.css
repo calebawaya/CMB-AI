@@ -1,72 +1,72 @@
-/* CMB-AI reactor — full-screen, centered, continuous rotation */
+/* CMB-AI reactor — true full-screen centered reactor */
 html,
 body{
   width:100%;
-  min-width:100%;
   height:100%;
+  min-width:100%;
   min-height:100%;
   margin:0;
   padding:0;
-  overflow:hidden;
+  overflow-x:hidden;
   background:#020617;
 }
 
 #cmbReactor{
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  margin:0;
-  padding:0;
-  z-index:0;
-  pointer-events:none;
-  overflow:hidden;
-  display:block;
-  background:#020617;
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  margin:0 !important;
+  padding:0 !important;
+  z-index:0 !important;
+  pointer-events:none !important;
+  overflow:hidden !important;
+  background:#020617 !important;
+  transform:none !important;
 }
 
-/* Large enough to cover the entire viewport even while rotating. */
+/* Both layers occupy the entire viewport. The browser centers the image itself, not the page layout. */
 #cmbReactor .reactor-core,
 #cmbReactor .reactor-triangle{
-  position:fixed;
-  left:50vw;
-  top:50vh;
-  width:120vmax;
-  height:auto;
-  max-width:none;
-  margin:0;
-  padding:0;
-  display:block;
-  object-fit:contain;
-  object-position:center;
-  transform-origin:50% 50%;
-  opacity:1;
-  visibility:visible;
-  filter:none;
-  pointer-events:none;
-  box-sizing:border-box;
+  position:absolute !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  max-width:none !important;
+  max-height:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:block !important;
+  object-fit:cover !important;
+  object-position:center center !important;
+  transform-origin:center center !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  filter:none !important;
+  pointer-events:none !important;
+  box-sizing:border-box !important;
 }
 
-/* The circular energy rotates continuously and smoothly. */
+/* The circular artwork spins continuously around the exact center. */
 #cmbReactor .reactor-core{
-  z-index:1;
-  transform:translate(-50%,-50%) rotate(0deg);
-  animation:cmbCircleSpin .65s linear infinite;
+  z-index:1 !important;
+  transform:rotate(0deg) !important;
+  animation:cmbFullScreenSpin .65s linear infinite !important;
 }
 
-/* The triangle stays perfectly still in the center. */
+/* The triangle is on top and does not rotate. */
 #cmbReactor .reactor-triangle{
-  z-index:2;
-  transform:translate(-50%,-50%);
-  clip-path:polygon(50% 20%,84% 93%,16% 93%);
-  animation:none;
+  z-index:2 !important;
+  transform:none !important;
+  clip-path:polygon(50% 20%,84% 93%,16% 93%) !important;
+  animation:none !important;
 }
 
 #cmbReactor .reactor-ring,
 #cmbReactor::before,
 #cmbReactor::after{
-  display:none;
-  content:none;
+  display:none !important;
+  content:none !important;
 }
 
 .app{
@@ -74,18 +74,7 @@ body{
   z-index:1;
 }
 
-@keyframes cmbCircleSpin{
-  from{
-    transform:translate(-50%,-50%) rotate(0deg);
-  }
-  to{
-    transform:translate(-50%,-50%) rotate(360deg);
-  }
-}
-
-@media(max-width:700px){
-  #cmbReactor .reactor-core,
-  #cmbReactor .reactor-triangle{
-    width:120vmax;
-  }
+@keyframes cmbFullScreenSpin{
+  from{transform:rotate(0deg) !important;}
+  to{transform:rotate(360deg) !important;}
 }
