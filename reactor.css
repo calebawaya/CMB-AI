@@ -24,3 +24,13 @@ html,body{width:100%;min-height:100%;margin:0;padding:0;overflow-x:hidden;backgr
 #cmbReactor.reactor-error .reactor-triangle{opacity:.8;filter:drop-shadow(0 0 15px rgba(255,100,100,1))}
 #cmbReactor.reactor-error::before{background:radial-gradient(circle,rgba(255,80,80,.22),rgba(255,30,30,.08) 45%,transparent 72%)}
 @media(prefers-reduced-motion:reduce){#cmbReactor .reactor-core,#cmbReactor .reactor-triangle,#cmbReactor::before,#cmbReactor::after{animation:none}}
+
+
+/* CMB AI chat feedback */
+#chatLog article{border:1px solid rgba(90,180,255,.12);box-shadow:0 8px 28px rgba(0,0,0,.12);transition:transform .2s ease,border-color .2s ease}
+#chatLog article.ai-message{border-color:rgba(0,205,255,.22);background:linear-gradient(135deg,rgba(0,110,180,.12),rgba(30,20,90,.14))}
+#chatLog article.user-message{border-color:rgba(120,100,255,.18)}
+.typing-message p{display:flex;gap:6px;align-items:center;min-height:18px}
+.typing-message p span{width:7px;height:7px;border-radius:50%;background:#45d9ff;box-shadow:0 0 10px rgba(69,217,255,.9);animation:cmbTyping 1s ease-in-out infinite}
+.typing-message p span:nth-child(2){animation-delay:.15s}.typing-message p span:nth-child(3){animation-delay:.3s}
+@keyframes cmbTyping{0%,60%,100%{opacity:.3;transform:translateY(0) scale(.8)}30%{opacity:1;transform:translateY(-4px) scale(1)}}
