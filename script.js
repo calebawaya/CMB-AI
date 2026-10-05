@@ -893,3 +893,43 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    },120);
  });
 })();
+
+
+/* CMB AI — idea-aware project templates */
+(()=>{
+ const btn=document.getElementById("buildProject");
+ if(!btn)return;
+ function makeProject(idea){
+   const q=idea.toLowerCase();
+   let type="general",label="DIGITAL PRODUCT",features=["Modern interface","Responsive design","Project workflow"];
+   if(/shop|store|ecommerce|product|sell|market/.test(q)){type="store";label="ONLINE STORE";features=["Product showcase","Shopping experience","Customer call-to-action"]}
+   else if(/restaurant|food|cafe|menu|hotel/.test(q)){type="restaurant";label="HOSPITALITY";features=["Menu showcase","Reservations / contact","Location & hours"]}
+   else if(/portfolio|developer|designer|freelance|personal/.test(q)){type="portfolio";label="PORTFOLIO";features=["Featured work","About & skills","Contact section"]}
+   else if(/school|course|learn|education|academy/.test(q)){type="education";label="LEARNING PLATFORM";features=["Course sections","Learning resources","Student call-to-action"]}
+   else if(/business|company|agency|startup|enterprise/.test(q)){type="business";label="BUSINESS WEBSITE";features=["Services","Company story","Lead generation"]}
+   else if(/blog|news|magazine|article/.test(q)){type="content";label="CONTENT PLATFORM";features=["Article layout","Categories","Reader call-to-action"]}
+   return {type,label,features};
+ }
+ function build(idea){
+   const safe=String(idea).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+   const t=makeProject(idea);
+   const cards=t.features.map((x,i)=>'<article><b>0'+(i+1)+'</b><h3>'+x+'</h3><p>Designed around your '+t.type+' project and ready to customize.</p></article>').join("");
+   state.files["index.html"]='<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="'+safe+'"><title>'+safe+'</title><link rel="stylesheet" href="style.css"></head><body><header class="nav"><strong>CMB AI</strong><nav><a href="#features">Features</a><a href="#about">About</a><a href="#contact">Contact</a></nav></header><main><section class="hero"><span>'+t.label+'</span><h1>'+safe+'</h1><p>A purpose-built starting point generated from your idea by CMB AI.</p><a class="cta" href="#features">Explore project →</a></section><section id="features" class="section"><span>✦ PROJECT FEATURES</span><h2>Built around what you want to create.</h2><div class="grid">'+cards+'</div></section><section id="about" class="section split"><div><span>ABOUT</span><h2>Start simple. Keep building.</h2></div><p>CMB AI gives this project a clear structure so you can continue adding pages, APIs, databases, authentication, and AI features.</p></section><section id="contact" class="section final"><h2>Ready to build?</h2><p>Open the Workspace to edit your generated files and preview them.</p><button class="cta" id="startBtn">Open project</button></section></main><footer>Built with CMB AI · '+t.label+'</footer><script src="script.js"></script></body></html>';
+   state.files["style.css"]='*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,sans-serif;background:#050b16;color:#edf8ff;line-height:1.6}.nav{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:18px 7%;background:rgba(5,11,22,.84);backdrop-filter:blur(16px);border-bottom:1px solid rgba(90,190,255,.14)}nav{display:flex;gap:22px}a{color:inherit;text-decoration:none}.nav strong{color:#54ddff}.hero{min-height:72vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:100px 7%;background:radial-gradient(circle,rgba(0,180,255,.12),transparent 55%)}.hero span,.section>span{font-size:11px;letter-spacing:.18em;color:#54ddff;font-weight:800}.hero h1{font-size:clamp(44px,7vw,88px);line-height:1.02;max-width:1000px;margin:18px 0}.hero p{max-width:700px;color:#9bb0c9;font-size:18px}.cta{display:inline-block;margin-top:18px;padding:13px 22px;border-radius:12px;background:linear-gradient(135deg,#28c9ff,#786bff);color:#fff;font-weight:800;border:0;cursor:pointer}.section{max-width:1100px;margin:auto;padding:100px 7%}.section h2{font-size:clamp(30px,5vw,52px);line-height:1.08}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:32px}.grid article,.split,.final{padding:28px;border:1px solid rgba(90,190,255,.14);border-radius:20px;background:rgba(13,27,45,.72)}.grid article b{color:#54ddff}.split{display:grid;grid-template-columns:1fr 1fr;gap:35px}.final{text-align:center}footer{text-align:center;padding:35px;color:#71859d;border-top:1px solid rgba(90,190,255,.12)}@media(max-width:700px){nav{display:none}.section{padding:70px 6%}.grid,.split{grid-template-columns:1fr}.hero{padding:75px 6%}.hero h1{font-size:46px}}';
+   state.files["script.js"]='document.getElementById("startBtn")?.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));console.log("CMB AI '+t.type+' project online");';
+   state.currentFile="index.html";
+   if(typeof renderFiles==="function")renderFiles();
+   if(typeof renderEditor==="function")renderEditor();
+   if(typeof saveState==="function")saveState();
+   return t;
+ }
+ window.cmbBuildIdeaAwareProject=build;
+ const old=btn;
+ old.addEventListener("click",()=>{
+   const idea=(document.getElementById("builderIdea")?.value||"").trim();
+   if(!idea)return;
+   const t=build(idea);
+   const result=document.getElementById("builderResult");
+   if(result)result.innerHTML='<div class="builder-file"><div><b>✓ '+t.label+'</b><br><small>Template selected from your idea.</small></div></div><div class="builder-file"><div><b>Features</b><br><small>'+t.features.join(" · ")+'</small></div></div><div class="builder-file"><div><b>Files ready</b><br><small>index.html · style.css · script.js</small></div></div>';
+ });
+})();
