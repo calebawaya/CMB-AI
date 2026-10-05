@@ -474,24 +474,6 @@ $("#aiTimeline")?.addEventListener("click",e=>{
 });
 
 function snapshotKey(){return "cmbai_ai_snapshot_"+(state.active?.id||"default")}
-function createAiSnapshot(){
- localStorage.setItem(snapshotKey(),JSON.stringify({files:{...state.files},time:new Date().toISOString()}));
- toast("AI snapshot created");renderAiSnapshotStatus();
-}
-function restoreAiSnapshot(){
- try{
-  const s=JSON.parse(localStorage.getItem(snapshotKey())||"null");
-  if(!s){toast("No AI snapshot found");return}
-  state.files={...s.files};save();renderFiles();loadCodeEditor();refreshLivePreviewNow();toast("AI snapshot restored");
- }catch{toast("Could not restore snapshot")}
-}
-$("#aiSnapshot")?.addEventListener("click",createAiSnapshot);
-$("#restoreAiSnapshot")?.addEventListener("click",restoreAiSnapshot);
-
-function autoAiSnapshot(files){
- localStorage.setItem(snapshotKey(),JSON.stringify({files:{...(files||state.files)},time:new Date().toISOString(),automatic:true}));
-}
-
 function renderAiSnapshotStatus(){
  const box=$("#aiSnapshotStatus"); if(!box)return;
  try{
