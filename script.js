@@ -55,6 +55,7 @@ function newProject(){
   const p={id:Date.now(),name:"New CMB AI Project",idea:"",progress:0,created:new Date().toLocaleDateString(),files:JSON.parse(JSON.stringify(state.files))};
   state.projects.unshift(p);state.active=p;state.files=p.files;state.currentFile="index.html";
   save();openProject(p);renderFiles();view("workspace");toast("New project created");
+  return p;
 }
 function openProject(project){
   const p=typeof project==="object" ? project : state.projects.find(x=>String(x.id)===String(project) || String(x.backendId)===String(project));
@@ -97,30 +98,37 @@ function renderProjectTasks(tasks){
 function makePlan(){
   const idea=$("#idea").value.trim();
   if(!idea){toast("Describe your project first");return}
-  if(!state.active){newProject();return}
+  if(!state.active){newProject()}
+  if(!state.active)return;
   state.active.idea=idea;state.active.name=idea.split(/\s+/).slice(0,4).join(" ")+" Project";
   $("#projectName").textContent=state.active.name;
   const tasks=["Define the main user problem","Design the page structure","Build the HTML interface","Style the responsive UI","Add JavaScript interactions","Test desktop and mobile","Prepare for GitHub"];
-  $("#tasks").innerHTML=tasks.map((x,i)=>"<label class='task'><input type='checkbox' data-plan-index='"+i+"'> "+x+"</label>").join("");
-  qsa(".task input").forEach((x,i)=>x.onchange=async()=>{
-    const completed=x.checked;
-    setProgress(Math.round(qsa(".task input:checked").length/tasks.length*100));
-    const taskId=x.dataset.taskId,backendId=state.active?.backendId;
-    if(backendId&&window.CMBAITasks){
-      try{
-        if(taskId) await window.CMBAITasks.update(backendId,Number(taskId),{completed});
-        else{
-          const created=await window.CMBAITasks.create(backendId,tasks[i]);
-          if(created?.task?.id)x.dataset.taskId=created.task.id;
-        }
-      }catch(err){console.warn("CMB AI task persistence failed:",err)}
+  const existingTasks=Array.isArray(state.active.tasks)?state.active.tasks:[];
+  if(existingTasks.length){
+    renderProjectTasks(existingTasks);
+  }else{
+    $("#tasks").innerHTML=tasks.map((x,i)=>"<label class='task'><input type='checkbox' data-plan-index='"+i+"'> "+x+"</label>").join("");
+    qsa(".task input").forEach((x,i)=>x.onchange=async()=>{
+      const completed=x.checked;
+      setProgress(Math.round(qsa(".task input:checked").length/tasks.length*100));
+      const taskId=x.dataset.taskId,backendId=state.active?.backendId;
+      if(backendId&&window.CMBAITasks){
+        try{
+          if(taskId) await window.CMBAITasks.update(backendId,Number(taskId),{completed});
+          else{
+            const created=await window.CMBAITasks.create(backendId,tasks[i]);
+            if(created?.task?.id)x.dataset.taskId=created.task.id;
+          }
+        }catch(err){console.warn("CMB AI task persistence failed:",err)}
+      }
+    });
+    if(state.active?.backendId&&window.CMBAITasks){
+      for(const task of tasks){
+        try{await window.CMBAITasks.create(state.active.backendId,task)}catch(err){console.warn("CMB AI task creation failed:",err)}
+      }
+      const refreshed=await window.CMBAIProjects?.hydrateActive?.(state.active.backendId);
+      if(refreshed?.project?.tasks) state.active.tasks=refreshed.project.tasks;
     }
-  });
-  if(state.active?.backendId&&window.CMBAITasks){
-    for(const task of tasks){
-      try{await window.CMBAITasks.create(state.active.backendId,task)}catch(err){console.warn("CMB AI task creation failed:",err)}
-    }
-    window.CMBAIProjects?.hydrateActive?.(state.active.backendId);
   }
   save();addChat("CMB AI","I created a 7-step build plan for your idea.");toast("Build plan created");
 }
