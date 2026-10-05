@@ -68,3 +68,44 @@ html,body{min-height:100%;background:#020617}
 }
 #cmbReactor{z-index:1!important}
 .app{position:relative!important;z-index:2!important}
+
+
+/* HARD OVERRIDE: center reactor image in the viewport */
+html,body{width:100%!important;min-width:100%!important;margin:0!important}
+#cmbVisibleBackground{
+  position:fixed!important;
+  top:0!important;left:0!important;
+  width:100vw!important;height:100vh!important;
+  margin:0!important;
+  transform:none!important;
+  z-index:0!important;
+}
+#cmbReactor{
+  position:fixed!important;
+  top:0!important;left:0!important;
+  width:100vw!important;height:100vh!important;
+  margin:0!important;
+  transform:none!important;
+  z-index:1!important;
+  display:block!important;
+}
+#cmbReactor .reactor-core,
+#cmbReactor .reactor-triangle{
+  position:fixed!important;
+  top:50vh!important;
+  left:50vw!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:min(68vw,760px)!important;
+  height:min(68vw,760px)!important;
+  max-width:760px!important;
+  max-height:760px!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  transform:translate(-50%,-50%)!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+#cmbReactor .reactor-triangle{transform:translate(-50%,-50%) scale(.92)!important}
+.app{position:relative!important;z-index:2!important}
