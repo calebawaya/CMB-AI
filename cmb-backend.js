@@ -60,6 +60,41 @@
     return result.project;
   }
 
+
+  async function hydrateProjects(){
+    if(!window.CMBAIBackendConnected || !window.state) return false;
+    try{
+      const result=await client.projects();
+      const remote=result.projects||[];
+      const local=window.state.projects||[];
+      const byBackend=new Map(local.filter(p=>p.backendId).map(p=>[String(p.backendId),p]));
+      const merged=remote.map(r=>{
+        const existing=byBackend.get(String(r.id));
+        return existing ? {...existing,backendId:r.id,name:r.name,idea:r.description||existing.idea||"",progress:r.progress,files:r.files||existing.files||{}} : {
+          id:Date.now()+Math.random(),backendId:r.id,name:r.name,idea:r.description||"",progress:r.progress||0,created:r.created_at||new Date().toLocaleDateString(),files:r.files||{}
+        };
+      });
+      const localOnly=local.filter(p=>!p.backendId);
+      window.state.projects=[...merged,...localOnly];
+      localStorage.setItem("cmbai_projects",JSON.stringify(window.state.projects));
+      if(window.renderProjects) window.renderProjects();
+      document.dispatchEvent(new CustomEvent("cmb:projects-loaded",{detail:{count:remote.length}}));
+      return true;
+    }catch(error){
+      console.warn("CMB AI database project load failed:",error);
+      return false;
+    }
+  }
+
+  async function syncCurrentFile(){
+    const state=window.state;
+    if(!state?.active?.backendId || !window.CMBAIBackendConnected || !state.currentFile) return;
+    try{
+      await client.saveFile(state.active.backendId,state.currentFile,String(state.files?.[state.currentFile]||""));
+      await client.event(state.active.backendId,"file.sync","Frontend editor saved "+state.currentFile+" to SQLite");
+    }catch(error){ console.warn("CMB AI file sync failed:",error); }
+  }
+
   async function syncActiveProject(){
     const state = window.state;
     if(!state?.active?.id || !window.CMBAIBackendConnected) return;
@@ -89,8 +124,12 @@
   }
 
   window.CMBAISync = {checkBackend, syncActiveProject, createBackendProjectFromState, ensureBackendProject};
-  document.addEventListener("DOMContentLoaded", ()=>{
+  document.addEventListener("cmb:workspace-sync",()=>{ syncActiveProject(); });
+  document.addEventListener("cmb:editor-refresh",()=>{ syncCurrentFile(); });
+  document.addEventListener("cmb:backend-status",e=>{ if(e.detail?.online){ hydrateProjects(); setTimeout(syncActiveProject,700); } });
+  document.addEventListener("DOMContentLoaded",()=>{
     checkBackend();
-    setTimeout(syncActiveProject, 1200);
+    setTimeout(hydrateProjects,1400);
+    setTimeout(syncActiveProject,1800);
   });
 })();
