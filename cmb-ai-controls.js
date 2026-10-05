@@ -1,12 +1,8 @@
-/* CMB AI — unified AI coding controls
-   This layer prevents duplicate action handlers from firing and keeps
-   Explain / Improve / Debug / Optimize behavior predictable. */
+/* CMB AI — unified AI coding controls */
 (()=>{
   const actions=document.querySelectorAll("[data-aca-action]");
-  const form=document.getElementById("acaForm");
-  const input=document.getElementById("acaInput");
-  const result=document.getElementById("acaResult");
-  const stateEl=document.getElementById("acaState");
+  const form=document.getElementById("acaForm"),input=document.getElementById("acaInput");
+  const result=document.getElementById("acaResult"),stateEl=document.getElementById("acaState");
   if(!actions.length||!result)return;
 
   const prompts={
@@ -21,59 +17,53 @@
     window.cmbEvent?.("AI assistant "+mode,text,"✦");
   };
 
-  async function explainOnly(instruction){
-    const file=state.currentFile||"index.html";
-    const source=state.files?.[file]||"";
+  async function askAI(instruction){
+    const file=state.currentFile||"index.html",source=state.files?.[file]||"";
     result.textContent="CMB AI is analyzing "+file+"…";
-    setState("AI working","started");
-    window.reactorThinking?.();
+    setState("AI working","started"); window.reactorThinking?.();
     try{
       const res=await fetch("http://127.0.0.1:5000/api/ai",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
+        method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({message:instruction+"\n\nCurrent file: "+file+"\n\nCode:\n"+source})
       });
       if(!res.ok)throw new Error("AI request failed");
       const data=await res.json();
-      result.textContent=data.response||data.message||data.answer||"AI returned no explanation.";
-      setState("AI ready","completed");
-      window.reactorResponding?.();
+      result.textContent=data.response||data.message||data.answer||"AI returned no response.";
+      setState("AI ready","completed"); window.reactorResponding?.();
     }catch(err){
       result.textContent="AI backend is offline. Start the CMB AI backend and try again.";
-      setState("AI offline","failed");
-      window.reactorError?.();
+      setState("AI offline","failed"); window.reactorError?.();
     }
+  }
+
+  async function previewChange(action){
+    result.textContent="Preparing an AI change preview for "+(state.currentFile||"index.html")+"…";
+    setState("AI reviewing","started");
+    if(window.cmbAIPreviewChange) await window.cmbAIPreviewChange(prompts[action]||"Review this code.");
+    else { result.textContent="AI change preview is not available."; setState("AI offline","failed"); }
   }
 
   actions.forEach(btn=>{
     btn.addEventListener("click",e=>{
-      e.preventDefault();
-      e.stopImmediatePropagation();
+      e.preventDefault(); e.stopImmediatePropagation();
       const action=btn.dataset.acaAction;
-      if(action==="explain"){
-        explainOnly(prompts.explain);
-      }else if(window.cmbAIPreviewChange){
-        result.textContent="Preparing an AI change preview for "+(state.currentFile||"index.html")+"…";
-        setState("AI reviewing","started");
-        window.cmbAIPreviewChange(prompts[action]||"Review this code.");
-      }
+      if(action==="explain") askAI(prompts.explain);
+      else previewChange(action);
     },true);
   });
 
-  if(form&&input){
-    form.addEventListener("submit",e=>{
-      e.stopImmediatePropagation();
-    },true);
-  }
+  form?.addEventListener("submit",e=>{
+    e.preventDefault(); e.stopImmediatePropagation();
+    const q=input?.value.trim(); if(!q)return;
+    askAI(q); if(input)input.value="";
+  },true);
 
   document.getElementById("acaAccept")?.addEventListener("click",()=>{
     window.cmbEvent?.("AI change accepted","The reviewed AI code change was applied to the workspace.","✓");
   },true);
-
   document.getElementById("acaReject")?.addEventListener("click",()=>{
     window.cmbEvent?.("AI change rejected","The proposed AI change was discarded.","×");
   },true);
-
   document.getElementById("acaUndo")?.addEventListener("click",()=>{
     window.cmbEvent?.("AI change undone","The last accepted AI change was restored.","↶");
   },true);
