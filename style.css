@@ -288,3 +288,14 @@ body::after{
 .github-file-button small{color:rgba(100,220,255,.62);font-size:9px;letter-spacing:.12em}
 .github-file-button:disabled{opacity:.65;cursor:wait}
 .github-file-button:focus-visible{outline:1px solid rgba(70,220,255,.65);outline-offset:2px}
+
+/* CMB AI — light theme */
+body.light-theme{background:#eef4ff;color:#10203a}
+body.light-theme .app{background:rgba(244,248,255,.86)}
+body.light-theme .sidebar,body.light-theme .panel,body.light-theme .card,body.light-theme .hero{background:rgba(255,255,255,.88);color:#10203a;border-color:rgba(30,80,140,.16)}
+body.light-theme .sidebar{box-shadow:8px 0 35px rgba(30,70,120,.10)}
+body.light-theme p,body.light-theme small,body.light-theme .github-summary,body.light-theme .github-file-hint{color:rgba(16,32,58,.68)}
+body.light-theme .input,body.light-theme textarea,body.light-theme input,body.light-theme .code{background:rgba(244,248,255,.96);color:#10203a;border-color:rgba(30,80,140,.20)}
+body.light-theme .github-file-row{background:rgba(242,247,255,.92);border-color:rgba(30,100,180,.16)}
+body.light-theme .nav:hover,body.light-theme .nav.active{background:rgba(0,130,220,.10)}
+body.light-theme .terminal-output{background:#101a2a;color:#dbeafe}
