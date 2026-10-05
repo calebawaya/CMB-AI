@@ -1642,3 +1642,30 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  const badge=status();
  badge.title="Editor, project files, preview and workspace state";
 })();
+
+
+/* AI Coding Assistant */
+(()=>{
+ const form=document.getElementById("acaForm"),input=document.getElementById("acaInput"),result=document.getElementById("acaResult"),stateEl=document.getElementById("acaState");
+ if(!form||!input||!result)return;
+ const run=async instruction=>{
+   const file=state.currentFile||"index.html", source=state.files[file]||"";
+   result.textContent="CMB AI is analyzing "+file+"…"; if(stateEl)stateEl.textContent="AI working";
+   reactorThinking?.();
+   try{
+     const res=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:instruction+"\n\nCurrent file: "+file+"\n\nCode:\n"+source})});
+     if(!res.ok)throw new Error("AI request failed");
+     const data=await res.json();
+     result.textContent=data.response||data.message||data.answer||"AI returned no explanation.";
+     if(stateEl)stateEl.textContent="AI ready"; reactorResponding?.();
+   }catch(err){
+     result.textContent="AI backend is offline. Start the CMB AI backend and try again.";
+     if(stateEl)stateEl.textContent="AI offline"; reactorError?.();
+   }
+ };
+ form.addEventListener("submit",e=>{e.preventDefault();const v=input.value.trim();if(v)run(v)});
+ qsa("[data-aca-action]").forEach(btn=>btn.addEventListener("click",()=>{
+   const map={explain:"Explain this code clearly and identify what each important section does.",improve:"Suggest practical improvements to make this code cleaner, more reliable, and easier to maintain.",debug:"Inspect this code for likely bugs, errors, broken references, or logic problems and explain how to fix them.",optimize:"Optimize this code for performance, readability, and maintainability without changing its intended behavior."};
+   run(map[btn.dataset.acaAction]||"Review this code.");
+ }));
+})();
