@@ -660,3 +660,24 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    modal.classList.remove("hidden");
  });
 })();
+
+
+/* CMB AI — development cycle controls */
+(()=>{
+ const run=document.getElementById("runProject"),fix=document.getElementById("fixWithAI");
+ run?.addEventListener("click",()=>{document.getElementById("preview")?.click()});
+ fix?.addEventListener("click",async()=>{
+   const code=state.files?.["index.html"]||"";
+   const request=prompt("What should CMB AI fix in your project?","Find and fix errors in the current project.");
+   if(!request)return;
+   reactorThinking();fix.disabled=true;fix.textContent="✦ Fixing…";
+   try{
+    const r=await fetch("http://127.0.0.1:5000/api/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request,files:state.files})});
+    const data=await r.json();if(!data.ok)throw new Error(data.error||"AI fix failed");
+    Object.entries(data.files||{}).forEach(([name,value])=>{if(value!==null&&value!==undefined)state.files[name]=value});
+    if(typeof renderFiles==="function")renderFiles();if(typeof renderEditor==="function")renderEditor();if(typeof saveState==="function")saveState();
+    reactorResponding();setTimeout(()=>setReactorState("ready"),900);document.getElementById("preview")?.click();
+   }catch(e){reactorError();setTimeout(()=>setReactorState("ready"),900);alert("AI Fix could not connect to the CMB AI backend.")}
+   finally{fix.disabled=false;fix.textContent="✦ AI Fix"}
+ });
+})();
