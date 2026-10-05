@@ -568,3 +568,19 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   });
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 })();
+
+
+/* CMB AI — Builder feature controls */
+(()=>{
+ const tools=[...document.querySelectorAll("[data-builder-tool]")]; if(!tools.length)return;
+ tools.forEach(t=>t.addEventListener("click",()=>{
+   tools.forEach(x=>x.classList.remove("active"));t.classList.add("active");
+   const mode=t.dataset.builderTool, box=document.getElementById("builderResult"); if(!box)return;
+   if(mode==="files") box.innerHTML='<div class="builder-tool-panel"><b>▣ Starter files</b><p>index.html — page structure</p><p>style.css — visual design</p><p>script.js — interactions</p></div>';
+   if(mode==="tasks") box.innerHTML='<div class="builder-tool-panel"><b>✓ Build tasks</b><div class="builder-task"><input type="checkbox"><span>Create project structure</span></div><div class="builder-task"><input type="checkbox"><span>Design the interface</span></div><div class="builder-task"><input type="checkbox"><span>Build core functionality</span></div><div class="builder-task"><input type="checkbox"><span>Test the project</span></div><div class="builder-task"><input type="checkbox"><span>Prepare for GitHub</span></div></div>';
+   if(mode==="preview") box.innerHTML='<div class="builder-tool-panel"><b>▶ Live preview</b><p>Your generated project will be previewed here after files are created.</p><button class="primary" id="builderOpenWorkspace">Open Workspace →</button></div>';
+   if(mode==="plan"&&idea&&idea.value.trim()) title&&(title.textContent="Generated project plan");
+   box.querySelectorAll(".builder-task input").forEach(cb=>cb.addEventListener("change",()=>cb.closest(".builder-task").classList.toggle("done",cb.checked)));
+   const open=document.getElementById("builderOpenWorkspace"); if(open)open.onclick=()=>document.querySelector('[data-open="workspace"]')?.click();
+ });
+})();
