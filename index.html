@@ -81,6 +81,10 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="workspaceFocus" class="workspace-focus panel">
+  <div class="wf-head"><div><small>EDITOR FOCUS</small><strong>Selected File</strong><span>Track the file currently selected from the project inspector.</span></div><div id="focusedFile">No file selected</div></div>
+  <div class="wf-actions"><button class="small" id="focusWorkspace">Open Workspace</button><button class="small" id="copyFocusedPath">Copy Path</button></div>
+</section>
 <section id="buildArtifacts" class="build-artifacts panel">
   <div class="ba-head"><div><small>BUILD ARTIFACTS</small><strong>Project File Inspector</strong><span>Inspect important project files before deployment.</span></div><button class="small" id="scanArtifacts">Scan Files</button></div>
   <div id="artifactList" class="ba-list"><div class="ba-empty">Ready to scan project files.</div></div>
@@ -173,6 +177,9 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 </script>
 <script>
 (()=>{const l=document.getElementById("artifactList");if(!l)return;l.addEventListener("click",e=>{const b=e.target.closest("[data-artifact-file]");if(!b)return;const file=b.dataset.artifactFile;window.cmbEvent?.("File selected",file+" selected from the project inspector.","▣");document.dispatchEvent(new CustomEvent("cmb:open-file",{detail:{file}}));});})();
+</script>
+<script>
+(()=>{const f=document.getElementById("focusedFile"),open=document.getElementById("focusWorkspace"),copy=document.getElementById("copyFocusedPath");if(!f)return;let selected="";document.addEventListener("cmb:open-file",e=>{selected=e.detail?.file||"";f.textContent=selected||"No file selected";f.title=selected;});open?.addEventListener("click",()=>{if(!selected)return;document.dispatchEvent(new CustomEvent("cmb:workspace-open-file",{detail:{file:selected}}));window.cmbEvent?.("Workspace focus requested","Opening "+selected+" in the workspace editor.","⌁");});copy?.addEventListener("click",async()=>{if(!selected)return;try{await navigator.clipboard.writeText(selected);copy.textContent="Copied";setTimeout(()=>copy.textContent="Copy Path",1200);window.cmbEvent?.("Path copied",selected+" copied to clipboard.","✓")}catch(e){copy.textContent="Copy failed";setTimeout(()=>copy.textContent="Copy Path",1200)}});})();
 </script>
 </body>
 </html>
