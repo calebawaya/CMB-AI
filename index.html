@@ -81,6 +81,11 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="releaseScoreCard" class="release-score-card panel">
+  <div class="rsc-head"><div><small>RELEASE SCORE</small><strong>Deployment Confidence</strong><span>Measure how close the project is to a clean release.</span></div><strong id="releaseConfidence">0%</strong></div>
+  <div class="rsc-bar"><i id="releaseConfidenceFill"></i></div>
+  <div id="releaseConfidenceText">Complete the release checks to calculate deployment confidence.</div>
+</section>
 <section id="releaseReadinessDetails" class="release-readiness-details panel">
   <div class="rrd-head"><div><small>RELEASE INSIGHT</small><strong>Why This Release Is Blocked</strong><span>See exactly what still needs attention.</span></div><button class="small" id="refreshReleaseInsight">Refresh</button></div>
   <div id="releaseInsightList" class="rrd-list"><div class="rrd-empty">Run a release check to see details.</div></div>
@@ -317,6 +322,12 @@ document.getElementById("openDeploymentControl")?.addEventListener("click",()=>d
 (()=>{const b=document.getElementById("refreshReleaseInsight"),run=document.getElementById("runReleaseCheck"),out=document.getElementById("releaseInsightList");if(!out)return;
 const render=()=>{const items=[...document.querySelectorAll("#releaseCheckList .rc-item")];if(!items.length){out.innerHTML="<div class='rrd-empty'>Run a release check to see details.</div>";return}out.innerHTML=items.map(x=>{const bad=x.classList.contains("bad"),name=x.querySelector("b")?.textContent||"Check";const detail=bad?({Files:"Scan the Project File Inspector and make sure required files are reachable.",Build:"Run the Build Center check until it reports BUILD READY.","AI Review":"Complete the AI review milestone.","Ready to deploy":"Complete the Ready to deploy milestone."}[name]||"Review this release check."): "Passed — no action needed.";return "<div class='rrd-item "+(bad?"bad":"ok")+"'><i>"+(bad?"!":"✓")+"</i><div><b>"+name+"</b><span>"+detail+"</span></div></div>"}).join("")};
 run?.addEventListener("click",()=>setTimeout(render,40));b?.addEventListener("click",render);render();
+})();
+</script>
+<script>
+(()=>{const run=document.getElementById("runReleaseCheck"),score=document.getElementById("releaseConfidence"),fill=document.getElementById("releaseConfidenceFill"),txt=document.getElementById("releaseConfidenceText");if(!score)return;
+const update=()=>{const items=[...document.querySelectorAll("#releaseCheckList .rc-item")];if(!items.length){score.textContent="0%";if(fill)fill.style.width="0%";txt.textContent="Complete the release checks to calculate deployment confidence.";return}const passed=items.filter(x=>x.classList.contains("ok")).length,pct=Math.round(passed/items.length*100);score.textContent=pct+"%";if(fill)fill.style.width=pct+"%";txt.textContent=pct===100?"Maximum confidence — all release checks passed.":passed+" of "+items.length+" release checks passed. Review the Release Insight panel for the remaining work."};
+run?.addEventListener("click",()=>setTimeout(update,50));update();
 })();
 </script>
 </body>
