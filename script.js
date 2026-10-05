@@ -69,8 +69,16 @@ function makePlan(){
 }
 function addChat(who,msg){
   const a=document.createElement("article"),b=document.createElement("b"),p=document.createElement("p");
+  a.className=who==="CMB AI"?"ai-message":"user-message";
   b.textContent=who;p.textContent=msg;a.append(b,p);$("#chatLog").appendChild(a);$("#chatLog").scrollTop=$("#chatLog").scrollHeight;
 }
+function showTyping(){
+  const old=$("#cmbTyping"); if(old)old.remove();
+  const a=document.createElement("article");a.id="cmbTyping";a.className="ai-message typing-message";
+  a.innerHTML="<b>CMB AI</b><p><span></span><span></span><span></span></p>";
+  $("#chatLog").appendChild(a);$("#chatLog").scrollTop=$("#chatLog").scrollHeight;
+}
+function hideTyping(){ $("#cmbTyping")?.remove(); }
 function answer(q){
   const s=q.toLowerCase();
   let a=s.includes("html")?"Use semantic HTML for the page structure.":s.includes("css")?"Keep layout and responsive styling in style.css.":s.includes("javascript")||s.includes("js")?"Use script.js for interactions and logic.":s.includes("github")?"Your CMB-AI repository is connected to GitHub Pages.":"Start with a small version, preview it, test it, then add features.";
@@ -133,7 +141,7 @@ $$(".nav").forEach(x=>x.onclick=()=>view(x.dataset.view));
 $$("[data-open]").forEach(x=>x.onclick=()=>view(x.dataset.open));
 $("#newProject").onclick=newProject;$("#newProject2").onclick=newProject;$("#start").onclick=newProject;$("#plan").onclick=makePlan;
 $("#addFile").onclick=addFile;$("#addFolder").onclick=addFolder;$("#saveCode").onclick=saveCurrent;
-$("#chatForm").onsubmit=e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";reactorThinking();setTimeout(()=>{answer(q);reactorResponding();setTimeout(()=>setReactorState("ready"),900)},220)};
+$("#chatForm").onsubmit=e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";reactorThinking();showTyping();setTimeout(()=>{hideTyping();answer(q);reactorResponding();setTimeout(()=>setReactorState("ready"),900)},220)};
 $("#rename").onclick=()=>{if(!state.active){toast("Create a project first");return}const n=prompt("Project name",state.active.name);if(n){state.active.name=n;$("#projectName").textContent=n;save();toast("Project renamed")}};
 $("#theme").onclick=()=>{document.body.classList.toggle("light");localStorage.setItem("cmbai_theme",document.body.classList.contains("light")?"light":"dark")};
 $("#preview").onclick=buildPreview;$("#refreshPreview").onclick=buildPreview;
