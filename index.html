@@ -106,6 +106,28 @@
   <div id="acaChangeSummary" class="aca-change-summary">No pending change.</div>
   <div class="aca-diff-grid"><div><b>Current</b><pre id="acaBefore"></pre></div><div><b>AI Proposed</b><pre id="acaAfter"></pre></div></div>
 </section>
+
+<section id="deploymentDiagnostics" class="deployment-diagnostics panel">
+  <div class="dd-head"><div><small>DEPLOYMENT</small><strong>Preflight Diagnostics</strong><span>Check the live project files before publishing.</span></div><button class="small primary" id="runDeploymentCheck">Run check</button></div>
+  <div id="deploymentCheckList" class="dd-list"><div class="dd-item"><i>●</i><span>Ready to run deployment checks.</span></div></div>
+</section>
+<script>
+(()=>{
+ const button=document.getElementById("runDeploymentCheck"),list=document.getElementById("deploymentCheckList");
+ if(!button||!list)return;
+ const files=["index.html","style.css","script.js","reactor.css"];
+ const esc=s=>String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));
+ button.addEventListener("click",async()=>{
+  button.disabled=true;button.textContent="Checking…";
+  const results=[];
+  for(const file of files){try{const r=await fetch(file,{cache:"no-store"});results.push({file,ok:r.ok,status:r.status});}catch(e){results.push({file,ok:false,status:"offline"});}}
+  list.innerHTML=results.map(x=>'<div class="dd-item '+(x.ok?"ok":"bad")+'"><i>'+(x.ok?"✓":"!")+'</i><span><b>'+esc(x.file)+'</b> — '+(x.ok?"available":"not available")+" ("+esc(x.status)+')</span></div>').join("");
+  const good=results.every(x=>x.ok);
+  list.insertAdjacentHTML("afterbegin",'<div class="dd-summary '+(good?"ok":"bad")+'">'+(good?"✓ Preflight passed — required frontend files are reachable.":"⚠ Preflight found a missing or unreachable frontend file.")+"</div>");
+  button.disabled=false;button.textContent="Run again";
+ });
+})();
+</script>
 <div id="deploymentGuard" class="deployment-guard" role="status"><span>●</span><strong>Deployment Guard</strong><small>Checking required files…</small></div>
 </body>
 </html>
