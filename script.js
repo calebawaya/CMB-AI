@@ -734,6 +734,25 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
 })();
 
 
+/* CMB AI — responsive live preview */
+(()=>{
+ const modal=document.getElementById("previewModal");
+ if(!modal)return;
+ const shell=modal.querySelector(".preview-shell");
+ const frame=modal.querySelector("iframe");
+ document.addEventListener("click",e=>{
+   const btn=e.target.closest("[data-preview-device]");
+   if(!btn)return;
+   shell?.classList.remove("preview-tablet","preview-mobile");
+   const mode=btn.dataset.previewDevice;
+   if(mode==="tablet")shell?.classList.add("preview-tablet");
+   if(mode==="mobile")shell?.classList.add("preview-mobile");
+   document.querySelectorAll("[data-preview-device]").forEach(x=>x.classList.toggle("active",x===btn));
+   if(frame)frame.style.width="100%";
+ });
+})();
+ 
+
 /* CMB AI — development cycle controls */
 (()=>{
  const run=document.getElementById("runProject"),fix=document.getElementById("fixWithAI");
