@@ -628,7 +628,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    if(mode==="plan"&&idea&&idea.value.trim()) title&&(title.textContent="Generated project plan");
    box.querySelectorAll(".builder-task input").forEach(cb=>cb.addEventListener("change",()=>cb.closest(".builder-task").classList.toggle("done",cb.checked)));
    const open=document.getElementById("builderOpenWorkspace"); if(open)open.onclick=()=>document.querySelector('[data-open="workspace"]')?.click();
- });
+  }));
 })();
 
 
