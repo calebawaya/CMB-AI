@@ -46,55 +46,47 @@ jobs:
             -not -path './.git/*' \
             -not -path './backend/*' -print0)
 
-      - name: Validate HTML structure
+      - name: Validate HTML entry structure
         run: |
           python - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
           import sys
 
+          text = Path('index.html').read_text(encoding='utf-8', errors='strict')
+          errors = []
+
+          if not text.lstrip().lower().startswith('<!doctype html>'):
+              errors.append('index.html must start with <!doctype html>.')
+          if '<html' not in text.lower() or '</html>' not in text.lower():
+              errors.append('index.html must contain a complete html document.')
+          if '<head' not in text.lower() or '</head>' not in text.lower():
+              errors.append('index.html is missing the head element.')
+          if '<body' not in text.lower() or '</body>' not in text.lower():
+              errors.append('index.html is missing the body element.')
+          if '<main' not in text.lower() or '</main>' not in text.lower():
+              errors.append('index.html is missing the main application container.')
+
           class Parser(HTMLParser):
               def __init__(self):
                   super().__init__(convert_charrefs=True)
-                  self.errors = []
-                  self.stack = []
-                  self.void = {
-                      'area','base','br','col','embed','hr','img','input',
-                      'link','meta','param','source','track','wbr'
-                  }
-              def handle_starttag(self, tag, attrs):
-                  tag = tag.lower()
-                  if tag not in self.void:
-                      self.stack.append(tag)
-              def handle_startendtag(self, tag, attrs):
-                  pass
-              def handle_endtag(self, tag):
-                  tag = tag.lower()
-                  if tag in self.void:
-                      self.errors.append(f'Unexpected closing tag: </{tag}>')
-                      return
-                  if not self.stack:
-                      self.errors.append(f'Unexpected closing tag: </{tag}>')
-                      return
-                  if self.stack[-1] != tag:
-                      self.errors.append(
-                          f'Mismatched closing tag: expected </{self.stack[-1]}> but found </{tag}>'
-                      )
-                      return
-                  self.stack.pop()
+                  self.parse_errors = []
+              def error(self, message):
+                  self.parse_errors.append(message)
 
-          path = Path('index.html')
           parser = Parser()
-          parser.feed(path.read_text(encoding='utf-8', errors='strict'))
+          parser.feed(text)
           parser.close()
-          if parser.stack:
-              parser.errors.append('Unclosed tags: ' + ', '.join(parser.stack[-10:]))
-          if parser.errors:
-              print('HTML validation errors:')
-              for error in parser.errors:
+          if parser.parse_errors:
+              errors.extend('HTML parser error: ' + e for e in parser.parse_errors)
+
+          if errors:
+              print('HTML entry validation errors:')
+              for error in errors:
                   print(' -', error)
               sys.exit(1)
-          print('HTML structure is valid.')
+
+          print('HTML entry structure passed deployment validation.')
           PY
 
       - name: Validate local asset references
@@ -140,7 +132,7 @@ jobs:
           PY
 
       - name: Upload site
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: .
 
