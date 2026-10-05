@@ -1,10 +1,19 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="CMB AI — an AI-powered project workspace."><title>CMB AI — Project Workspace</title>
-<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="reactor.css"></head>
-<body><div id="cmbVisibleBackground" aria-hidden="true"></div><div id="cmbReactor" aria-hidden="true"><div class="reactor-ring reactor-ring-1"></div><div class="reactor-ring reactor-ring-2"></div><div class="reactor-core"></div></div>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CMB AI — an AI-powered project workspace.">
+<title>CMB AI — Project Workspace</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="reactor.css">
+</head>
+<body>
+<div id="cmbVisibleBackground" aria-hidden="true"></div>
+<div id="cmbReactor" aria-hidden="true">
+  <img class="reactor-core" src="Neon%20Blue%20Arc%20Reactor%20Core.png" alt="">
+  <img class="reactor-triangle" src="Neon%20Blue%20Arc%20Reactor%20Core.png" alt="">
+</div>
 <div class="app"><aside class="sidebar">
 <div class="brand"><b>C</b><span>CMB<span>AI</span></span></div>
 <button class="new-project" id="newProject">＋ New project</button>
@@ -12,7 +21,7 @@
 <div class="side-bottom"><div class="plan"><small>FREE PLAN</small><strong>CMB AI Workspace</strong><p>Projects are saved locally.</p></div><button class="theme" id="theme">☼ Theme</button></div>
 </aside>
 <main class="main"><section id="dashboard" class="workspace-section"><div class="dashboard-head"><div><span class="eyebrow">PROJECT DASHBOARD</span><h2>Your Projects</h2><p>Manage your CMB-AI projects from one place.</p></div><button id="dashboardNewProject" class="btn primary">+ New Project</button></div><div id="dashboardStats" class="dashboard-stats"></div><div id="dashboardProjects" class="dashboard-projects"></div></section><header><div><small id="eyebrow">DASHBOARD</small><h1 id="title">Build something great.</h1></div><div class="ready"><i></i> AI workspace ready</div></header>
-<section id="dashboard" class="view">
+<section id="dashboardHome" class="view">
 <div class="hero"><div><label>✦ CMB AI WORKSPACE</label><h2>Turn an idea into a <em>real project.</em></h2><p>Plan, code, track progress, and prepare projects for GitHub from one connected workspace.</p><button class="primary" id="start">Start building →</button></div><div class="orb"><b>AI</b></div></div>
 <div class="stats"><div><small>PROJECTS</small><b id="projectCount">0</b></div><div><small>FILES</small><b id="fileCount">3</b></div><div><small>PROGRESS</small><b id="progressCount">0%</b></div><div><small>STATUS</small><b class="green">READY</b></div></div>
 <div class="section"><h3>Quick start</h3><p>Choose what you want to work on.</p></div>
@@ -81,4 +90,8 @@
     <iframe id="previewFrame" title="CMB AI project preview" sandbox="allow-scripts"></iframe>
   </div>
 </div>
-<div id="toast" class="toast"></div><script src="script.js"></script></body></html><div id="aiHistory" class="ai-history"><div class="ai-history-head"><b>AI History</b><button id="clearAiHistory" class="btn">Clear</button></div><div id="aiHistoryList"></div><div id="aiHistoryDetails" class="ai-history-details hidden"></div><div id="aiTimeline" class="ai-timeline"></div><div class="ai-snapshot-bar"><button id="aiSnapshot" class="btn">Create AI Snapshot</button><button id="restoreAiSnapshot" class="btn">Restore Snapshot</button></div><div class="snapshot-name-row"><input id="snapshotName" class="input" placeholder="Snapshot name"><button id="createNamedSnapshot" class="btn">Save Named Snapshot</button></div><div id="aiSnapshotStatus" class="ai-snapshot-status"></div><div id="aiSnapshotsList" class="ai-snapshots-list"></div></div>
+<div id="toast" class="toast"></div>
+<div id="aiHistory" class="ai-history"><div class="ai-history-head"><b>AI History</b><button id="clearAiHistory" class="btn">Clear</button></div><div id="aiHistoryList"></div><div id="aiHistoryDetails" class="ai-history-details hidden"></div><div id="aiTimeline" class="ai-timeline"></div><div class="ai-snapshot-bar"><button id="aiSnapshot" class="btn">Create AI Snapshot</button><button id="restoreAiSnapshot" class="btn">Restore Snapshot</button></div><div class="snapshot-name-row"><input id="snapshotName" class="input" placeholder="Snapshot name"><button id="createNamedSnapshot" class="btn">Save Named Snapshot</button></div><div id="aiSnapshotStatus" class="ai-snapshot-status"></div><div id="aiSnapshotsList" class="ai-snapshots-list"></div></div>
+<script src="script.js"></script>
+</body>
+</html>
