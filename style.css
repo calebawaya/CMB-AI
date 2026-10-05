@@ -321,3 +321,7 @@ body.light-theme .terminal-output{background:#101a2a;color:#dbeafe}
 #aiCommandStatus{font-size:11px;color:#54ddff;min-width:170px}
 @media(max-width:850px){.ai-command-bar{flex-direction:column;align-items:stretch}.ai-command-bar>div:first-child{min-width:0}#aiCommandForm{max-width:none}.ai-command-bar button{width:100%}#aiCommandStatus{min-width:0}}
 body.light-theme .ai-command-bar{background:rgba(255,255,255,.88);border-color:rgba(30,100,180,.16)}
+
+
+.ai-command-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ai-command-actions button{white-space:nowrap}.ai-command-actions #aiAcceptChanges:not(:disabled){border-color:rgba(70,230,160,.5)}.ai-command-actions #aiRejectChanges:not(:disabled){border-color:rgba(255,100,120,.4)}
+@media(max-width:850px){.ai-command-actions{width:100%}.ai-command-actions button{flex:1}}
