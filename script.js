@@ -1510,3 +1510,59 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  });
  renderTabs();renderMinimap();
 })();
+
+/* CMB AI advanced editor intelligence */
+(()=>{
+ const code=document.getElementById("code");if(!code)return;
+ const editor=code.closest(".editor");if(!editor)return;
+ let gutter=document.getElementById("editorGutter");
+ if(!gutter){gutter=document.createElement("div");gutter.id="editorGutter";gutter.className="editor-gutter";editor.appendChild(gutter);}
+ let suggest=document.getElementById("editorSuggestions");
+ if(!suggest){suggest=document.createElement("div");suggest.id="editorSuggestions";suggest.className="editor-suggestions hidden";editor.appendChild(suggest);}
+ function refreshGutter(){
+   const n=code.value.split("\n").length;
+   gutter.innerHTML=Array.from({length:n},(_,i)=>"<span>"+(i+1)+"</span>").join("");
+   gutter.scrollTop=code.scrollTop;
+ }
+ const wordsByLang={
+  html:["html","head","body","div","section","header","main","footer","nav","button","input","form","script","style","title"],
+  css:["display","position","relative","absolute","fixed","flex","grid","margin","padding","color","background","border","width","height","font-size"],
+  javascript:["const","let","var","function","return","if","else","for","while","async","await","fetch","document","window","console","true","false"],
+  python:["def","return","import","from","class","if","else","elif","for","while","in","print","True","False","None"],
+  sql:["SELECT","FROM","WHERE","INSERT","UPDATE","DELETE","CREATE","TABLE","JOIN","ORDER","GROUP","BY"],
+  default:["function","const","let","return","class","if","else","for","while","import","from","true","false","null"]
+ };
+ function langKey(){return (code.dataset.language||"").toLowerCase().replace(/[^a-z]/g,"")}
+ function suggestions(q){
+   const key=langKey(),pool=wordsByLang[key]||wordsByLang.default;
+   return pool.filter(x=>x.toLowerCase().startsWith(q.toLowerCase())).slice(0,7);
+ }
+ function showSuggestions(){
+   const before=code.value.slice(0,code.selectionStart),m=before.match(/[A-Za-z_][A-Za-z0-9_-]*$/),q=m?m[0]:"";
+   if(q.length<2){suggest.classList.add("hidden");return}
+   const list=suggestions(q);if(!list.length){suggest.classList.add("hidden");return}
+   suggest.innerHTML=list.map((x,i)=>'<button type="button" data-suggestion="'+i+'">'+x+"</button>").join("");
+   suggest.querySelectorAll("button").forEach((b,i)=>b.onclick=()=>{const word=list[i],start=code.selectionStart-q.length;code.setRangeText(word,start,code.selectionEnd,"end");suggest.classList.add("hidden");code.focus();});
+   suggest.classList.remove("hidden");
+ }
+ code.addEventListener("input",()=>{refreshGutter();showSuggestions();validate();});
+ code.addEventListener("scroll",()=>{gutter.scrollTop=code.scrollTop;});
+ code.addEventListener("keydown",e=>{
+   if(e.key==="Escape")suggest.classList.add("hidden");
+   if(e.key==="Tab"&&!suggest.classList.contains("hidden")){const b=suggest.querySelector("button");if(b){e.preventDefault();b.click();}}
+ });
+ function validate(){
+   let errors=[];
+   const text=code.value,lang=langKey();
+   if(["javascript","typescript","java","c","cpp","c","c","rust","go"].includes(lang)){
+     const opens=(text.match(/[({[]/g)||[]).length,closes=(text.match(/[)}\]]/g)||[]).length;
+     if(opens!==closes)errors.push("Possible unmatched bracket");
+   }
+   if(lang==="html"&&!/<\/?[a-z][\s\S]*>/i.test(text)&&text.trim())errors.push("HTML markup not detected");
+   let box=document.getElementById("editorDiagnostics");
+   if(!box){box=document.createElement("div");box.id="editorDiagnostics";box.className="editor-diagnostics";editor.appendChild(box);}
+   box.textContent=errors.length?"⚠ "+errors.join(" · "):"✓ No basic syntax issues detected";
+   box.classList.toggle("error",!!errors.length);
+ }
+ setTimeout(()=>{refreshGutter();validate();},0);
+})();
