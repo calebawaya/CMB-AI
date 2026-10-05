@@ -349,6 +349,47 @@ function updateBackendProjectCount(){
 $("#checkBackend")?.addEventListener("click",updateBackendProjectCount);
 updateBackendProjectCount();
 
+async function applyAIChange(){
+ const input=$("#aiPrompt"),out=$("#aiResponse"),button=$("#sendAiPrompt");
+ if(!input||!out)return;
+ const request=input.value.trim();
+ if(!request){toast("Enter a change request first");return}
+ button.disabled=true;button.textContent="Building...";
+ reactorThinking();
+ out.textContent="CMB AI is preparing the code change...";
+ try{
+  const r=await fetch("http://127.0.0.1:5000/api/ai/apply",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({request,files:state.files})
+  });
+  const data=await r.json();
+  if(!data.ok)throw new Error(data.error||"AI change failed");
+  const changed=[];
+  ["index.html","style.css","script.js"].forEach(name=>{
+   if(typeof data.files?.[name]==="string"){
+    state.files[name]=data.files[name];
+    changed.push(name);
+   }
+  });
+  if(!changed.length)throw new Error("AI returned no file changes");
+  renderFiles();
+  $("#code").value=state.files[state.currentFile]||"";
+  addChat("CMB AI","Applied the requested code changes to: "+changed.join(", "));
+  out.textContent="Updated: "+changed.join(", ");
+  saveState();
+  reactorResponding();
+  toast("AI code change applied");
+ }catch(e){
+  out.textContent=e.message||"Could not apply the AI change.";
+  addChat("CMB AI","I could not apply that code change. Check that the Python backend is running.");
+  reactorError();
+ }finally{
+  button.disabled=false;button.textContent="Apply AI Change";
+  setTimeout(()=>setReactorState("ready"),900);
+ }
+}
+
 async function askPythonAI(){
  const input=$("#aiPrompt"),out=$("#aiResponse"),button=$("#sendAiPrompt");
  if(!input||!out)return;
