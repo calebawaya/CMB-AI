@@ -374,7 +374,8 @@ async function askPythonAI(){
  try{
   const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,project:{name:state.active?.name||"CMB-AI project",files:state.files}})});
   const data=await r.json();
-  out.textContent=data.ok?data.answer:(data.error||"AI request failed");\n  if(data.ok) reactorResponding(); else reactorError();
+  out.textContent=data.ok?data.answer:(data.error||"AI request failed");
+  if(data.ok) reactorResponding(); else reactorError();
  }catch(e){out.textContent="Python backend is offline. Start the Flask server first.";reactorError()}
  finally{button.disabled=false;button.textContent="Ask AI";setTimeout(()=>setReactorState("ready"),900)}
 }
