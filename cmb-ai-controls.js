@@ -60,3 +60,21 @@
     if(taskId)document.dispatchEvent(new CustomEvent("cmb:ai-task-updated",{detail:{taskId,completed:box.checked}}));
   });
 })();
+
+/* CMB AI — restore persisted event stream */
+(()=>{
+  document.addEventListener("cmb:project-events-restored",event=>{
+    const list=document.getElementById("eventStreamList");
+    const events=event.detail?.events||[];
+    if(!list||!events.length)return;
+    list.innerHTML="";
+    [...events].reverse().forEach(ev=>{
+      const row=document.createElement("div");row.className="as-item";
+      const time=document.createElement("time");time.textContent=ev.created_at?new Date(ev.created_at).toLocaleTimeString():"";
+      const body=document.createElement("div");
+      const title=document.createElement("b");title.textContent=ev.event_type||"workspace.event";
+      const msg=document.createElement("span");msg.textContent=ev.message||"";
+      body.append(title,msg);row.append(time,body);list.appendChild(row);
+    });
+  });
+})();
