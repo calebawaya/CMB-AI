@@ -423,3 +423,14 @@ body.light-theme .health-dashboard{background:rgba(255,255,255,.86);border-color
 /* Unified workspace sync status */
 .workspace-sync-status{margin-left:auto;padding:5px 8px;border:1px solid rgba(74,222,128,.25);border-radius:999px;background:rgba(74,222,128,.07);color:#4ade80;font:800 9px/1 system-ui;letter-spacing:.3px}
 .workspace-sync-status.unsaved{border-color:rgba(250,204,21,.3);background:rgba(250,204,21,.08);color:#facc15}
+
+/* AI Coding Assistant */
+.ai-coding-assistant{margin-top:14px;padding:14px;border:1px solid rgba(96,165,250,.22);background:linear-gradient(145deg,rgba(15,23,42,.9),rgba(9,14,30,.78));box-shadow:0 0 28px rgba(37,99,235,.08)}
+.aca-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.aca-head div{display:grid;gap:4px}.aca-head small{color:var(--muted);font-size:10px}
+#acaState{font-size:9px;color:#60a5fa;border:1px solid rgba(96,165,250,.25);padding:5px 8px;border-radius:999px}
+.aca-actions{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 9px}
+.aca-actions button:hover{border-color:#60a5fa;box-shadow:0 0 12px rgba(96,165,250,.14)}
+.aca-form{display:flex;gap:8px}.aca-form .input{flex:1}
+.aca-result{margin-top:10px;min-height:54px;padding:11px;border:1px solid var(--line);border-radius:9px;background:rgba(2,6,23,.55);color:var(--text);font:11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap}
+@media(max-width:700px){.aca-form{flex-direction:column}}
