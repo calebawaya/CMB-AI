@@ -1,4 +1,19 @@
-const $=s=>document.querySelector(s),qsa=s=>[...document.querySelectorAll(s)];\n\n/* CMB AI reactor state — visual feedback for the AI core */\nfunction setReactorState(state){\n  const reactor=document.getElementById("cmbReactor");\n  if(!reactor)return;\n  reactor.dataset.state=state;\n  reactor.classList.remove("reactor-ready","reactor-thinking","reactor-responding","reactor-error");\n  reactor.classList.add("reactor-"+state);\n}\nsetReactorState("ready");\n\nfunction reactorThinking(){setReactorState("thinking")}\nfunction reactorResponding(){setReactorState("responding")}\nfunction reactorError(){setReactorState("error")}\n
+const $=s=>document.querySelector(s),qsa=s=>[...document.querySelectorAll(s)];
+
+/* CMB AI reactor state — visual feedback for the AI core */
+function setReactorState(state){
+  const reactor=document.getElementById("cmbReactor");
+  if(!reactor)return;
+  reactor.dataset.state=state;
+  reactor.classList.remove("reactor-ready","reactor-thinking","reactor-responding","reactor-error");
+  reactor.classList.add("reactor-"+state);
+}
+setReactorState("ready");
+
+function reactorThinking(){setReactorState("thinking")}
+function reactorResponding(){setReactorState("responding")}
+function reactorError(){setReactorState("error")}
+
 
 const builder={blocks:[],selected:null,history:[],future:[],historyLock:false};
 function snapshot(){return JSON.stringify(builder.blocks)}
