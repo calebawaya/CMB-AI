@@ -682,6 +682,21 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
 })();
 
 
+/* CMB AI — core UI controls */
+(()=>{
+  const theme=document.getElementById("theme");
+  theme?.addEventListener("click",()=>{
+    document.body.classList.toggle("light-theme");
+    localStorage.setItem("cmbai_theme",document.body.classList.contains("light-theme")?"light":"dark");
+  });
+  if(localStorage.getItem("cmbai_theme")==="light")document.body.classList.add("light-theme");
+  const close=document.getElementById("closePreview");
+  const modal=document.getElementById("previewModal");
+  close?.addEventListener("click",()=>modal?.classList.add("hidden"));
+  modal?.addEventListener("click",e=>{if(e.target===modal)modal.classList.add("hidden")});
+})();
+
+
 /* CMB AI — workspace live preview */
 (()=>{
  const preview=document.getElementById("preview"); if(!preview)return;
