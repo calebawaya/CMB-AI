@@ -681,3 +681,22 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    finally{fix.disabled=false;fix.textContent="✦ AI Fix"}
  });
 })();
+
+
+/* CMB AI — local development console */
+(()=>{
+ const form=document.getElementById("terminalForm"),input=document.getElementById("terminalInput"),out=document.getElementById("terminalOutput"),clear=document.getElementById("clearTerminal");if(!form||!input||!out)return;
+ const log=(msg,type="")=>{const d=document.createElement("div");d.className=type;d.innerHTML=msg;out.appendChild(d);out.scrollTop=out.scrollHeight};
+ form.addEventListener("submit",e=>{e.preventDefault();const q=input.value.trim();if(!q)return;log('<span class="terminal-prompt">CMB&gt;</span> '+escape(q));input.value="";
+   const cmd=q.toLowerCase();
+   if(cmd==="clear"){out.innerHTML="";return}
+   if(cmd==="help"){log("Available: help, files, status, preview, build, clear");return}
+   if(cmd==="files"){log(Object.keys(state.files||{}).map(x=>"• "+escape(x)).join("<br>")||"No files");return}
+   if(cmd==="status"){log("Project: "+escape(state.active?.name||"Untitled Project")+"<br>Files: "+Object.keys(state.files||{}).length+"<br>Status: READY","terminal-ok");return}
+   if(cmd==="preview"){document.getElementById("preview")?.click();log("Opening live preview…","terminal-ok");return}
+   if(cmd==="build"){document.getElementById("buildProject")?.click();log("Starting project build…","terminal-ok");return}
+   log("Unknown command. Type <b>help</b> for available commands.","terminal-error");
+ });
+ clear?.addEventListener("click",()=>out.innerHTML="");
+ function escape(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+})();
