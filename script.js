@@ -122,12 +122,21 @@ async function makePlan(){
         }catch(err){console.warn("CMB AI task persistence failed:",err)}
       }
     });
+    if(window.CMBAISync?.createBackendProjectFromState&&window.CMBAIBackendConnected){
+      try{
+        await window.CMBAISync.createBackendProjectFromState(state.active);
+      }catch(err){console.warn("CMB AI backend project creation failed:",err)}
+    }
     if(state.active?.backendId&&window.CMBAITasks){
+      const createdTasks=[];
       for(const task of tasks){
-        try{await window.CMBAITasks.create(state.active.backendId,task)}catch(err){console.warn("CMB AI task creation failed:",err)}
+        try{
+          const created=await window.CMBAITasks.create(state.active.backendId,task);
+          if(created?.task)createdTasks.push(created.task);
+        }catch(err){console.warn("CMB AI task creation failed:",err)}
       }
-      const refreshed=await window.CMBAIProjects?.hydrateActive?.(state.active.backendId);
-      if(refreshed?.project?.tasks) state.active.tasks=refreshed.project.tasks;
+      state.active.tasks=createdTasks;
+      renderProjectTasks(createdTasks);
     }
   }
   save();addChat("CMB AI","I created a 7-step build plan for your idea.");toast("Build plan created");
