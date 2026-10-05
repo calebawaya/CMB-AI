@@ -81,6 +81,16 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="aiMilestones" class="ai-milestones panel">
+  <div class="am-head"><div><small>AI MILESTONES</small><strong>Workspace Milestones</strong><span>Mark major development stages as completed.</span></div><button class="small" id="resetMilestones">Reset</button></div>
+  <div class="am-list">
+    <label><input type="checkbox" data-milestone="Project initialized"><span>Project initialized</span></label>
+    <label><input type="checkbox" data-milestone="Files verified"><span>Files verified</span></label>
+    <label><input type="checkbox" data-milestone="AI review completed"><span>AI review completed</span></label>
+    <label><input type="checkbox" data-milestone="Build passed"><span>Build passed</span></label>
+    <label><input type="checkbox" data-milestone="Ready to deploy"><span>Ready to deploy</span></label>
+  </div>
+</section>
 <section id="aiProgress" class="ai-progress panel">
   <div class="ap-head"><div><small>AI PROGRESS</small><strong>Task Progress</strong><span>Track completed tasks from your AI action plan.</span></div><strong id="progressText">0%</strong></div>
   <div class="ap-bar"><i id="progressFill"></i></div>
@@ -222,6 +232,9 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 </script>
 <script>
 (()=>{const list=document.getElementById("actionPlanList"),fill=document.getElementById("progressFill"),text=document.getElementById("progressText"),meta=document.getElementById("progressMeta");if(!list)return;function update(){const boxes=[...list.querySelectorAll('input[type="checkbox"]')],done=boxes.filter(x=>x.checked).length,pct=boxes.length?Math.round(done/boxes.length*100):0;if(fill)fill.style.width=pct+"%";if(text)text.textContent=pct+"%";if(meta)meta.textContent=done+" of "+boxes.length+" tasks completed";}list.addEventListener("change",e=>{if(e.target.matches('input[type="checkbox"]')){update();window.cmbEvent?.("AI task updated",e.target.checked?"Task completed.":"Task reopened.","✓")}});window.addEventListener("cmb:action-plan-built",update);update();})();
+</script>
+<script>
+(()=>{const root=document.getElementById("aiMilestones"),reset=document.getElementById("resetMilestones");if(!root)return;const key="cmbMilestones";const boxes=[...root.querySelectorAll("[data-milestone]")];let saved={};try{saved=JSON.parse(localStorage.getItem(key)||"{}")}catch{}boxes.forEach(b=>{b.checked=!!saved[b.dataset.milestone];b.addEventListener("change",()=>{saved[b.dataset.milestone]=b.checked;localStorage.setItem(key,JSON.stringify(saved));window.cmbEvent?.("Milestone updated",b.dataset.milestone+(b.checked?" completed.":" reopened."),"★")})});reset?.addEventListener("click",()=>{boxes.forEach(b=>b.checked=false);saved={};localStorage.removeItem(key);window.cmbEvent?.("Milestones reset","Workspace milestones were reset.","↺")});})();
 </script>
 </body>
 </html>
