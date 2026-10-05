@@ -7,17 +7,24 @@
 
   const backendDot=document.getElementById("acaBackendDot");
   const backendState=document.getElementById("acaBackendState");
+  function setQuick(id,text,mode=""){ const dot=document.getElementById(id); const box=dot?.parentElement; const b=box?.querySelector("b"); if(dot){dot.classList.remove("checking","offline"); if(mode)dot.classList.add(mode);} if(b)b.textContent=text; }
   async function checkBackend(){
     try{
       const r=await fetch("http://127.0.0.1:5000/api/health",{cache:"no-store"});
       if(!r.ok)throw new Error("offline");
       backendDot?.classList.add("online"); backendDot?.classList.remove("offline");
       if(backendState)backendState.textContent="Backend online";
+      setQuick("quickBackend","Online");
     }catch(e){
       backendDot?.classList.add("offline"); backendDot?.classList.remove("online");
       if(backendState)backendState.textContent="Backend offline";
+      setQuick("quickBackend","Offline","offline");
     }
   }
+  setQuick("quickFrontend","Ready");
+  setQuick("quickWorkspace", "Ready");
+  setQuick("quickDeploy", "Guarded");
+  setQuick("quickBackend","Checking","checking");
   checkBackend();
   setInterval(checkBackend,20000);
 
