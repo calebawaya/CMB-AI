@@ -1221,3 +1221,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  btn.addEventListener("click",run);
  document.getElementById("closeCheck")?.addEventListener("click",()=>modal.classList.add("hidden"));
 })();
+
+
+/* CMB AI — checker helper */
+(()=>{const b=document.getElementById('projectCheck'),s=document.getElementById('checkStatus');if(!b||!s)return;const x=document.createElement('button');x.className='small';x.textContent='Fix with AI';x.type='button';b.after(x);x.onclick=()=>{const i=document.getElementById('aiCommand'),p=document.getElementById('aiPreviewChanges');if(!i)return;i.value='Fix the issues found by Project Check while preserving my current design.';s.textContent='Fix request prepared. Preview it before accepting.';p?.click()}})();
