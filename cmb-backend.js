@@ -328,4 +328,20 @@
     }catch(error){console.warn("CMB AI chat restore failed:",error);}
   });
 
+  async function restoreProjectEvents(projectId){
+    if(!projectId||!window.CMBAIBackendConnected)return [];
+    try{
+      const result=await client.events(projectId);
+      const events=result.events||[];
+      window.CMBAIProjectEvents=events;
+      document.dispatchEvent(new CustomEvent("cmb:project-events-restored",{detail:{projectId,events}}));
+      return events;
+    }catch(error){console.warn("CMB AI event restore failed:",error);return [];}
+  }
+  window.CMBAIProjects.restoreEvents=restoreProjectEvents;
+  document.addEventListener("cmb:open-project",event=>{
+    const id=event.detail?.projectId||event.detail?.backendId;
+    if(id)restoreProjectEvents(id);
+  });
+
 })();
