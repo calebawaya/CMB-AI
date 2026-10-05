@@ -97,6 +97,12 @@
   <div class="aca-change-head"><strong>AI Code Change</strong><div><button class="small" id="acaUndo">Undo Last AI Change</button><button class="small" id="acaReject">Reject</button><button class="small primary" id="acaAccept">Accept Change</button></div></div>
   <div id="acaChangeSummary" class="aca-change-summary">No pending change.</div>
   <div class="aca-diff-grid"><div><b>Current</b><pre id="acaBefore"></pre></div><div><b>AI Proposed</b><pre id="acaAfter"></pre></div></div>
+<section id="activityStream" class="activity-stream panel"><div class="as-head"><div><small>REAL-TIME ACTIVITY</small><strong>CMB AI Event Stream</strong><span>See important workspace events as they happen.</span></div><button class="small" id="clearEventStream">Clear</button></div><div id="eventStreamList" class="as-list"><div class="as-empty">Waiting for workspace events…</div></div></section>
+<section id="liveHealth" class="live-health panel"><div class="lh-head"><div><small>LIVE SYSTEM</small><strong>CMB AI Health Monitor</strong><span>Quickly verify the workspace frontend and backend connection.</span></div><button class="small" id="runHealthCheck">Check health</button></div><div id="healthChecks" class="lh-grid"><div class="lh-card"><i>●</i><b>Frontend</b><span>Waiting</span></div><div class="lh-card"><i>●</i><b>Backend</b><span>Waiting</span></div><div class="lh-card"><i>●</i><b>Workspace</b><span>Waiting</span></div></div></section>
+<section id="deploymentDiagnostics" class="deployment-diagnostics panel">
+  <div class="dd-head"><div><small>DEPLOYMENT</small><strong>Preflight Diagnostics</strong><span>Check the live project files before publishing.</span></div><button class="small primary" id="runDeploymentCheck">Run check</button></div>
+  <div id="deploymentCheckList" class="dd-list"><div class="dd-item"><i>●</i><span>Ready to run deployment checks.</span></div></div>
+</section>
 </section></section>
 <section id="settings" class="view hidden"><div class="panel settings"><small>SETTINGS</small><h2>CMB AI preferences</h2><label><span><b>Local project saving</b><small>Keep workspace data in this browser.</small></span><input type="checkbox" id="localSave" checked></label><label><span><b>Animations</b><small>Use subtle interface motion.</small></span><input type="checkbox" id="animations" checked></label></div></section>
 </main></div>
@@ -110,12 +116,7 @@
 [CMB] Waiting for events…</pre></section><aside id="notificationCenter" class="notification-center"><div class="notification-head"><strong>Notifications</strong><button class="small" id="clearNotifications">Clear</button></div><div id="notificationList"></div></aside><button id="notificationBell" class="notification-bell" title="Open notifications">●<span id="notificationCount">0</span></button>
 
 
-<section id="activityStream" class="activity-stream panel"><div class="as-head"><div><small>REAL-TIME ACTIVITY</small><strong>CMB AI Event Stream</strong><span>See important workspace events as they happen.</span></div><button class="small" id="clearEventStream">Clear</button></div><div id="eventStreamList" class="as-list"><div class="as-empty">Waiting for workspace events…</div></div></section>
-<section id="liveHealth" class="live-health panel"><div class="lh-head"><div><small>LIVE SYSTEM</small><strong>CMB AI Health Monitor</strong><span>Quickly verify the workspace frontend and backend connection.</span></div><button class="small" id="runHealthCheck">Check health</button></div><div id="healthChecks" class="lh-grid"><div class="lh-card"><i>●</i><b>Frontend</b><span>Waiting</span></div><div class="lh-card"><i>●</i><b>Backend</b><span>Waiting</span></div><div class="lh-card"><i>●</i><b>Workspace</b><span>Waiting</span></div></div></section>
-<section id="deploymentDiagnostics" class="deployment-diagnostics panel">
-  <div class="dd-head"><div><small>DEPLOYMENT</small><strong>Preflight Diagnostics</strong><span>Check the live project files before publishing.</span></div><button class="small primary" id="runDeploymentCheck">Run check</button></div>
-  <div id="deploymentCheckList" class="dd-list"><div class="dd-item"><i>●</i><span>Ready to run deployment checks.</span></div></div>
-</section>
+
 <script>
 (()=>{
  const button=document.getElementById("runDeploymentCheck"),list=document.getElementById("deploymentCheckList");
