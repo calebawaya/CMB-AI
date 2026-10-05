@@ -1,13 +1,12 @@
-/* CMB-AI reactor — centered reactor, static triangle, rotating circular energy field */
+/* CMB-AI reactor — visible, centered, fast circular motion with a locked triangle */
 html,
 body{
   width:100%;
   min-width:100%;
-  height:100%;
   min-height:100%;
   margin:0;
   padding:0;
-  overflow:hidden;
+  overflow-x:hidden;
   background:#020617;
 }
 
@@ -19,50 +18,45 @@ body{
   z-index:0;
   pointer-events:none;
   overflow:hidden;
+  display:block;
   background:#020617;
+}
+
+/* Both layers use the real uploaded PNG, so the artwork cannot disappear because of a CSS background-image URL. */
+#cmbReactor .reactor-core,
+#cmbReactor .reactor-triangle{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:min(92vw,119vh);
+  height:min(92vw,119vh);
+  margin:0;
+  object-fit:contain;
+  object-position:center center;
+  transform-origin:50% 50%;
+  display:block;
+  opacity:1;
+  visibility:visible;
+  filter:none;
+  will-change:transform;
+}
+
+/* The full artwork rotates continuously. */
+#cmbReactor .reactor-core{
+  z-index:1;
+  transform:translate(-50%,-50%) rotate(0deg);
+  animation:cmbCircleSpin .65s linear infinite;
+}
+
+/* The same artwork is clipped to the triangle and placed above the rotating layer. */
+#cmbReactor .reactor-triangle{
+  z-index:2;
+  transform:translate(-50%,-50%);
+  clip-path:polygon(50% 20%,84% 93%,16% 93%);
 }
 
 #cmbReactor .reactor-ring{
   display:none;
-}
-
-/* The uploaded artwork stays locked to the exact center of the page. */
-#cmbReactor .reactor-core{
-  display:block;
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:142vmax;
-  height:142vmax;
-  margin:0;
-  transform:translate(-50%,-50%) rotate(0deg);
-  transform-origin:50% 50%;
-  background-image:url("Neon%20Blue%20Arc%20Reactor%20Core.png");
-  background-position:50% 50%;
-  background-repeat:no-repeat;
-  background-size:min(92vw,119vh) auto;
-  background-color:#020617;
-  clip-path:none;
-  filter:none;
-  opacity:1;
-  will-change:transform;
-  animation:cmbCircleSpin .8s linear infinite;
-}
-
-/* A second copy holds only the triangular reactor structure still. */
-#cmbReactor .reactor-core::after{
-  content:"";
-  display:block;
-  position:absolute;
-  inset:0;
-  background-image:url("Neon%20Blue%20Arc%20Reactor%20Core.png");
-  background-position:50% 50%;
-  background-repeat:no-repeat;
-  background-size:min(92vw,119vh) auto;
-  background-color:transparent;
-  clip-path:polygon(50% 20%,84% 93%,16% 93%);
-  transform:none;
-  animation:none;
 }
 
 .app{
@@ -70,7 +64,6 @@ body{
   z-index:1;
 }
 
-/* Only the circular/outer artwork rotates. The triangle above does not move. */
 @keyframes cmbCircleSpin{
   from{
     transform:translate(-50%,-50%) rotate(0deg);
