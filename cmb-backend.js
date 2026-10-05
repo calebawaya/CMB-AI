@@ -229,4 +229,46 @@
     const projectId=detail.projectId||window.state?.active?.backendId;
     if(projectId && detail.message) logAIEvent(projectId,detail.type||"ai.event",detail.message);
   });
+  async function refreshProjectList(){
+    if(!window.CMBAIBackendConnected || !window.state) return false;
+    try{
+      const result=await client.projects();
+      const remote=result.projects||[];
+      const local=window.state.projects||[];
+      const localByBackend=new Map(local.filter(p=>p.backendId).map(p=>[String(p.backendId),p]));
+      remote.forEach(r=>{
+        const existing=localByBackend.get(String(r.id));
+        if(existing){
+          existing.name=r.name;
+          existing.idea=r.description||existing.idea||"";
+          existing.progress=Number(r.progress||0);
+          existing.updatedAt=Date.now();
+        }else{
+          window.state.projects.push({
+            id:"backend-"+r.id,
+            backendId:r.id,
+            name:r.name||"Untitled Project",
+            idea:r.description||"",
+            progress:Number(r.progress||0),
+            created:r.created_at||new Date().toLocaleDateString(),
+            updatedAt:Date.now(),
+            files:r.files||{}
+          });
+        }
+      });
+      localStorage.setItem("cmbai_projects",JSON.stringify(window.state.projects));
+      if(typeof window.renderProjects==="function") window.renderProjects();
+      document.dispatchEvent(new CustomEvent("cmb:projects-refreshed",{detail:{count:remote.length}}));
+      return true;
+    }catch(error){
+      console.warn("CMB AI project refresh failed:",error);
+      return false;
+    }
+  }
+  window.CMBAIProjects={refresh:refreshProjectList};
+  document.addEventListener("DOMContentLoaded",()=>{
+    document.querySelectorAll('[data-view="projects"]').forEach(el=>el.addEventListener("click",()=>setTimeout(refreshProjectList,150)));
+    document.querySelectorAll('[data-open="projects"]').forEach(el=>el.addEventListener("click",()=>setTimeout(refreshProjectList,150)));
+  });
+
 })();
