@@ -1566,3 +1566,37 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  }
  setTimeout(()=>{refreshGutter();validate();},0);
 })();
+
+/* CMB AI project file explorer */
+(()=>{
+ const list=document.getElementById("fileList");if(!list)return;
+ const panel=list.closest(".panel");if(!panel)return;
+ let toolbar=document.getElementById("fileExplorerToolbar");
+ if(!toolbar){toolbar=document.createElement("div");toolbar.id="fileExplorerToolbar";toolbar.className="file-explorer-toolbar";toolbar.innerHTML='<strong>Project Explorer</strong><div><button class="small" id="newFolderExplorer">+ Folder</button><button class="small" id="newFileExplorer">+ File</button></div>';panel.insertBefore(toolbar,list);}
+ let search=document.getElementById("fileExplorerSearch");
+ if(!search){search=document.createElement("input");search.id="fileExplorerSearch";search.className="input file-explorer-search";search.placeholder="Search project files...";panel.insertBefore(search,list);}
+ const iconMap={html:"🌐",css:"🎨",js:"⚡",ts:"🔷",py:"🐍",java:"☕",json:"{}","c":"C",cpp:"C++",cs:"C#",go:"GO",rs:"RS",php:"PHP",rb:"RB",swift:"SW",kt:"KT",sql:"DB",sh:"⌘",ps1:"PS",md:"MD",txt:"TXT"};
+ const icon=f=>iconMap[(f.split(".").pop()||"").toLowerCase()]||"📄";
+ function refresh(){
+   const q=(search.value||"").toLowerCase().trim();
+   const files=Object.keys(state.files).filter(f=>f.toLowerCase().includes(q)).sort();
+   list.innerHTML="";
+   files.forEach(f=>{
+    const row=document.createElement("div");row.className="file-item explorer-file "+(f===state.currentFile?"active":"");row.dataset.file=f;
+    row.innerHTML='<span class="file-name-wrap"><b class="file-icon">'+icon(f)+'</b><span>'+f+'</span></span><span class="file-row-actions"><button title="Rename">✎</button><button title="Delete">×</button></span>';
+    row.querySelector(".file-name-wrap").onclick=()=>{state.currentFile=f;renderFiles();renderEditor();document.dispatchEvent(new Event("cmb:editor-refresh"));};
+    row.querySelectorAll(".file-row-actions button")[0].onclick=e=>{e.stopPropagation();const next=prompt("Rename file",f);if(!next||next===f)return;if(state.files[next]!==undefined){alert("A file with that name already exists.");return;}state.files[next]=state.files[f];delete state.files[f];if(state.currentFile===f)state.currentFile=next;saveState();renderFiles();renderEditor();document.dispatchEvent(new Event("cmb:editor-refresh"));};
+    row.querySelectorAll(".file-row-actions button")[1].onclick=e=>{e.stopPropagation();if(Object.keys(state.files).length<=1){alert("Keep at least one project file.");return;}if(!confirm("Delete "+f+"?"))return;delete state.files[f];if(state.currentFile===f)state.currentFile=Object.keys(state.files)[0];saveState();renderFiles();renderEditor();document.dispatchEvent(new Event("cmb:editor-refresh"));};
+    list.appendChild(row);
+   });
+ }
+ document.getElementById("newFileExplorer")?.addEventListener("click",()=>{
+   const name=prompt("New file name","new-file.js");if(!name)return;if(state.files[name]!==undefined){alert("That file already exists.");return;}state.files[name]="";state.currentFile=name;saveState();renderFiles();renderEditor();document.dispatchEvent(new Event("cmb:editor-refresh"));
+ });
+ document.getElementById("newFolderExplorer")?.addEventListener("click",()=>{
+   const name=prompt("Folder name","src");if(!name)return;const file=name.replace(/\/+$/,"")+"/main.js";if(state.files[file]===undefined)state.files[file]="";state.currentFile=file;saveState();renderFiles();renderEditor();document.dispatchEvent(new Event("cmb:editor-refresh"));
+ });
+ search.addEventListener("input",refresh);
+ document.addEventListener("cmb:editor-refresh",refresh);
+ refresh();
+})();
