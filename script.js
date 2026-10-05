@@ -1707,12 +1707,25 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  });
  document.getElementById("acaAccept")?.addEventListener("click",()=>{
    if(!pending)return;
+   const undoHistory=JSON.parse(localStorage.getItem("cmbai_ai_undo")||"[]");
+   undoHistory.push({file:pending.file,before:state.files[pending.file]||"",after:pending.next,at:Date.now()});
+   localStorage.setItem("cmbai_ai_undo",JSON.stringify(undoHistory.slice(-20)));
    state.files[pending.file]=pending.next;state.currentFile=pending.file;
    saveState?.();renderFiles?.();renderEditor?.();document.dispatchEvent(new Event("cmb:editor-refresh"));document.dispatchEvent(new Event("cmb:workspace-sync"));
    summary.textContent="✓ AI change accepted and saved.";pending=null;
  });
  document.getElementById("acaReject")?.addEventListener("click",()=>{
    pending=null;panel.classList.add("hidden");summary.textContent="Change rejected.";
+ });
+ document.getElementById("acaUndo")?.addEventListener("click",()=>{
+   const history=JSON.parse(localStorage.getItem("cmbai_ai_undo")||"[]");
+   const last=history.pop();
+   if(!last){summary.textContent="No AI change is available to undo.";return;}
+   state.files[last.file]=last.before;
+   state.currentFile=last.file;
+   localStorage.setItem("cmbai_ai_undo",JSON.stringify(history));
+   saveState?.();renderFiles?.();renderEditor?.();document.dispatchEvent(new Event("cmb:editor-refresh"));document.dispatchEvent(new Event("cmb:workspace-sync"));
+   panel.classList.add("hidden");summary.textContent="✓ Last AI change was undone.";
  });
 })();
 
