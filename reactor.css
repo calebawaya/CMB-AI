@@ -12,3 +12,15 @@ html,body{width:100%;min-height:100%;margin:0;padding:0;overflow-x:hidden;backgr
 @keyframes cmbGlowPulse{0%,100%{opacity:.65;transform:translate(-50%,-50%) scale(.94)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
 @keyframes cmbRingSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @media(max-width:700px){#cmbReactor .reactor-core,#cmbReactor .reactor-triangle{width:min(86vw,520px);height:min(86vw,520px)}#cmbReactor::after{width:92vw;height:92vw}}
+
+/* AI activity states */
+#cmbReactor.reactor-thinking .reactor-core{animation-duration:1s;filter:drop-shadow(0 0 30px rgba(0,235,255,1)) drop-shadow(0 0 90px rgba(0,170,255,1)) drop-shadow(0 0 160px rgba(0,120,255,.8))}
+#cmbReactor.reactor-thinking .reactor-triangle{animation-duration:.8s;opacity:.9}
+#cmbReactor.reactor-thinking::before{animation-duration:1s;opacity:1}
+#cmbReactor.reactor-responding .reactor-core{animation-duration:.65s;filter:drop-shadow(0 0 35px rgba(80,245,255,1)) drop-shadow(0 0 100px rgba(0,190,255,1)) drop-shadow(0 0 180px rgba(0,120,255,.85))}
+#cmbReactor.reactor-responding .reactor-triangle{animation-duration:.55s;opacity:1;transform:translate(-50%,-50%) scale(1.02)}
+#cmbReactor.reactor-responding::before{animation-duration:.7s;opacity:1}
+#cmbReactor.reactor-error .reactor-core{animation-duration:.45s;filter:drop-shadow(0 0 20px rgba(255,90,90,.95)) drop-shadow(0 0 65px rgba(255,40,40,.65))}
+#cmbReactor.reactor-error .reactor-triangle{opacity:.8;filter:drop-shadow(0 0 15px rgba(255,100,100,1))}
+#cmbReactor.reactor-error::before{background:radial-gradient(circle,rgba(255,80,80,.22),rgba(255,30,30,.08) 45%,transparent 72%)}
+@media(prefers-reduced-motion:reduce){#cmbReactor .reactor-core,#cmbReactor .reactor-triangle,#cmbReactor::before,#cmbReactor::after{animation:none}}
