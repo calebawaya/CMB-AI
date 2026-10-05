@@ -269,3 +269,10 @@ body::after{
 .preview-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(5,18,38,.96);border-bottom:1px solid rgba(80,190,255,.16)}
 .preview-shell iframe{flex:1;width:100%;border:0;background:white}
 .preview-modal.hidden{display:none!important}
+
+
+/* DEVELOPMENT TERMINAL */
+.terminal-panel{grid-column:1/-1;background:linear-gradient(145deg,rgba(2,10,24,.92),rgba(5,8,20,.88))!important}
+.terminal-output{min-height:150px;max-height:230px;overflow:auto;padding:14px;border:1px solid rgba(70,180,255,.13);border-radius:10px;background:#02060e;color:#a9f4ff;font:12px/1.7 "Cascadia Code",Consolas,monospace}
+.terminal-output .terminal-prompt{color:#46dcff}.terminal-output .terminal-error{color:#ff8f9a}.terminal-output .terminal-ok{color:#74f7ad}
+#terminalForm{display:flex;gap:8px;margin-top:9px}#terminalForm input{flex:1;min-width:0;font-family:monospace}
