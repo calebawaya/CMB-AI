@@ -1,4 +1,4 @@
-/* CMB-AI reactor — centered, full-screen, continuous rotation */
+/* CMB-AI reactor — perfectly centered, edge-to-edge, ultra-fast continuous rotation */
 html,
 body{
   width:100%;
@@ -7,7 +7,7 @@ body{
   min-height:100%;
   margin:0;
   padding:0;
-  overflow-x:hidden;
+  overflow:hidden;
   background:#020617;
 }
 
@@ -22,7 +22,6 @@ body{
   background:#020617;
 }
 
-/* Remove the old reactor layers. */
 #cmbReactor::before,
 #cmbReactor::after,
 #cmbReactor .reactor-ring,
@@ -32,26 +31,27 @@ body{
   content:none;
 }
 
-/* Exact uploaded image: centered and oversized so rotation never exposes the page behind it. */
+/* The exact uploaded artwork is centered on the viewport, not anchored to a corner. */
 #cmbReactor .reactor-core{
   display:block;
   position:absolute;
   left:50%;
   top:50%;
-  width:150vmax;
-  height:150vmax;
-  transform-origin:center center;
-  transform:translate(-50%,-50%) rotate(0deg) scale(1.02);
+  width:200vmax;
+  height:200vmax;
+  margin:0;
+  transform-origin:50% 50%;
+  transform:translate(-50%,-50%) rotate(0deg);
   clip-path:none;
   background-image:url("Neon%20Blue%20Arc%20Reactor%20Core.png");
-  background-position:center center;
+  background-position:50% 50%;
   background-repeat:no-repeat;
   background-size:cover;
   background-color:#020617;
   filter:none;
   opacity:1;
   will-change:transform;
-  animation:cmbContinuousReactorSpin 3s linear infinite;
+  animation:cmbUltraFastContinuousSpin 1.5s linear infinite;
 }
 
 .app{
@@ -59,19 +59,19 @@ body{
   z-index:1;
 }
 
-/* One uninterrupted rotation: no pause, no fade, no reset delay. */
-@keyframes cmbContinuousReactorSpin{
+/* No fade, no pause, no hold — immediately loops into the next rotation. */
+@keyframes cmbUltraFastContinuousSpin{
   from{
-    transform:translate(-50%,-50%) rotate(0deg) scale(1.02);
+    transform:translate(-50%,-50%) rotate(0deg);
   }
   to{
-    transform:translate(-50%,-50%) rotate(360deg) scale(1.02);
+    transform:translate(-50%,-50%) rotate(360deg);
   }
 }
 
 @media(prefers-reduced-motion:reduce){
   #cmbReactor .reactor-core{
     animation:none;
-    transform:translate(-50%,-50%) scale(1.02);
+    transform:translate(-50%,-50%);
   }
 }
