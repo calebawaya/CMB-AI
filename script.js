@@ -159,15 +159,63 @@ function buildPreview(){
   const withJs=withCss.replace("</body>","<script>"+script.replace(/<\/script/gi,"<\\/script")+"</script></body>");
   $("#previewFrame").srcdoc=withJs;$("#previewModal").classList.remove("hidden");
 }
+function builderBlock(kind){
+ const defaults={
+  hero:["Hero","Build your next idea","Turn your idea into a real project."],
+  heading:["Heading","Your main heading","A clear title for your page."],
+  text:["Text","Your content","Write useful information for your visitors."],
+  button:["Button","Get started","Take action with this button."],
+  card:["Card","Feature card","A focused piece of content."],
+  services:["Services","Our services","What we can help you with.","Service 1,Service 2,Service 3"],
+  contact:["Contact","Contact us","We would love to hear from you."],
+  footer:["Footer","CMB AI","Built with CMB AI."],
+  image:["Image","Image","Add a project image."],
+  navbar:["Navbar","CMB AI","Home, About, Services, Contact"],
+  columns:["Columns","Why choose us","Fast, Secure, Affordable"],
+  pricing:["Pricing","Simple pricing","Choose the plan that fits your project."],
+  testimonials:["Testimonials","What customers say","Real feedback from your customers."],
+  faq:["FAQ","Frequently asked questions","Answers to common questions."],
+  features:["Features","Powerful features","Highlight the most useful parts of your project."],
+  about:["About","About us","Tell visitors who you are and what you do."]
+ };
+ const d=defaults[kind]||[kind.toUpperCase(),"New section","Add content here."];
+ return {id:Date.now()+Math.random(),kind,title:d[1],text:d[2],items:d[3]?d[3].split(","):[],size:"medium",align:"center",color:"#172033",bg:"#ffffff",padding:"medium",font:"system",src:"",alt:"Project image",fit:"cover",columns:3,responsive:"stack",columnText:d[2],logo:"CMB AI",links:"Home, About, Services, Contact",button:"Get started"};
+}
+function renderBuilder(){
+ const canvas=$("#builderCanvas");if(!canvas)return;
+ canvas.innerHTML="";
+ if(!builder.blocks.length){canvas.innerHTML="<div class='builder-empty'>Choose a component to start designing.</div>";return}
+ builder.blocks.forEach(b=>{
+  const el=document.createElement("article");el.className="builder-block "+(b.id===builder.selected?"selected":"");el.dataset.blockId=b.id;
+  el.style.textAlign=b.align||"center";el.style.color=b.color||"#172033";el.style.background=b.bg||"#fff";
+  el.style.padding=b.padding==="large"?"40px":b.padding==="small"?"12px":"24px";
+  const title=document.createElement("h3");title.textContent=b.title||b.kind.toUpperCase();
+  const text=document.createElement("p");text.textContent=b.text||"";
+  const tag=document.createElement("small");tag.textContent=b.kind.toUpperCase();
+  el.append(tag,title,text);el.onclick=()=>selectBlock(b.id);canvas.appendChild(el);
+ });
+}
+function selectBlock(id){
+ const b=builder.blocks.find(x=>x.id===id);if(!b)return;
+ builder.selected=id;renderBuilder();
+ $("#inspectorEmpty")?.classList.add("hidden");$("#inspector")?.classList.remove("hidden");
+ const set=(id,value)=>{const el=$("#"+id);if(el)el.value=value??""};
+ set("propText",b.title);set("propSize",b.size||"medium");set("propAlign",b.align||"center");set("propColor",b.color||"#172033");set("propBg",b.bg||"#ffffff");set("propPadding",b.padding||"medium");set("propFont",b.font||"system");
+ const section=["pricing","testimonials","faq","features","about"].includes(b.kind);
+ $("#sectionProps")?.classList.toggle("hidden",!section);
+ if(section){set("propSectionHeading",b.title);set("propSectionText",b.text);set("propSectionItems",(b.items||[]).join("\n"))}
+ $("#columnsProps")?.classList.toggle("hidden",b.kind!=="columns");
+ if(b.kind==="columns"){set("propColumns",b.columns||3);set("propColumnText",b.columnText||"");set("propResponsive",b.responsive||"stack")}
+ $("#navbarProps")?.classList.toggle("hidden",b.kind!=="navbar");
+ if(b.kind==="navbar"){set("propLogo",b.logo||"CMB AI");set("propLinks",b.links||"Home, About, Services, Contact");set("propNavButton",b.button||"Get started")}
+ $("#imageProps")?.classList.toggle("hidden",b.kind!=="image");
+ if(b.kind==="image"){set("propImageUrl",b.src&&b.src.startsWith("data:")?"":(b.src||""));set("propAlt",b.alt||"");set("propFit",b.fit||"cover")}
+}
 qsa(".nav").forEach(x=>x.onclick=()=>view(x.dataset.view));
 qsa("[data-open]").forEach(x=>x.onclick=()=>view(x.dataset.open));
 $("#newProject").onclick=newProject;$("#newProject2").onclick=newProject;$("#start").onclick=newProject;$("#plan").onclick=makePlan;
 $("#addFile").onclick=addFile;$("#addFolder").onclick=addFolder;$("#saveCode").onclick=saveCurrent;
 $("#chatForm").onsubmit=async e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";reactorThinking();showTyping();try{const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q,project:{name:state.active?.name||"CMB-AI project",files:state.files}})});const data=await r.json();hideTyping();if(data.ok){addChat("CMB AI",data.answer);reactorResponding();}else{answer(q);reactorError();}}catch(err){hideTyping();answer(q);reactorError();}finally{setTimeout(()=>setReactorState("ready"),900)}};
- if(b.kind==="columns"){$("#propColumns").value=b.columns||3;$("#propColumnText").value=b.columnText||"";$("#propResponsive").value=b.responsive||"stack"}
- if(b.kind==="image"){$("#propImageUrl").value=b.src&&b.src.startsWith("data:")?"":(b.src||"");$("#propAlt").value=b.alt||"";$("#propFit").value=b.fit||"cover"}
- if(b.kind==="navbar"){$("#propLogo").value=b.logo||"";$("#propLinks").value=b.links||"";$("#propNavButton").value=b.button||""}
-}
 function updateSelected(){
  const b=builder.blocks.find(x=>x.id===builder.selected);if(!b)return;
  b.title=$("#propText").value;b.size=$("#propSize").value;b.align=$("#propAlign").value;b.color=$("#propColor").value;b.bg=$("#propBg").value;b.padding=$("#propPadding").value;b.font=$("#propFont").value;
