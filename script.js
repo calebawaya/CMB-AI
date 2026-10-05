@@ -1743,3 +1743,18 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.addEventListener("cmb:workspace-sync",check);
  check();
 })();
+
+/* Live health monitor */
+(()=>{
+ const btn=document.getElementById("runHealthCheck"),wrap=document.getElementById("healthChecks");
+ if(!btn||!wrap)return;
+ const card=(name,ok,detail)=>'<div class="lh-card '+(ok?"ok":"bad")+'"><i>'+(ok?"✓":"!")+'</i><b>'+name+'</b><span>'+detail+'</span></div>';
+ async function check(){
+  btn.disabled=true;btn.textContent="Checking…";
+  const backend=await fetch("http://127.0.0.1:5000/api/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
+  const workspace=!!window.localStorage&&!!document.querySelector("#code");
+  wrap.innerHTML=card("Frontend",true,"Interface loaded")+card("Backend",backend,backend?"API online":"API offline")+card("Workspace",workspace,"Editor and local storage ready");
+  btn.disabled=false;btn.textContent="Check again";
+ }
+ btn.addEventListener("click",check);
+})();
