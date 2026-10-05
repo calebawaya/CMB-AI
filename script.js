@@ -149,16 +149,6 @@ function renderProjects(){
     d.querySelector("button").onclick=()=>{openProject(p);view("workspace")};b.appendChild(d);
   });
 }
-function buildPreview(){
-  state.files[state.currentFile]=$("#code").value;
-  const html=state.files["index.html"]||"";
-  const css=state.files["style.css"]||"";
-  const script=state.files["script.js"]||"";
-  const doc=html.includes("<html")?html:"<!doctype html><html><head></head><body>"+html+"</body></html>";
-  const withCss=doc.replace("</head>","<style>"+css+"</style></head>");
-  const withJs=withCss.replace("</body>","<script>"+script.replace(/<\/script/gi,"<\\/script")+"</script></body>");
-  $("#previewFrame").srcdoc=withJs;$("#previewModal").classList.remove("hidden");
-}
 function builderBlock(kind){
  const defaults={
   hero:["Hero","Build your next idea","Turn your idea into a real project."],
