@@ -299,3 +299,16 @@ body.light-theme .input,body.light-theme textarea,body.light-theme input,body.li
 body.light-theme .github-file-row{background:rgba(242,247,255,.92);border-color:rgba(30,100,180,.16)}
 body.light-theme .nav:hover,body.light-theme .nav.active{background:rgba(0,130,220,.10)}
 body.light-theme .terminal-output{background:#101a2a;color:#dbeafe}
+
+
+/* CMB AI — responsive live preview controls */
+.preview-device-tools{display:flex;gap:6px;align-items:center}
+.preview-device{opacity:.72}
+.preview-device.active{opacity:1;border-color:rgba(70,220,255,.55);box-shadow:0 0 14px rgba(0,190,255,.12)}
+.preview-shell.preview-tablet{left:50%;right:auto;top:3vh;bottom:3vh;width:min(820px,88vw);transform:translateX(-50%)}
+.preview-shell.preview-mobile{left:50%;right:auto;top:2vh;bottom:2vh;width:min(430px,92vw);transform:translateX(-50%);border-radius:22px}
+.preview-shell.preview-mobile iframe{background:#fff}
+@media(max-width:700px){
+  .preview-device-tools{display:none}
+  .preview-shell,.preview-shell.preview-tablet,.preview-shell.preview-mobile{left:3vw;right:3vw;width:auto;transform:none}
+}
