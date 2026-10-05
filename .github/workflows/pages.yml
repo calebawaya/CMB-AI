@@ -32,10 +32,70 @@ jobs:
           test -f index.html
           test -f style.css
           test -f script.js
+          test -f reactor.css
           echo "Required site files are present."
 
-      - name: Validate JavaScript syntax
-        run: node --check script.js
+      - name: Validate all frontend JavaScript
+        shell: bash
+        run: |
+          set -e
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find . -type f -name '*.js' \
+            -not -path './.git/*' \
+            -not -path './backend/*' -print0)
+
+      - name: Validate HTML structure
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import sys
+
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True)
+                  self.errors = []
+                  self.stack = []
+                  self.void = {
+                      'area','base','br','col','embed','hr','img','input',
+                      'link','meta','param','source','track','wbr'
+                  }
+              def handle_starttag(self, tag, attrs):
+                  tag = tag.lower()
+                  if tag not in self.void:
+                      self.stack.append(tag)
+              def handle_startendtag(self, tag, attrs):
+                  pass
+              def handle_endtag(self, tag):
+                  tag = tag.lower()
+                  if tag in self.void:
+                      self.errors.append(f'Unexpected closing tag: </{tag}>')
+                      return
+                  if not self.stack:
+                      self.errors.append(f'Unexpected closing tag: </{tag}>')
+                      return
+                  if self.stack[-1] != tag:
+                      self.errors.append(
+                          f'Mismatched closing tag: expected </{self.stack[-1]}> but found </{tag}>'
+                      )
+                      return
+                  self.stack.pop()
+
+          path = Path('index.html')
+          parser = Parser()
+          parser.feed(path.read_text(encoding='utf-8', errors='strict'))
+          parser.close()
+          if parser.stack:
+              parser.errors.append('Unclosed tags: ' + ', '.join(parser.stack[-10:]))
+          if parser.errors:
+              print('HTML validation errors:')
+              for error in parser.errors:
+                  print(' -', error)
+              sys.exit(1)
+          print('HTML structure is valid.')
+          PY
 
       - name: Validate local asset references
         run: |
@@ -45,18 +105,18 @@ jobs:
           import re
           import sys
 
-          root = Path(".")
-          files_to_scan = ["index.html", "style.css", "reactor.css"]
+          root = Path('.')
+          files_to_scan = ['index.html', 'style.css', 'reactor.css']
           missing = []
 
           def check_ref(ref, source):
               ref = unquote(ref.strip())
-              if not ref or ref.startswith(("#", "http://", "https://", "//", "data:", "mailto:", "javascript:")):
+              if not ref or ref.startswith(('#', 'http://', 'https://', '//', 'data:', 'mailto:', 'javascript:')):
                   return
-              ref = ref.split("?", 1)[0].split("#", 1)[0]
+              ref = ref.split('?', 1)[0].split('#', 1)[0]
               if not ref:
                   return
-              path = root / ref.lstrip("/")
+              path = root / ref.lstrip('/')
               if not path.is_file():
                   missing.append((source, ref))
 
@@ -64,19 +124,20 @@ jobs:
               path = root / filename
               if not path.is_file():
                   continue
-              text = path.read_text(encoding="utf-8", errors="ignore")
+              text = path.read_text(encoding='utf-8', errors='strict')
               for match in re.findall(r'(?:src|href)=["\']([^"\']+)["\']', text, re.I):
                   check_ref(match, filename)
               for match in re.findall(r'url\(\s*["\']?([^)"\']+)["\']?\s*\)', text, re.I):
                   check_ref(match, filename)
 
           if missing:
-              print("Missing local assets:")
+              print('Missing local assets:')
               for source, ref in sorted(set(missing)):
-                  print(f" - {source}: {ref}")
+                  print(f' - {source}: {ref}')
               sys.exit(1)
 
-          print("Local asset references are valid.")
+          print('Local asset references are valid.')
+          PY
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
