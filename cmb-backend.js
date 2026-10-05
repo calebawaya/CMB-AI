@@ -201,6 +201,24 @@
     try{await client.event(projectId,type,message);}catch(error){console.warn("CMB AI event persistence failed:",error);}
   }
   window.CMBAIChat={save:saveChatMessage,load:loadChatHistory,logEvent:logAIEvent};
+  async function createTask(projectId,title){
+    if(!projectId||!title)return null;
+    try{return await client.createTask(projectId,title);}catch(error){console.warn("CMB AI task creation failed:",error);return null;}
+  }
+  async function updateTask(projectId,taskId,data){
+    if(!projectId||!taskId)return null;
+    try{return await client.updateTask(projectId,taskId,data);}catch(error){console.warn("CMB AI task update failed:",error);return null;}
+  }
+  window.CMBAITasks={create:createTask,update:updateTask};
+  document.addEventListener("cmb:ai-task-created",event=>{
+    const d=event.detail||{}, id=d.projectId||window.state?.active?.backendId;
+    if(id&&d.title)createTask(id,d.title);
+  });
+  document.addEventListener("cmb:ai-task-updated",event=>{
+    const d=event.detail||{}, id=d.projectId||window.state?.active?.backendId;
+    if(id&&d.taskId)updateTask(id,d.taskId,{completed:!!d.completed});
+  });
+
   document.addEventListener("cmb:ai-chat-message",event=>{
     const detail=event.detail||{};
     const projectId=detail.projectId||window.state?.active?.backendId;
