@@ -152,10 +152,16 @@
 })();
 </script>
 <script>
+(()=>{const list=document.getElementById("buildHistoryList"),clear=document.getElementById("clearBuildHistory");if(!list)return;
+const key="cmbBuildHistory";let history=[];try{history=JSON.parse(localStorage.getItem(key)||"[]")}catch{}
+const render=()=>{list.innerHTML=history.length?history.map(x=>'<div class="bh-item"><i class="'+(x.ok?"ok":"bad")+'">'+(x.ok?"✓":"!")+'</i><div><b>'+x.status+'</b><span>'+x.detail+'</span></div><time>'+x.time+'</time></div>').join(""):'<div class="bh-empty">No build checks recorded yet.</div>'};
+window.cmbRecordBuild=(ok,count)=>{history.unshift({ok,status:ok?"BUILD READY":"ISSUES FOUND",detail:ok?"All required files passed the build check.":count+" required file(s) need attention.",time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})});history=history.slice(0,8);localStorage.setItem(key,JSON.stringify(history));render()};clear?.addEventListener("click",()=>{history=[];localStorage.removeItem(key);render()});render();})();
+</script>
+<script>
 (()=>{const b=document.getElementById("runBuildCheck"),l=document.getElementById("buildLog"),s=document.getElementById("buildState"),c=document.getElementById("clearBuildLog");if(!b||!l)return;
 const files=["index.html","style.css","script.js","reactor.css","cmb-ai-controls.js","cmb-ai-diff.js"];
 const add=(t,ok=true)=>l.insertAdjacentHTML("beforeend",'<div class="'+(ok?"ok":"bad")+'">'+t+"</div>");
-b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";window.cmbEvent?.("Build check started","CMB AI is validating required frontend files.","⚡");for(const f of files){try{const r=await fetch(f,{cache:"no-store"});add((r.ok?"✓ ":"✕ ")+f+" — "+(r.ok?"available":"HTTP "+r.status),r.ok)}catch(e){add("✕ "+f+" — unreachable",false)}}const bad=[...l.querySelectorAll(".bad")].length;s.textContent=bad?"ISSUES FOUND":"BUILD READY";window.cmbEvent?.("Build check completed",bad?bad+" required file(s) need attention.":"All required frontend files are reachable.","✓");b.disabled=false;b.textContent=bad?"Run Again":"Run Build Check"};c.onclick=()=>{l.innerHTML="<div>Build log cleared.</div>";s.textContent="READY";};})();
+b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";window.cmbEvent?.("Build check started","CMB AI is validating required frontend files.","⚡");for(const f of files){try{const r=await fetch(f,{cache:"no-store"});add((r.ok?"✓ ":"✕ ")+f+" — "+(r.ok?"available":"HTTP "+r.status),r.ok)}catch(e){add("✕ "+f+" — unreachable",false)}}const bad=[...l.querySelectorAll(".bad")].length;s.textContent=bad?"ISSUES FOUND":"BUILD READY";window.cmbEvent?.("Build check completed",bad?bad+" required file(s) need attention.":"All required frontend files are reachable.","✓");window.cmbRecordBuild?.(!bad,bad);b.disabled=false;b.textContent=bad?"Run Again":"Run Build Check"};c.onclick=()=>{l.innerHTML="<div>Build log cleared.</div>";s.textContent="READY";};})();
 </script>
 <div id="deploymentGuard" class="deployment-guard" role="status"><span>●</span><strong>Deployment Guard</strong><small>Checking required files…</small></div>
 </body>
