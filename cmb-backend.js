@@ -44,22 +44,39 @@
     }
   }
 
+  async function ensureBackendProject(project){
+    if(!project || !window.CMBAIBackendConnected) return null;
+    if(project.backendId){
+      try { return (await client.project(project.backendId)).project; } catch(_) {}
+    }
+    const result = await client.createProject({
+      name: project.name || "Untitled Project",
+      description: project.idea || project.description || "",
+      progress: Number(project.progress || 0),
+      files: project.files || {},
+      tasks: []
+    });
+    project.backendId = result.project.id;
+    return result.project;
+  }
+
   async function syncActiveProject(){
     const state = window.state;
     if(!state?.active?.id || !window.CMBAIBackendConnected) return;
     const project = state.active;
     try{
-      const result = await client.updateProject(project.backendId || project.id, {
+      const backendProject = await ensureBackendProject(project);
+      if(!backendProject) return;
+      const result = await client.updateProject(project.backendId, {
         name: project.name || "Untitled Project",
         description: project.idea || project.description || "",
         progress: Number(project.progress || 0)
       });
-      if(result.project) project.backendId = result.project.id;
       for(const [path,content] of Object.entries(state.files||{})){
-        await client.saveFile(project.backendId || result.project.id, path, String(content));
+        await client.saveFile(project.backendId, path, String(content));
       }
-      await client.event(project.backendId || result.project.id, "workspace.sync", "Frontend workspace synchronized with SQLite backend");
-      document.dispatchEvent(new CustomEvent("cmb:backend-sync", {detail:{ok:true,projectId:project.backendId||result.project.id}}));
+      await client.event(project.backendId, "workspace.sync", "Frontend workspace synchronized with SQLite backend");
+      document.dispatchEvent(new CustomEvent("cmb:backend-sync", {detail:{ok:true,projectId:result.project.id}}));
     }catch(error){
       document.dispatchEvent(new CustomEvent("cmb:backend-sync", {detail:{ok:false,error:String(error.message||error)}}));
     }
@@ -67,23 +84,11 @@
 
   async function createBackendProjectFromState(project){
     if(!project || !window.CMBAIBackendConnected) return null;
-    try{
-      const result = await client.createProject({
-        name: project.name || "Untitled Project",
-        description: project.idea || project.description || "",
-        progress: Number(project.progress || 0),
-        files: project.files || {},
-        tasks: []
-      });
-      project.backendId = result.project.id;
-      return result.project;
-    }catch(error){
-      console.warn("CMB AI backend project creation failed:", error);
-      return null;
-    }
+    try { return await ensureBackendProject(project); }
+    catch(error){ console.warn("CMB AI backend project creation failed:", error); return null; }
   }
 
-  window.CMBAISync = {checkBackend, syncActiveProject, createBackendProjectFromState};
+  window.CMBAISync = {checkBackend, syncActiveProject, createBackendProjectFromState, ensureBackendProject};
   document.addEventListener("DOMContentLoaded", ()=>{
     checkBackend();
     setTimeout(syncActiveProject, 1200);
