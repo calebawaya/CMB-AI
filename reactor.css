@@ -1,4 +1,4 @@
-/* CMB-AI reactor — visible, centered, fast circular motion with a locked triangle */
+/* CMB-AI reactor — centered, fully visible background with continuous circular motion */
 html,
 body{
   width:100%;
@@ -22,14 +22,15 @@ body{
   background:#020617;
 }
 
-/* Both layers use the real uploaded PNG, so the artwork cannot disappear because of a CSS background-image URL. */
+/* The real uploaded PNG stays centered and fully visible instead of being cropped into giant strips. */
 #cmbReactor .reactor-core,
 #cmbReactor .reactor-triangle{
   position:absolute;
   left:50%;
   top:50%;
-  width:min(92vw,119vh);
-  height:min(92vw,119vh);
+  width:min(82vw,1100px);
+  height:auto;
+  max-height:88vh;
   margin:0;
   object-fit:contain;
   object-position:center center;
@@ -41,18 +42,19 @@ body{
   will-change:transform;
 }
 
-/* The full artwork rotates continuously. */
+/* The full reactor artwork rotates continuously around the exact center. */
 #cmbReactor .reactor-core{
   z-index:1;
   transform:translate(-50%,-50%) rotate(0deg);
   animation:cmbCircleSpin .65s linear infinite;
 }
 
-/* The same artwork is clipped to the triangle and placed above the rotating layer. */
+/* The triangle is a separate locked layer, so it does not rotate with the circular field. */
 #cmbReactor .reactor-triangle{
   z-index:2;
   transform:translate(-50%,-50%);
   clip-path:polygon(50% 20%,84% 93%,16% 93%);
+  animation:none;
 }
 
 #cmbReactor .reactor-ring{
