@@ -109,3 +109,49 @@ html,body{width:100%!important;min-width:100%!important;margin:0!important}
 }
 #cmbReactor .reactor-triangle{transform:translate(-50%,-50%) scale(.92)!important}
 .app{position:relative!important;z-index:2!important}
+
+
+/* FULL-SCREEN CMB AI VISUAL */
+html,body,#cmbVisibleBackground,#cmbReactor{
+  width:100%!important;
+  height:100%!important;
+  min-width:100%!important;
+  min-height:100%!important;
+}
+html,body{
+  margin:0!important;
+  padding:0!important;
+  overflow-x:hidden!important;
+}
+#cmbVisibleBackground{
+  position:fixed!important;
+  inset:0!important;
+  background-size:cover!important;
+}
+#cmbReactor{
+  position:fixed!important;
+  inset:0!important;
+  display:grid!important;
+  place-items:center!important;
+}
+#cmbReactor .reactor-core,
+#cmbReactor .reactor-triangle{
+  position:absolute!important;
+  top:50%!important;
+  left:50%!important;
+  width:min(78vw,900px)!important;
+  height:min(78vw,900px)!important;
+  max-width:900px!important;
+  max-height:900px!important;
+  transform:translate(-50%,-50%)!important;
+}
+#cmbReactor .reactor-triangle{
+  transform:translate(-50%,-50%) scale(.92)!important;
+}
+@media(max-width:700px){
+  #cmbReactor .reactor-core,
+  #cmbReactor .reactor-triangle{
+    width:88vw!important;
+    height:88vw!important;
+  }
+}
