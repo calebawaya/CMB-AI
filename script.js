@@ -20,7 +20,13 @@ const state={assets:[],
   currentFile:"index.html"
 };
 
-function save(){localStorage.setItem("cmbai_projects",JSON.stringify(state.projects))}
+function save(){
+  if(state.active){
+    state.active.files=state.files;
+    state.active.updatedAt=Date.now();
+  }
+  localStorage.setItem("cmbai_projects",JSON.stringify(state.projects));
+}
 function toast(x){const t=$("#toast");t.textContent=x;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
 function view(n){
   $$(".view").forEach(x=>x.classList.add("hidden"));
@@ -35,9 +41,16 @@ function newProject(){
   state.projects.unshift(p);state.active=p;state.files=p.files;state.currentFile="index.html";
   save();openProject(p);renderFiles();view("workspace");toast("New project created");
 }
-function openProject(p){
-  state.active=p;state.files=p.files||state.files;state.currentFile=Object.keys(state.files)[0]||"index.html";
-  $("#projectName").textContent=p.name;$("#idea").value=p.idea||"";setProgress(p.progress||0);renderFiles();
+function openProject(project){
+  const p=typeof project==="object" ? project : state.projects.find(x=>String(x.id)===String(project) || String(x.backendId)===String(project));
+  if(!p){toast("Project not found");return}
+  state.active=p;
+  state.files=p.files||state.files;
+  state.currentFile=Object.keys(state.files)[0]||"index.html";
+  $("#projectName").textContent=p.name||"Untitled Project";
+  $("#idea").value=p.idea||p.description||"";
+  setProgress(p.progress||0);
+  renderFiles();
 }
 function setProgress(v){
   if(state.active){state.active.progress=v;state.active.files=state.files;save()}
