@@ -81,6 +81,11 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="fileCommand" class="file-command panel">
+  <div class="fc-head"><div><small>FILE COMMAND</small><strong>Quick File Command</strong><span>Run a simple command against the selected project file.</span></div><span id="fileCommandState">READY</span></div>
+  <form id="fileCommandForm" class="fc-form"><input id="fileCommandInput" class="input" placeholder="e.g. explain this file, find errors, improve readability"><button class="small primary" type="submit">Run</button></form>
+  <div id="fileCommandResult" class="fc-result">Select a file and enter a command.</div>
+</section>
 <section id="fileActions" class="file-actions panel">
   <div class="fa-head"><div><small>FILE ACTIONS</small><strong>Selected File Tools</strong><span>Quick actions for the file selected in the inspector.</span></div><span id="fileActionState">READY</span></div>
   <div class="fa-buttons">
@@ -192,6 +197,9 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 </script>
 <script>
 (()=>{const state=document.getElementById("fileActionState"),buttons=document.querySelectorAll("[data-file-action]");if(!state||!buttons.length)return;let selected="";document.addEventListener("cmb:open-file",e=>{selected=e.detail?.file||"";state.textContent=selected?"SELECTED":"READY";});buttons.forEach(b=>b.addEventListener("click",()=>{if(!selected){state.textContent="SELECT A FILE";return}const a=b.dataset.fileAction;const labels={refresh:"File refresh requested",edit:"Editor open requested",preview:"Preview requested",history:"File history requested"};state.textContent=a.toUpperCase();window.cmbEvent?.(labels[a]||"File action",selected+" — "+a+" action triggered.","◆");if(a==="edit")document.dispatchEvent(new CustomEvent("cmb:workspace-open-file",{detail:{file:selected}}));}));})();
+</script>
+<script>
+(()=>{const form=document.getElementById("fileCommandForm"),input=document.getElementById("fileCommandInput"),out=document.getElementById("fileCommandResult"),state=document.getElementById("fileCommandState");if(!form)return;let selected="";document.addEventListener("cmb:open-file",e=>{selected=e.detail?.file||"";state.textContent=selected?"SELECTED":"READY";});form.addEventListener("submit",async e=>{e.preventDefault();const q=input.value.trim();if(!selected||!q){out.textContent="Select a file and enter a command.";return}state.textContent="WORKING";out.textContent="CMB AI is processing "+selected+"…";try{const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:q+"\n\nSelected project file: "+selected})});if(!r.ok)throw new Error();const d=await r.json();out.textContent=d.response||d.message||d.answer||"AI returned no response.";state.textContent="READY";window.cmbEvent?.("File command completed",selected+" — AI command completed.","✦")}catch(err){out.textContent="AI backend is offline. Start the CMB AI backend and try again.";state.textContent="OFFLINE";window.cmbEvent?.("File command failed",selected+" — AI backend unavailable.","!")}input.value=""});})();
 </script>
 </body>
 </html>
