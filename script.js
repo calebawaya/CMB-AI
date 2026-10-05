@@ -1252,3 +1252,21 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  scan();
  window.addEventListener("cmb:ai-accepted",scan);
 })();
+
+/* CMB AI — deployment readiness */
+(()=>{
+ const el=document.getElementById("deployStatus"); if(!el)return;
+ function update(){
+  const f=state.files||{}, names=Object.keys(f), html=f["index.html"]||"";
+  const missing=[];
+  [...html.matchAll(/(?:href|src)=["']([^"']+)["']/gi)].forEach(m=>{
+   const p=m[1].split("#")[0].split("?")[0].replace(/^\.\//,"");
+   if(p&&!/^https?:|^data:|^mailto:|^tel:/i.test(p)&&!f[p])missing.push(p);
+  });
+  const ready=!!html&&/<html[\s>]/i.test(html)&&/<\/html>/i.test(html)&&!!names.find(n=>/\.css$/i.test(n))&&missing.length===0;
+  el.classList.toggle("ready",ready); el.classList.toggle("blocked",!ready);
+  el.querySelector("span").textContent=ready?"✓ Ready to Deploy":("⚠ "+(missing.length?"Fix missing files":"Finish project setup"));
+ }
+ window.cmbRefreshDeployStatus=update; update();
+ window.addEventListener("cmb:ai-accepted",update);
+})();
