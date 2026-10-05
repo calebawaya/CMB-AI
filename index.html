@@ -85,6 +85,14 @@
   <div class="rs-head"><div><small>RELEASE STATUS</small><strong>Deployment Decision</strong><span>Summarize the final release gate in one place.</span></div><strong id="releaseDecision">NOT CHECKED</strong></div>
   <div id="releaseSummaryText">Run the final release check to generate a deployment decision.</div>
 </section>
+<section id="deploymentControl" class="deployment-control panel">
+  <div class="dc-head"><div><small>DEPLOYMENT CONTROL</small><strong>GitHub Pages Release</strong><span>Deployment is locked until every release check passes.</span></div><strong id="deploymentControlState">LOCKED</strong></div>
+  <div class="dc-actions">
+    <button class="small primary" id="prepareDeployment" disabled>Prepare Deployment</button>
+    <a class="small" href="https://github.com/calebawaya/CMB-AI/actions" target="_blank" rel="noopener">Open GitHub Actions</a>
+  </div>
+  <div id="deploymentControlText">Run the Final Deployment Checklist first.</div>
+</section>
 <section id="releaseChecklist" class="release-checklist panel">
   <div class="rc-head"><div><small>RELEASE CHECK</small><strong>Final Deployment Checklist</strong><span>Confirm the critical release conditions before publishing.</span></div><button class="small primary" id="runReleaseCheck">Run Release Check</button></div>
   <div id="releaseCheckList" class="rc-list"><div class="rc-empty">Ready to run the final release check.</div></div>
@@ -262,5 +270,10 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 <script>
 (()=>{const b=document.getElementById("runReleaseCheck"),decision=document.getElementById("releaseDecision"),txt=document.getElementById("releaseSummaryText"),list=document.getElementById("releaseCheckList");if(!b)return;b.addEventListener("click",()=>{setTimeout(()=>{const bad=list?.querySelectorAll(".rc-item.bad").length||0;const good=!bad&&list?.children.length;decision.textContent=good?"RELEASE READY":"BLOCKED";decision.className=good?"ready":"blocked";txt.textContent=good?"All final release checks passed. The project is ready for the deployment workflow.":bad+" release check(s) need attention before deployment.";},0)});})();
 </script>
+<script>
+(()=>{const run=document.getElementById("runReleaseCheck"),btn=document.getElementById("prepareDeployment"),state=document.getElementById("deploymentControlState"),txt=document.getElementById("deploymentControlText"),list=document.getElementById("releaseCheckList");if(!btn||!run)return;
+const sync=()=>{const ready=document.getElementById("releaseDecision")?.textContent==="RELEASE READY";btn.disabled=!ready;state.textContent=ready?"READY":"LOCKED";state.className=ready?"ready":"locked";txt.textContent=ready?"Release gate passed. The GitHub Pages workflow can now be started from GitHub Actions.":"Run the Final Deployment Checklist first."};
+run.addEventListener("click",()=>setTimeout(sync,20));btn.addEventListener("click",()=>{if(btn.disabled)return;window.cmbEvent?.("Deployment prepared","Release gate passed. Open GitHub Actions to start the Pages workflow.","🚀");txt.textContent="Deployment prepared. Start the latest GitHub Pages workflow from GitHub Actions.";btn.textContent="Deployment Prepared";btn.disabled=true;});sync();
+})();</script>
 </body>
 </html>
