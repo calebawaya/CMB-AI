@@ -162,6 +162,28 @@ JavaScript:
     except Exception:
         return jsonify({"ok": False, "error": "Could not generate a safe code change"}), 502
 
+
+@app.get("/api/github/tree")
+def github_tree():
+    repo = str(request.args.get("repo", "")).strip()
+    branch = str(request.args.get("branch", "main")).strip() or "main"
+    if not repo or "/" not in repo:
+        return jsonify({"ok": False, "error": "Repository must look like owner/name"}), 400
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        return jsonify({"ok": False, "error": "GITHUB_TOKEN is not configured on the server"}), 503
+    import urllib.request
+    url = f"https://api.github.com/repos/{repo}/git/trees/{branch}?recursive=1"
+    try:
+        req = urllib.request.Request(url, headers={"Accept":"application/vnd.github+json","Authorization":f"Bearer {token}","User-Agent":"CMB-AI"})
+        with urllib.request.urlopen(req, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        files = [x.get("path") for x in payload.get("tree", []) if x.get("type") == "blob"]
+        return jsonify({"ok": True, "repo": repo, "branch": branch, "files": files})
+    except Exception as exc:
+        print(f"GitHub tree error: {exc}")
+        return jsonify({"ok": False, "error": "Could not read the GitHub repository"}), 502
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
 
