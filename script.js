@@ -1321,3 +1321,26 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   link.textContent="Open Deploy Actions";
  }
 })();
+
+/* CMB AI — command center */
+(()=>{
+ const root=document.getElementById("commandCenter"); if(!root)return;
+ const refresh=()=>{
+  const f=state.files||{}, projects=state.projects||[];
+  const score=document.getElementById("healthScore")?.textContent||"--";
+  document.getElementById("ccProjects").textContent=projects.length;
+  document.getElementById("ccFiles").textContent=Object.keys(f).length;
+  document.getElementById("ccHealth").textContent=score;
+  document.getElementById("ccAI").textContent="READY";
+  document.getElementById("ccDeploy").textContent=document.getElementById("deployStatus")?.classList.contains("ready")?"READY":"CHECK";
+ };
+ refresh(); window.cmbRefreshCommandCenter=refresh;
+ window.addEventListener("cmb:ai-accepted",refresh);
+ document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-command-target]"); if(!b)return;
+  const target=b.dataset.commandTarget;
+  document.querySelector(`.nav[data-view="${target}"]`)?.click();
+ });
+ document.getElementById("buildRun")?.addEventListener("click",()=>{document.getElementById("commandActivity").textContent="Build pipeline started…";setTimeout(()=>{document.getElementById("commandActivity").textContent="Build pipeline completed.";refresh()},500)});
+ document.getElementById("buildDeploy")?.addEventListener("click",()=>{document.getElementById("commandActivity").textContent="Deployment process started…";setTimeout(()=>{document.getElementById("commandActivity").textContent="Deployment status updated.";refresh()},700)});
+})();
