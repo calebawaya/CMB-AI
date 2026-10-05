@@ -276,3 +276,8 @@ body::after{
 .terminal-output{min-height:150px;max-height:230px;overflow:auto;padding:14px;border:1px solid rgba(70,180,255,.13);border-radius:10px;background:#02060e;color:#a9f4ff;font:12px/1.7 "Cascadia Code",Consolas,monospace}
 .terminal-output .terminal-prompt{color:#46dcff}.terminal-output .terminal-error{color:#ff8f9a}.terminal-output .terminal-ok{color:#74f7ad}
 #terminalForm{display:flex;gap:8px;margin-top:9px}#terminalForm input{flex:1;min-width:0;font-family:monospace}
+
+
+/* GITHUB WORKSPACE */
+.github-hero{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px}.github-hero h2{font-size:clamp(28px,4vw,46px);margin:8px 0}.github-hero p{color:rgba(220,235,255,.7);max-width:720px}.github-status{padding:9px 13px;border:1px solid rgba(100,160,255,.2);border-radius:999px;font-size:11px;letter-spacing:.08em;white-space:nowrap}.github-status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#8895a7;margin-right:7px}.github-status.connected i{background:#53f0a0;box-shadow:0 0 12px rgba(83,240,160,.8)}.github-grid{display:grid;grid-template-columns:minmax(280px,.8fr) minmax(320px,1.2fr);gap:16px}.github-grid .input{display:block;width:100%;box-sizing:border-box;margin-bottom:10px}.github-summary{margin-top:14px;padding:12px;border-radius:10px;border:1px solid rgba(80,190,255,.12);background:rgba(0,12,30,.45);color:rgba(220,235,255,.65)}.github-files{display:grid;gap:8px}.github-file-row{display:flex;justify-content:space-between;padding:11px;border:1px solid rgba(80,190,255,.12);border-radius:9px;background:rgba(0,12,30,.45)}
+@media(max-width:850px){.github-grid{grid-template-columns:1fr}.github-hero{flex-direction:column;align-items:flex-start}}
