@@ -701,7 +701,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    const html=state.files?.["index.html"]||"";
    const css=state.files?.["style.css"]||"";
    const js=state.files?.["script.js"]||"";
-   const doc=html.replace("</head>",'<style>'+css.replace(/<\\/style/gi,"")+'</style></head>').replace("</body>",'<script>'+js.replace(/<\\/script/gi,"")+'</script></body>');
+   const doc=html.replace("</head>",'<style>'+css.replace(/<\/style/gi,"")+'</style></head>').replace("</body>",'<script>'+js.replace(/<\/script/gi,"")+'</script></body>');
    if(frame)frame.srcdoc=doc;
    modal.classList.remove("hidden");
  });
