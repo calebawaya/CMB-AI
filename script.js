@@ -57,13 +57,13 @@ function newProject(){
   save();openProject(p);renderFiles();view("workspace");toast("New project created");
   return p;
 }
-function openProject(project){
+function openProject(project,options={} ){
   const p=typeof project==="object" ? project : state.projects.find(x=>String(x.id)===String(project) || String(x.backendId)===String(project));
   if(!p){toast("Project not found");return}
   state.active=p;
   state.files=p.files||state.files;
   state.currentFile=Object.keys(state.files)[0]||"index.html";
-  document.dispatchEvent(new CustomEvent("cmb:open-project",{detail:{projectId:p.backendId,backendId:p.backendId}}));
+  if(!options.skipBackend) document.dispatchEvent(new CustomEvent("cmb:open-project",{detail:{projectId:p.backendId,backendId:p.backendId}}));
   $("#projectName").textContent=p.name||"Untitled Project";
   $("#idea").value=p.idea||p.description||"";
   setProgress(p.progress||0);
