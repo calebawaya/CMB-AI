@@ -34,6 +34,22 @@
 <div class="panel editor"><div class="panel-head"><div><small>CODE EDITOR</small><h2 id="editorTitle">index.html</h2></div><div class="editor-actions"><button class="small" id="preview">▶ Preview</button><button class="small" id="saveCode">Save</button></div></div><textarea id="code" spellcheck="false"></textarea></div>
 </div></section>
 <section id="builder" class="view hidden">
+<div class="section builder-hero">
+  <div><label>✦ AI PROJECT BUILDER</label><h2>Describe it. <em>CMB AI builds the plan.</em></h2><p>Turn a simple idea into a project structure, development tasks, and starter files.</p></div>
+  <div class="builder-status"><i></i> BUILDER ONLINE</div>
+</div>
+<div class="builder-console">
+  <div class="panel builder-input-panel">
+    <div class="panel-head"><div><small>YOUR IDEA</small><h2>What do you want to build?</h2></div></div>
+    <textarea id="builderIdea" class="input builder-textarea" maxlength="1000" placeholder="Example: A modern website for a Ghanaian technology company..."></textarea>
+    <div class="builder-controls"><span id="builderChars">0 / 1000</span><button class="primary" id="generateBuild">✦ Generate project</button></div>
+  </div>
+  <div class="panel builder-result-panel">
+    <div class="panel-head"><div><small>BUILD PREVIEW</small><h2 id="builderResultTitle">Waiting for an idea</h2></div><span id="builderResultStatus" class="live">READY</span></div>
+    <div id="builderResult" class="builder-result"><div class="builder-empty">Your generated project structure will appear here.</div></div>
+  </div>
+</div>
+</section>
 <div class="builder-layout">
 <div class="panel palette"><div class="panel-head"><div><small>COMPONENTS</small><h2>Website Builder</h2></div><span class="live">● READY</span></div>
 <p>Add sections to your page, then customize the selected block.</p>
