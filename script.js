@@ -1225,3 +1225,30 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
 
 /* CMB AI — checker helper */
 (()=>{const b=document.getElementById('projectCheck'),s=document.getElementById('checkStatus');if(!b||!s)return;const x=document.createElement('button');x.className='small';x.textContent='Fix with AI';x.type='button';b.after(x);x.onclick=()=>{const i=document.getElementById('aiCommand'),p=document.getElementById('aiPreviewChanges');if(!i)return;i.value='Fix the issues found by Project Check while preserving my current design.';s.textContent='Fix request prepared. Preview it before accepting.';p?.click()}})();
+
+
+/* CMB AI — project health dashboard */
+(()=>{
+ const scoreEl=document.getElementById("healthScore");
+ if(!scoreEl)return;
+ function scan(){
+  const f=state.files||{}, names=Object.keys(f);
+  const html=names.filter(n=>/\.html?$/i.test(n)), css=names.filter(n=>/\.css$/i.test(n)), js=names.filter(n=>/\.js$/i.test(n));
+  let points=0,total=0;
+  function add(ok){total++;if(ok)points++}
+  add(!!f["index.html"]); add(html.length>0); add(css.length>0); add(js.length>0);
+  html.forEach(n=>{const x=f[n]||"";add(/<html[\s>]/i.test(x)&&/<\/html>/i.test(x));add(/<head[\s>]/i.test(x)&&/<body[\s>]/i.test(x));});
+  js.forEach(n=>{const x=f[n]||"";add(x.split("{").length===x.split("}").length)});
+  const refs=[];html.forEach(n=>{[...String(f[n]||"").matchAll(/(?:href|src)=["']([^"']+)["']/gi)].forEach(m=>{const p=m[1].split("#")[0].split("?")[0].replace(/^\.\//,"");if(p&&!/^https?:|^data:|^mailto:|^tel:/i.test(p)&&!f[p])refs.push(p)})});add(refs.length===0);
+  const score=Math.round((points/Math.max(total,1))*100);
+  scoreEl.textContent=score+"%";
+  document.getElementById("healthHtml").textContent="HTML "+(html.length?"✓":"!");
+  document.getElementById("healthCss").textContent="CSS "+(css.length?"✓":"!");
+  document.getElementById("healthJs").textContent="JS "+(js.length?"✓":"!");
+  document.getElementById("healthFiles").textContent="Files "+names.length;
+  scoreEl.parentElement?.classList.toggle("health-warning",score<80);
+ }
+ window.cmbRefreshHealth=scan;
+ scan();
+ window.addEventListener("cmb:ai-accepted",scan);
+})();
