@@ -81,6 +81,11 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="aiProgress" class="ai-progress panel">
+  <div class="ap-head"><div><small>AI PROGRESS</small><strong>Task Progress</strong><span>Track completed tasks from your AI action plan.</span></div><strong id="progressText">0%</strong></div>
+  <div class="ap-bar"><i id="progressFill"></i></div>
+  <div id="progressMeta">0 of 0 tasks completed</div>
+</section>
 <section id="aiActionPlan" class="ai-action-plan panel">
   <div class="aap-head"><div><small>AI ACTION PLAN</small><strong>Turn Suggestions Into Tasks</strong><span>Convert file analysis into a focused checklist.</span></div><button class="small" id="buildActionPlan">Build Plan</button></div>
   <div id="actionPlanList" class="aap-list"><div class="aap-empty">Analyze a file first, then build an action plan.</div></div>
@@ -214,6 +219,9 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 </script>
 <script>
 (()=>{const b=document.getElementById("buildActionPlan"),l=document.getElementById("actionPlanList"),suggest=document.getElementById("suggestionList");if(!b||!l)return;let selected="";document.addEventListener("cmb:open-file",e=>{selected=e.detail?.file||"";});b.onclick=()=>{if(!selected){l.innerHTML="<div class='aap-empty'>Select a file first.</div>";return}const items=[...(suggest?.querySelectorAll(".asug-item")||[])].map(x=>x.textContent.trim()).filter(Boolean);if(!items.length){l.innerHTML="<div class='aap-empty'>Analyze the selected file first.</div>";return}l.innerHTML=items.slice(0,4).map((x,i)=>"<label class='aap-item'><input type='checkbox'><span><b>Task "+(i+1)+"</b>"+x+"</span></label>").join("");window.cmbEvent?.("AI action plan created",selected+" converted into "+Math.min(items.length,4)+" tasks.","✓")};})();
+</script>
+<script>
+(()=>{const list=document.getElementById("actionPlanList"),fill=document.getElementById("progressFill"),text=document.getElementById("progressText"),meta=document.getElementById("progressMeta");if(!list)return;function update(){const boxes=[...list.querySelectorAll('input[type="checkbox"]')],done=boxes.filter(x=>x.checked).length,pct=boxes.length?Math.round(done/boxes.length*100):0;if(fill)fill.style.width=pct+"%";if(text)text.textContent=pct+"%";if(meta)meta.textContent=done+" of "+boxes.length+" tasks completed";}list.addEventListener("change",e=>{if(e.target.matches('input[type="checkbox"]')){update();window.cmbEvent?.("AI task updated",e.target.checked?"Task completed.":"Task reopened.","✓")}});window.addEventListener("cmb:action-plan-built",update);update();})();
 </script>
 </body>
 </html>
