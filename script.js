@@ -67,6 +67,7 @@ function openProject(project){
   $("#idea").value=p.idea||p.description||"";
   setProgress(p.progress||0);
   renderFiles();
+  document.dispatchEvent(new CustomEvent("cmb:workspace-chat-restore",{detail:{projectId:p.backendId}}));
 }
 function setProgress(v){
   if(state.active){state.active.progress=v;state.active.files=state.files;save()}
