@@ -271,4 +271,42 @@
     document.querySelectorAll('[data-open="projects"]').forEach(el=>el.addEventListener("click",()=>setTimeout(refreshProjectList,150)));
   });
 
+  async function hydrateActiveProject(projectId){
+    const id=projectId||window.state?.active?.backendId;
+    if(!id||!window.CMBAIBackendConnected||!window.state) return null;
+    try{
+      const result=await client.project(id);
+      const remote=result.project;
+      if(!remote) return null;
+      let local=window.state.projects.find(p=>String(p.backendId)===String(remote.id));
+      if(!local){
+        local={id:"backend-"+remote.id,backendId:remote.id,name:remote.name||"Untitled Project",idea:remote.description||"",progress:Number(remote.progress||0),files:{}};
+        window.state.projects.unshift(local);
+      }
+      local.backendId=remote.id;
+      local.name=remote.name||local.name;
+      local.idea=remote.description||"";
+      local.progress=Number(remote.progress||0);
+      local.files=remote.files||{};
+      local.tasks=remote.tasks||[];
+      local.chat=remote.chat||[];
+      local.events=remote.events||[];
+      window.state.active=local;
+      window.state.files=local.files;
+      window.state.currentFile=Object.keys(local.files)[0]||"index.html";
+      localStorage.setItem("cmbai_projects",JSON.stringify(window.state.projects));
+      if(typeof window.openProject==="function") window.openProject(local);
+      document.dispatchEvent(new CustomEvent("cmb:active-project-hydrated",{detail:{projectId:remote.id,tasks:local.tasks.length,chat:local.chat.length,events:local.events.length}}));
+      return remote;
+    }catch(error){
+      console.warn("CMB AI active project hydration failed:",error);
+      return null;
+    }
+  }
+  window.CMBAIProjects={...(window.CMBAIProjects||{}),hydrateActive:hydrateActiveProject};
+  document.addEventListener("cmb:open-project",event=>{
+    const id=event.detail?.projectId||event.detail?.backendId;
+    if(id) hydrateActiveProject(id);
+  });
+
 })();
