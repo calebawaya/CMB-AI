@@ -702,18 +702,6 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
 })();
 
 
-/* CMB AI — GitHub project preparation */
-(()=>{
- const btn=document.getElementById("githubPrepare"),repoInput=document.getElementById("githubRepo"),branch=document.getElementById("githubBranch"),list=document.getElementById("githubFiles"),status=document.getElementById("githubStatus"),summary=document.getElementById("githubSummary");if(!btn)return;
- btn.addEventListener("click",()=>{
-   const repo=repoInput.value.trim();if(!repo){repoInput.focus();return}
-   const files=Object.keys(state.files||{});status.classList.add("connected");status.innerHTML="<i></i> READY";summary.textContent=repo+" · "+(branch.value.trim()||"main")+" · "+files.length+" files prepared";list.innerHTML=files.map(name=>'<div class="github-file-row"><span>▣ '+escape(name)+'</span><small>READY</small></div>').join("")+'<button class="primary full" id="githubCopy">Copy project files</button>';
-   document.getElementById("githubCopy").onclick=async()=>{const payload=JSON.stringify({repository:repo,branch:branch.value.trim()||"main",files:state.files},null,2);try{await navigator.clipboard.writeText(payload);summary.textContent="Project package copied. Ready to review before publishing."}catch(e){summary.textContent="Project prepared. Clipboard permission was unavailable."}};
- });
- function escape(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-})();
-
-
 /* CMB AI — read real GitHub repository files */
 (()=>{
  const btn=document.getElementById("githubPrepare"),repoInput=document.getElementById("githubRepo"),branch=document.getElementById("githubBranch"),list=document.getElementById("githubFiles"),status=document.getElementById("githubStatus"),summary=document.getElementById("githubSummary");if(!btn)return;
