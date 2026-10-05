@@ -95,7 +95,7 @@ function renderProjectTasks(tasks){
     }
   });
 }
-function makePlan(){
+async function makePlan(){
   const idea=$("#idea").value.trim();
   if(!idea){toast("Describe your project first");return}
   if(!state.active){newProject()}
