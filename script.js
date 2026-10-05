@@ -1107,7 +1107,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    Object.keys(pending.files).forEach(name=>{if(typeof pending.files[name]==="string")state.files[name]=pending.files[name]});
    state.currentFile=pending.current_file||state.currentFile;
    if(typeof renderFiles==="function")renderFiles(); if(typeof renderEditor==="function")renderEditor(); if(typeof saveState==="function")saveState(); if(typeof cmbRefreshLivePreview==="function")cmbRefreshLivePreview();
-   status.textContent="✓ Changes accepted and saved to the Workspace.";
+   status.textContent="✓ Changes accepted and saved to the Workspace."; window.dispatchEvent(new Event("cmb:ai-accepted"));
    pending=null; acceptBtn.disabled=true; rejectBtn.disabled=true; input.value=""; reactorResponding();
  });
  rejectBtn?.addEventListener("click",()=>{
@@ -1146,4 +1146,42 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  closeBtn?.addEventListener("click",()=>{modal.classList.add("hidden");modal.setAttribute("aria-hidden","true")});
  modal.addEventListener("click",e=>{if(e.target===modal)closeBtn?.click()});
  document.addEventListener("click",e=>{if(e.target.closest("#aiAcceptChanges"))setTimeout(()=>{modal.classList.add("hidden");modal.setAttribute("aria-hidden","true")},80)});
+})();
+
+
+/* CMB AI — local project version history */
+(()=>{
+ const MAX=15,key="cmbai_version_history";
+ const history=JSON.parse(localStorage.getItem(key)||"[]");
+ function snapshot(label){
+   const files={...state.files};
+   history.unshift({id:Date.now(),label:label||"Project snapshot",time:new Date().toLocaleString(),currentFile:state.currentFile,files});
+   history.splice(MAX);
+   localStorage.setItem(key,JSON.stringify(history));
+   update();
+ }
+ function update(){
+   const undo=document.getElementById("undoVersion");
+   if(undo)undo.disabled=history.length<1;
+   const list=document.getElementById("versionList");
+   if(!list)return;
+   list.innerHTML=history.length?history.map((v,i)=>'<button class="version-item" data-version="'+i+'"><b>'+(i===0?"Latest":"Version "+(history.length-i))+'</b><span>'+v.label+'</span><small>'+v.time+'</small></button>').join(""):'<p>No saved versions yet.</p>';
+ }
+ function restore(i){
+   const v=history[i]; if(!v)return;
+   state.files={...v.files}; state.currentFile=v.currentFile||"index.html";
+   if(typeof renderFiles==="function")renderFiles();
+   if(typeof renderEditor==="function")renderEditor();
+   if(typeof saveState==="function")saveState();
+   if(typeof cmbRefreshLivePreview==="function")cmbRefreshLivePreview();
+   document.getElementById("versionModal")?.classList.add("hidden");
+ }
+ window.cmbCreateVersion=snapshot;
+ window.cmbVersionHistory=history;
+ document.getElementById("versionHistory")?.addEventListener("click",()=>{update();document.getElementById("versionModal")?.classList.remove("hidden")});
+ document.getElementById("closeVersionHistory")?.addEventListener("click",()=>document.getElementById("versionModal")?.classList.add("hidden"));
+ document.getElementById("versionList")?.addEventListener("click",e=>{const b=e.target.closest("[data-version]");if(b)restore(Number(b.dataset.version))});
+ document.getElementById("undoVersion")?.addEventListener("click",()=>restore(0));
+ update();
+ window.addEventListener("cmb:ai-accepted",()=>snapshot("AI change accepted"));
 })();
