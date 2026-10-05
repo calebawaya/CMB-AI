@@ -62,6 +62,7 @@ function openProject(project){
   state.active=p;
   state.files=p.files||state.files;
   state.currentFile=Object.keys(state.files)[0]||"index.html";
+  document.dispatchEvent(new CustomEvent("cmb:open-project",{detail:{projectId:p.backendId,backendId:p.backendId}}));
   $("#projectName").textContent=p.name||"Untitled Project";
   $("#idea").value=p.idea||p.description||"";
   setProgress(p.progress||0);
