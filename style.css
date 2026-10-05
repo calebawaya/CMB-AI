@@ -471,3 +471,11 @@ body.light-theme .health-dashboard{background:rgba(255,255,255,.86);border-color
 .aca-diff-label{display:flex;align-items:center;gap:7px;margin-bottom:6px;font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.5px}
 .aca-diff-label i{width:7px;height:7px;border-radius:50%;display:inline-block}
 .aca-diff-label .add{background:#4ade80}.aca-diff-label .remove{background:#f87171}.aca-diff-label .change{background:#facc15}
+
+
+/* AI assistant backend status */
+.aca-status{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.aca-status>span:nth-child(2){font-size:9px;color:var(--muted)}
+#acaBackendDot{width:7px;height:7px;border-radius:50%;background:#facc15;box-shadow:0 0 10px rgba(250,204,21,.35)}
+#acaBackendDot.online{background:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.55)}
+#acaBackendDot.offline{background:#f87171;box-shadow:0 0 12px rgba(248,113,113,.45)}
