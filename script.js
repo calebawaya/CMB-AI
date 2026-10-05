@@ -682,6 +682,27 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
 })();
 
 
+/* CMB AI — keyboard shortcuts */
+(()=>{
+  document.addEventListener("keydown",e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){
+      e.preventDefault();
+      document.getElementById("saveCode")?.click();
+      document.getElementById("saveCurrent")?.click();
+    }
+    if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){
+      e.preventDefault();
+      document.getElementById("preview")?.click();
+      document.getElementById("openLivePreview")?.click();
+    }
+    if(e.key==="Escape"){
+      document.getElementById("previewModal")?.classList.add("hidden");
+      document.getElementById("livePreviewWrap")?.classList.add("hidden");
+    }
+  });
+})();
+
+
 /* CMB AI — core UI controls */
 (()=>{
   const theme=document.getElementById("theme");
