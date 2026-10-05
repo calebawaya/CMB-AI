@@ -1758,3 +1758,17 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  }
  btn.addEventListener("click",check);
 })();
+
+/* Real-time workspace event stream */
+(()=>{
+ const list=document.getElementById("eventStreamList"),clear=document.getElementById("clearEventStream");
+ if(!list)return;
+ const events=[];
+ const render=()=>{list.innerHTML=events.length?events.slice(0,30).map(e=>'<div class="as-item"><i>'+e.icon+'</i><div><b>'+e.title+'</b><span>'+e.detail+'</span></div><time>'+new Date(e.at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})+'</time></div>').join(""):'<div class="as-empty">Waiting for workspace events…</div>';};
+ window.cmbEvent=(title,detail,icon="●")=>{events.unshift({title,detail,icon,at:Date.now()});render();};
+ clear?.addEventListener("click",()=>{events.length=0;render()});
+ document.addEventListener("cmb:editor-refresh",()=>window.cmbEvent("Editor refreshed","Current file and editor state synchronized.","✦"));
+ document.addEventListener("cmb:workspace-sync",()=>window.cmbEvent("Workspace synchronized","Files, editor, and project state are aligned.","↻"));
+ document.addEventListener("cmb:preview-sync",()=>window.cmbEvent("Preview requested","Live project preview was refreshed.","▶"));
+ window.cmbEvent("System online","CMB AI event stream initialized.","✓");
+})();
