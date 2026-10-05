@@ -1037,3 +1037,41 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  });
  window.cmbRefreshLivePreview=refresh;
 })();
+
+
+/* CMB AI — natural-language project editor */
+(()=>{
+ const form=document.getElementById("aiCommandForm"),input=document.getElementById("aiCommand"),status=document.getElementById("aiCommandStatus");
+ if(!form||!input)return;
+ form.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const instruction=input.value.trim();
+  if(!instruction)return;
+  const files={...state.files};
+  status.textContent="AI is analyzing your project…";
+  reactorThinking();
+  try{
+   const res=await fetch("http://127.0.0.1:5000/api/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+    instruction,
+    files,
+    current_file:state.currentFile
+   })});
+   if(!res.ok)throw new Error("AI request failed");
+   const data=await res.json();
+   const updated=data.files||data.updated_files||data.project;
+   if(!updated||typeof updated!=="object")throw new Error("No project changes returned");
+   Object.keys(updated).forEach(name=>{if(typeof updated[name]==="string")state.files[name]=updated[name]});
+   state.currentFile=data.current_file||state.currentFile;
+   if(typeof renderFiles==="function")renderFiles();
+   if(typeof renderEditor==="function")renderEditor();
+   if(typeof saveState==="function")saveState();
+   if(typeof cmbRefreshLivePreview==="function")cmbRefreshLivePreview();
+   status.textContent="✓ AI applied the requested project change.";
+   reactorResponding();
+   input.value="";
+  }catch(err){
+   status.textContent="AI editor is offline or could not apply that change.";
+   reactorError();
+  }
+ });
+})();
