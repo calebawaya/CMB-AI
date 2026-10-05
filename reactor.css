@@ -155,3 +155,31 @@ html,body{
     height:88vw!important;
   }
 }
+
+
+/* CMB AI CORE ENHANCEMENT — energy field + scanning rings */
+#cmbReactor::before{
+  z-index:0!important;
+  width:min(82vw,980px)!important;
+  height:min(82vw,980px)!important;
+  background:
+    radial-gradient(circle,rgba(55,225,255,.24) 0,rgba(0,145,255,.14) 24%,rgba(0,70,190,.07) 45%,transparent 70%)!important;
+  filter:blur(14px)!important;
+}
+#cmbReactor::after{
+  z-index:0!important;
+  width:min(88vw,1040px)!important;
+  height:min(88vw,1040px)!important;
+  border:1px solid rgba(80,215,255,.22)!important;
+  box-shadow:0 0 55px rgba(0,190,255,.20),inset 0 0 55px rgba(0,160,255,.10)!important;
+}
+#cmbReactor .reactor-core{z-index:3!important}
+#cmbReactor .reactor-triangle{z-index:4!important}
+#cmbReactor .reactor-core::selection,#cmbReactor .reactor-triangle::selection{background:transparent}
+@keyframes cmbEnergyScan{0%{transform:translate(-50%,-50%) rotate(0deg) scale(.98);opacity:.35}50%{opacity:.8}100%{transform:translate(-50%,-50%) rotate(360deg) scale(1.04);opacity:.35}}
+#cmbReactor{isolation:isolate}
+#cmbReactor:focus{outline:none}
+@media(max-width:700px){
+  #cmbReactor::before{width:105vw!important;height:105vw!important}
+  #cmbReactor::after{width:110vw!important;height:110vw!important}
+}
