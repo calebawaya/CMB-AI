@@ -1281,3 +1281,28 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  run.onclick=async()=>{write("Preparing build…",15);await new Promise(r=>setTimeout(r,250));write("Checking project files…",40);await new Promise(r=>setTimeout(r,250));const ok=validateProject();write(ok?"Compiling project…":"Build stopped: validation failed.",ok?65:25);if(!ok)return;await new Promise(r=>setTimeout(r,300));write("✓ Build completed successfully.",100);window.cmbRefreshHealth?.();window.cmbRefreshDeployStatus?.()};
  deploy.onclick=async()=>{if(!validateProject()){write("Deploy blocked: fix validation issues first.",20);return}write("Packaging deployment…",25);await new Promise(r=>setTimeout(r,350));write("Uploading project…",65);await new Promise(r=>setTimeout(r,350));write("✓ Deployment package prepared. Connect a deployment provider to publish it.",100)};
 })();
+
+/* CMB AI — GitHub Pages deployment connector */
+(()=>{
+ const deploy=document.getElementById("buildDeploy"),repo=document.getElementById("githubDeployRepo"),branch=document.getElementById("githubDeployBranch"),log=document.getElementById("buildLog"),status=document.getElementById("buildCenterStatus");
+ if(!deploy||!repo||!branch)return;
+ repo.value=localStorage.getItem("cmbai_deploy_repo")||repo.value;
+ branch.value=localStorage.getItem("cmbai_deploy_branch")||"main";
+ function valid(){return /^[^/\s]+\/[^/\s]+$/.test(repo.value.trim())}
+ deploy.addEventListener("click",async()=>{
+  const r=repo.value.trim(),b=branch.value.trim()||"main";
+  if(!valid()){log.textContent="Enter a GitHub repository as owner/repository.";status.textContent="GitHub repo required";return}
+  localStorage.setItem("cmbai_deploy_repo",r);localStorage.setItem("cmbai_deploy_branch",b);
+  log.textContent="Preparing GitHub Pages deployment…";status.textContent="GitHub deployment";
+  try{
+   const res=await fetch("http://127.0.0.1:5000/api/github/deploy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({repo:r,branch:b,files:state.files||{}})});
+   if(!res.ok)throw new Error("Deployment endpoint unavailable");
+   const data=await res.json();
+   log.textContent=data.url?"✓ Deployment started: "+data.url:"✓ GitHub deployment request sent.";
+   status.textContent="Deployment started";
+  }catch(e){
+   log.textContent="⚠ GitHub deployment needs the backend deployment endpoint and GITHUB_TOKEN.";
+   status.textContent="Backend deployment not connected";
+  }
+ });
+})();
