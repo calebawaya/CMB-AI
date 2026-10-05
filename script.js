@@ -73,6 +73,19 @@ function setProgress(v){
   if(state.active){state.active.progress=v;state.active.files=state.files;save()}
   $("#progressBar").style.width=v+"%";$("#progressText").textContent=v+"%";$("#progressCount").textContent=v+"%";
 }
+
+function renderProjectTasks(tasks){
+  const box=$("#tasks");if(!box)return;
+  const list=Array.isArray(tasks)?tasks:[];
+  if(!list.length){box.innerHTML="";return}
+  box.innerHTML=list.map(t=>"<label class='task' data-task-id='"+String(t.id)+"'><input type='checkbox' "+(t.completed?"checked":"")+"> "+String(t.title||"Task")+"</label>").join("");
+  qsa("#tasks .task input").forEach(x=>x.onchange=()=>{
+    const task=x.closest(".task"),taskId=task?.dataset.taskId;
+    if(taskId)document.dispatchEvent(new CustomEvent("cmb:ai-task-updated",{detail:{taskId,completed:x.checked}}));
+    const total=qsa("#tasks .task input").length,done=qsa("#tasks .task input:checked").length;
+    if(total)setProgress(Math.round(done/total*100));
+  });
+}
 function makePlan(){
   const idea=$("#idea").value.trim();
   if(!idea){toast("Describe your project first");return}
