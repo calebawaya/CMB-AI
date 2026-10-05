@@ -1115,3 +1115,35 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  });
  window.cmbPendingAiChange=()=>pending;
 })();
+
+
+/* CMB AI — file-by-file AI diff viewer */
+(()=>{
+ const modal=document.getElementById("aiDiffModal"), filesEl=document.getElementById("aiDiffFiles"), summary=document.getElementById("aiDiffSummary");
+ const openBtn=document.getElementById("aiPreviewChanges"), closeBtn=document.getElementById("closeAiDiff");
+ if(!modal||!filesEl||!openBtn)return;
+ function esc(s){return String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
+ function diffLines(a,b){
+   const old=(a||"").split("\n"), neu=(b||"").split("\n"), out=[], max=Math.max(old.length,neu.length);
+   for(let i=0;i<max;i++){
+     if(old[i]===neu[i]) out.push('<div class="diff-line same"><span>'+(i+1)+'</span><code>'+esc(old[i]??"")+'</code></div>');
+     else {
+       if(old[i]!==undefined) out.push('<div class="diff-line removed"><span>−</span><code>'+esc(old[i])+'</code></div>');
+       if(neu[i]!==undefined) out.push('<div class="diff-line added"><span>+</span><code>'+esc(neu[i])+'</code></div>');
+     }
+   }
+   return out.join("");
+ }
+ function renderDiff(){
+   const p=window.cmbPendingAiChange?.();
+   if(!p){summary.textContent="No pending AI changes.";filesEl.innerHTML="";return}
+   const names=[...new Set([...Object.keys(state.files),...Object.keys(p.files)])];
+   const changed=names.filter(n=>(state.files[n]??"")!==(p.files[n]??""));
+   summary.innerHTML="<b>"+changed.length+"</b> file(s) changed · Review before accepting.";
+   filesEl.innerHTML=changed.map(name=>'<section class="ai-diff-file"><header><strong>'+esc(name)+'</strong><small>'+((state.files[name]||"").split("\n").length)+' → '+((p.files[name]||"").split("\n").length)+' lines</small></header><div class="diff-code">'+diffLines(state.files[name],p.files[name])+'</div></section>').join("")||'<p>No differences found.</p>';
+ }
+ openBtn.addEventListener("click",()=>{setTimeout(()=>{renderDiff();modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false")},30)});
+ closeBtn?.addEventListener("click",()=>{modal.classList.add("hidden");modal.setAttribute("aria-hidden","true")});
+ modal.addEventListener("click",e=>{if(e.target===modal)closeBtn?.click()});
+ document.addEventListener("click",e=>{if(e.target.closest("#aiAcceptChanges"))setTimeout(()=>{modal.classList.add("hidden");modal.setAttribute("aria-hidden","true")},80)});
+})();
