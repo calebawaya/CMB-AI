@@ -1,75 +1,14 @@
-/* CMB-AI reactor — true full-screen centered reactor */
-html,
-body{
-  width:100%;
-  height:100%;
-  min-width:100%;
-  min-height:100%;
-  margin:0;
-  padding:0;
-  overflow-x:hidden;
-  background:#020617;
-}
-
-#cmbReactor{
-  position:fixed !important;
-  inset:0 !important;
-  width:100vw !important;
-  height:100vh !important;
-  margin:0 !important;
-  padding:0 !important;
-  z-index:0 !important;
-  pointer-events:none !important;
-  overflow:hidden !important;
-  background:#020617 !important;
-  transform:none !important;
-}
-
-#cmbReactor .reactor-core,
-#cmbReactor .reactor-triangle{
-  position:absolute !important;
-  inset:0 !important;
-  width:100vw !important;
-  height:100vh !important;
-  max-width:none !important;
-  max-height:none !important;
-  margin:0 !important;
-  padding:0 !important;
-  display:block !important;
-  object-fit:cover !important;
-  object-position:center center !important;
-  transform-origin:center center !important;
-  opacity:1 !important;
-  visibility:visible !important;
-  filter:none !important;
-  pointer-events:none !important;
-  box-sizing:border-box !important;
-}
-
-/* Reactor is completely still. */
-#cmbReactor .reactor-core{
-  z-index:1 !important;
-  transform:none !important;
-  animation:none !important;
-  will-change:auto;
-}
-
-/* The triangle also stays completely still. */
-#cmbReactor .reactor-triangle{
-  z-index:2 !important;
-  transform:none !important;
-  clip-path:polygon(50% 20%,84% 93%,16% 93%) !important;
-  animation:none !important;
-}
-
-#cmbReactor .reactor-ring,
-#cmbReactor::before,
-#cmbReactor::after{
-  display:none !important;
-  content:none !important;
-}
-
-.app{
-  position:relative;
-  z-index:1;
-}
+/* CMB-AI reactor — centered blue triangular core */
+html,body{width:100%;min-height:100%;margin:0;padding:0;overflow-x:hidden;background:#020617}
+#cmbReactor{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;overflow:hidden;background:transparent;display:grid;place-items:center}
+#cmbReactor .reactor-core,#cmbReactor .reactor-triangle{position:absolute;left:50%;top:50%;width:min(62vw,720px);height:min(62vw,720px);max-width:720px;max-height:720px;margin:0;display:block;object-fit:contain;object-position:center;transform-origin:center;pointer-events:none;box-sizing:border-box}
+#cmbReactor .reactor-core{z-index:1;transform:translate(-50%,-50%);opacity:.78;filter:drop-shadow(0 0 18px rgba(0,210,255,.95)) drop-shadow(0 0 55px rgba(0,145,255,.75)) drop-shadow(0 0 110px rgba(0,110,255,.45));animation:cmbCorePulse 3.2s ease-in-out infinite}
+#cmbReactor .reactor-triangle{z-index:2;transform:translate(-50%,-50%) scale(.92);opacity:.42;clip-path:polygon(50% 20%,84% 93%,16% 93%);filter:drop-shadow(0 0 12px rgba(40,220,255,1)) drop-shadow(0 0 45px rgba(0,160,255,.85));mix-blend-mode:screen;animation:cmbTrianglePulse 2.7s ease-in-out infinite alternate}
+#cmbReactor::before{content:"";position:absolute;left:50%;top:50%;width:min(48vw,560px);height:min(48vw,560px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(80,225,255,.24) 0,rgba(0,160,255,.14) 25%,rgba(0,90,255,.06) 48%,transparent 72%);filter:blur(10px);animation:cmbGlowPulse 3s ease-in-out infinite}
+#cmbReactor::after{content:"";position:absolute;left:50%;top:50%;width:min(70vw,820px);height:min(70vw,820px);transform:translate(-50%,-50%);border:1px solid rgba(70,205,255,.16);border-radius:50%;box-shadow:0 0 35px rgba(0,180,255,.18),inset 0 0 35px rgba(0,180,255,.08);animation:cmbRingSpin 18s linear infinite}
+.app{position:relative;z-index:1}
+@keyframes cmbCorePulse{0%,100%{transform:translate(-50%,-50%) scale(.98)}50%{transform:translate(-50%,-50%) scale(1.04)}}
+@keyframes cmbTrianglePulse{from{opacity:.28;transform:translate(-50%,-50%) scale(.90)}to{opacity:.62;transform:translate(-50%,-50%) scale(.98)}}
+@keyframes cmbGlowPulse{0%,100%{opacity:.65;transform:translate(-50%,-50%) scale(.94)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes cmbRingSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@media(max-width:700px){#cmbReactor .reactor-core,#cmbReactor .reactor-triangle{width:min(86vw,520px);height:min(86vw,520px)}#cmbReactor::after{width:92vw;height:92vw}}
