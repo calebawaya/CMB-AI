@@ -81,6 +81,10 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="aiActionPlan" class="ai-action-plan panel">
+  <div class="aap-head"><div><small>AI ACTION PLAN</small><strong>Turn Suggestions Into Tasks</strong><span>Convert file analysis into a focused checklist.</span></div><button class="small" id="buildActionPlan">Build Plan</button></div>
+  <div id="actionPlanList" class="aap-list"><div class="aap-empty">Analyze a file first, then build an action plan.</div></div>
+</section>
 <section id="aiSuggestions" class="ai-suggestions panel">
   <div class="asug-head"><div><small>AI INSIGHTS</small><strong>Smart File Suggestions</strong><span>Get quick improvement ideas for the selected file.</span></div><button class="small" id="generateSuggestions">Analyze File</button></div>
   <div id="suggestionList" class="asug-list"><div class="asug-empty">Select a file to begin analysis.</div></div>
@@ -207,6 +211,9 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 </script>
 <script>
 (()=>{const b=document.getElementById("generateSuggestions"),l=document.getElementById("suggestionList");if(!b||!l)return;let selected="";document.addEventListener("cmb:open-file",e=>{selected=e.detail?.file||"";});b.onclick=async()=>{if(!selected){l.innerHTML="<div class='asug-empty'>Select a file to begin analysis.</div>";return}b.disabled=true;l.innerHTML="<div class='asug-empty'>CMB AI is analyzing "+selected+"…</div>";try{const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:"Analyze the selected project file and return exactly 4 concise practical improvement suggestions. Number them 1-4. File: "+selected})});if(!r.ok)throw new Error();const d=await r.json();const text=d.response||d.message||d.answer||"No suggestions returned.";l.innerHTML=text.split(/\n+/).filter(Boolean).slice(0,6).map(x=>"<div class='asug-item'>"+x.replace(/</g,"&lt;")+"</div>").join("");window.cmbEvent?.("AI file analysis completed",selected+" received smart improvement suggestions.","✦")}catch(e){l.innerHTML="<div class='asug-empty'>AI backend is offline. Start the CMB AI backend and try again.</div>";window.cmbEvent?.("AI file analysis failed",selected+" could not be analyzed.","!")}b.disabled=false;};})();
+</script>
+<script>
+(()=>{const b=document.getElementById("buildActionPlan"),l=document.getElementById("actionPlanList"),suggest=document.getElementById("suggestionList");if(!b||!l)return;let selected="";document.addEventListener("cmb:open-file",e=>{selected=e.detail?.file||"";});b.onclick=()=>{if(!selected){l.innerHTML="<div class='aap-empty'>Select a file first.</div>";return}const items=[...(suggest?.querySelectorAll(".asug-item")||[])].map(x=>x.textContent.trim()).filter(Boolean);if(!items.length){l.innerHTML="<div class='aap-empty'>Analyze the selected file first.</div>";return}l.innerHTML=items.slice(0,4).map((x,i)=>"<label class='aap-item'><input type='checkbox'><span><b>Task "+(i+1)+"</b>"+x+"</span></label>").join("");window.cmbEvent?.("AI action plan created",selected+" converted into "+Math.min(items.length,4)+" tasks.","✓")};})();
 </script>
 </body>
 </html>
