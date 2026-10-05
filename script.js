@@ -77,13 +77,21 @@ function setProgress(v){
 function renderProjectTasks(tasks){
   const box=$("#tasks");if(!box)return;
   const list=Array.isArray(tasks)?tasks:[];
-  if(!list.length){box.innerHTML="";return}
+  if(!list.length){box.innerHTML="";setProgress(0);document.dispatchEvent(new CustomEvent("cmb:task-progress",{detail:{completed:0,total:0,percent:0}}));return}
   box.innerHTML=list.map(t=>"<label class='task' data-task-id='"+String(t.id)+"'><input type='checkbox' "+(t.completed?"checked":"")+"> "+String(t.title||"Task")+"</label>").join("");
+  const initialDone=list.filter(t=>t.completed).length;
+  const initialPercent=Math.round(initialDone/list.length*100);
+  setProgress(initialPercent);
+  document.dispatchEvent(new CustomEvent("cmb:task-progress",{detail:{completed:initialDone,total:list.length,percent:initialPercent}}));
   qsa("#tasks .task input").forEach(x=>x.onchange=()=>{
     const task=x.closest(".task"),taskId=task?.dataset.taskId;
     if(taskId)document.dispatchEvent(new CustomEvent("cmb:ai-task-updated",{detail:{taskId,completed:x.checked}}));
     const total=qsa("#tasks .task input").length,done=qsa("#tasks .task input:checked").length;
-    if(total)setProgress(Math.round(done/total*100));
+    if(total){
+      const percent=Math.round(done/total*100);
+      setProgress(percent);
+      document.dispatchEvent(new CustomEvent("cmb:task-progress",{detail:{completed:done,total,percent}}));
+    }
   });
 }
 function makePlan(){
