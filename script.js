@@ -584,3 +584,26 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    const open=document.getElementById("builderOpenWorkspace"); if(open)open.onclick=()=>document.querySelector('[data-open="workspace"]')?.click();
  });
 })();
+
+
+/* CMB AI — Builder to Workspace file generation */
+(()=>{
+ const result=document.getElementById("builderResult");
+ if(!result)return;
+ function buildStarterFiles(){
+   const idea=(document.getElementById("builderIdea")?.value||"").trim()||"My CMB AI project";
+   state.files["index.html"]='<!doctype html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>'+escapeHtml(idea).replace(/&quot;/g,'\"')+'</title>\n<link rel="stylesheet" href="style.css">\n</head>\n<body>\n<main><h1>'+escapeHtml(idea)+'</h1><p>Built with CMB AI.</p></main>\n<script src="script.js"></script>\n</body>\n</html>';
+   state.files["style.css"]='*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;min-height:100vh;display:grid;place-items:center;background:#07111f;color:#eef9ff}main{text-align:center;padding:48px;border:1px solid #1d5270;border-radius:20px;background:#0b1b2c;box-shadow:0 0 45px rgba(0,190,255,.12)}h1{color:#54ddff}';
+   state.files["script.js"]='console.log("CMB AI starter project ready");';
+   state.currentFile="index.html";
+   if(typeof renderFiles==="function")renderFiles();
+   if(typeof renderEditor==="function")renderEditor();
+   if(typeof saveState==="function")saveState();
+   document.querySelector('[data-open="workspace"]')?.click();
+ }
+ document.addEventListener("click",e=>{
+   if(e.target.closest("#builderCreateFiles"))buildStarterFiles();
+ });
+ window.cmbBuilderCreateFiles=buildStarterFiles;
+ function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+})();
