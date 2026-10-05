@@ -1362,3 +1362,19 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.getElementById("preview")?.addEventListener("click",()=>add("Live project preview opened.","SYSTEM"));
  clear?.addEventListener("click",()=>{events.splice(0);localStorage.setItem(key,"[]");render()});
 })();
+
+/* CMB AI — notifications center */
+(()=>{
+ const panel=document.getElementById("notificationCenter"),bell=document.getElementById("notificationBell"),list=document.getElementById("notificationList"),count=document.getElementById("notificationCount"),clear=document.getElementById("clearNotifications");
+ if(!panel||!bell||!list)return;
+ const key="cmbai_notifications",items=JSON.parse(localStorage.getItem(key)||"[]");
+ function render(){list.innerHTML=items.slice(0,30).map(n=>'<div class="notice notice-'+n.type+'"><span>'+n.icon+'</span><div><b>'+n.title+'</b><small>'+n.message+'</small><time>'+n.time+'</time></div></div>').join("")||'<div class="notice-empty">All clear.</div>';count.textContent=items.length}
+ function add(title,message,type="info"){const icons={success:"✓",warning:"!",error:"×",info:"i",ai:"✦",build:"⚙",deploy:"🚀"};items.unshift({title,message,type,icon:icons[type]||"i",time:new Date().toLocaleTimeString()});items.splice(30);localStorage.setItem(key,JSON.stringify(items));render();panel.classList.add("show");setTimeout(()=>panel.classList.remove("show"),2600)}
+ window.cmbNotify=add;render();
+ bell.addEventListener("click",()=>panel.classList.toggle("show"));
+ clear?.addEventListener("click",()=>{items.splice(0);localStorage.setItem(key,"[]");render()});
+ document.getElementById("buildRun")?.addEventListener("click",()=>add("Build started","The project build pipeline has started.","build"));
+ document.getElementById("buildValidate")?.addEventListener("click",()=>add("Validation started","Checking project structure and files.","info"));
+ document.getElementById("buildDeploy")?.addEventListener("click",()=>add("Deployment requested","The deployment pipeline was requested.","deploy"));
+ document.getElementById("aiPreviewChanges")?.addEventListener("click",()=>add("AI change preview","AI is preparing project changes for review.","ai"));
+})();
