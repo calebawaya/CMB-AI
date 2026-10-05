@@ -998,3 +998,42 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   },180);
  });
 })();
+
+
+/* CMB AI — multi-page live preview + internal navigation */
+(()=>{
+ const modal=document.getElementById("previewModal");
+ const open=document.getElementById("preview");
+ if(!modal||!open)return;
+ function buildDoc(){
+   const files=state.files||{};
+   let html=files[state.currentFile||"index.html"]||files["index.html"]||"";
+   const css=files["style.css"]||"";
+   const js=files["script.js"]||"";
+   html=html.replace(/<link[^>]+href=["']style\.css["'][^>]*>/gi,"");
+   html=html.replace(/<script[^>]+src=["']script\.js["'][^>]*><\/script>/gi,"");
+   html=html.replace("</head>",'<style>'+css.replace(/<\/style/gi,"")+'</style></head>');
+   const navScript='<script>(function(){document.addEventListener("click",function(e){const a=e.target.closest("a[href]");if(!a)return;const h=a.getAttribute("href");if(!h||h.startsWith("#")||/^(https?:|mailto:|tel:)/i.test(h))return;e.preventDefault();parent.postMessage({type:"cmb-preview-page",file:h},"*")});})();<\/script>';
+   html=html.replace("</body>",navScript+'<script>'+js.replace(/<\/script/gi,"")+'</script></body>');
+   return html;
+ }
+ function refresh(){
+   const frame=modal.querySelector("iframe");
+   if(frame)frame.srcdoc=buildDoc();
+ }
+ function show(){
+   refresh();
+   modal.classList.remove("hidden");
+ }
+ open.addEventListener("click",show);
+ window.addEventListener("message",e=>{
+   if(e.data?.type!=="cmb-preview-page")return;
+   const file=String(e.data.file||"").split("#")[0].replace(/^\.\//,"");
+   if(!state.files[file])return;
+   state.currentFile=file;
+   if(typeof renderFiles==="function")renderFiles();
+   if(typeof renderEditor==="function")renderEditor();
+   refresh();
+ });
+ window.cmbRefreshLivePreview=refresh;
+})();
