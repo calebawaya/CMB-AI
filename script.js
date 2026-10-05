@@ -1378,3 +1378,21 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.getElementById("buildDeploy")?.addEventListener("click",()=>add("Deployment requested","The deployment pipeline was requested.","deploy"));
  document.getElementById("aiPreviewChanges")?.addEventListener("click",()=>add("AI change preview","AI is preparing project changes for review.","ai"));
 })();
+
+/* CMB AI — system console */
+(()=>{
+ const out=document.getElementById("consoleOutput"),clear=document.getElementById("clearConsole");
+ if(!out)return;
+ const key="cmbai_console_log",logs=JSON.parse(localStorage.getItem(key)||"[]");
+ function render(){out.textContent=logs.slice(-80).join("\n")||"[CMB] Console cleared." ;out.scrollTop=out.scrollHeight}
+ function log(message,tag="SYSTEM"){const line="["+new Date().toLocaleTimeString()+"][CMB]["+tag+"] "+message;logs.push(line);logs.splice(0,80);localStorage.setItem(key,JSON.stringify(logs));render();window.cmbNotify?.("System event",message,tag==="ERROR"?"error":"info")}
+ window.cmbConsoleLog=log;render();
+ clear?.addEventListener("click",()=>{logs.splice(0);localStorage.setItem(key,"[]");render()});
+ document.getElementById("buildValidate")?.addEventListener("click",()=>log("Project validation started.","CHECK"));
+ document.getElementById("buildRun")?.addEventListener("click",()=>log("Build pipeline started.","BUILD"));
+ document.getElementById("buildDeploy")?.addEventListener("click",()=>log("Deployment pipeline requested.","DEPLOY"));
+ document.getElementById("aiPreviewChanges")?.addEventListener("click",()=>log("AI change analysis requested.","AI"));
+ document.getElementById("saveCode")?.addEventListener("click",()=>log("Project code saved.","SAVE"));
+ document.getElementById("preview")?.addEventListener("click",()=>log("Live preview opened.","PREVIEW"));
+ window.addEventListener("cmb:ai-accepted",()=>log("AI changes accepted and applied.","AI"));
+})();
