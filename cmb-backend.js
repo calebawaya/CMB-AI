@@ -309,4 +309,23 @@
     if(id) hydrateActiveProject(id);
   });
 
+  document.addEventListener("cmb:workspace-chat-restore",async event=>{
+    const id=event.detail?.projectId;
+    if(!id||!window.CMBAIBackendConnected)return;
+    try{
+      const messages=await loadChatHistory(id);
+      const log=document.getElementById("chatLog");
+      if(!log||!messages.length)return;
+      log.innerHTML="";
+      messages.forEach(m=>{
+        const a=document.createElement("article"),b=document.createElement("b"),p=document.createElement("p");
+        a.className=m.role==="assistant"?"ai-message":"user-message";
+        b.textContent=m.role==="assistant"?"CMB AI":"You";
+        p.textContent=m.message;
+        a.append(b,p);log.appendChild(a);
+      });
+      log.scrollTop=log.scrollHeight;
+    }catch(error){console.warn("CMB AI chat restore failed:",error);}
+  });
+
 })();
