@@ -81,6 +81,10 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="releaseReadinessDetails" class="release-readiness-details panel">
+  <div class="rrd-head"><div><small>RELEASE INSIGHT</small><strong>Why This Release Is Blocked</strong><span>See exactly what still needs attention.</span></div><button class="small" id="refreshReleaseInsight">Refresh</button></div>
+  <div id="releaseInsightList" class="rrd-list"><div class="rrd-empty">Run a release check to see details.</div></div>
+</section>
 <section id="releaseActions" class="release-actions panel">
   <div class="ra-head"><div><small>RELEASE ACTIONS</small><strong>One-Click Release Workflow</strong><span>Run the release checks in the correct order.</span></div><strong id="releaseActionState">READY</strong></div>
   <div class="ra-buttons">
@@ -307,6 +311,12 @@ run.addEventListener("click",async()=>{run.disabled=true;state.textContent="RUNN
 click("runBuildCheck");await new Promise(r=>setTimeout(r,900));txt.textContent="Running final release check…";click("runReleaseCheck");await new Promise(r=>setTimeout(r,120));state.textContent=document.getElementById("releaseDecision")?.textContent==="RELEASE READY"?"READY":"BLOCKED";txt.textContent=state.textContent==="READY"?"Full release check passed. Deployment Control is ready.":"Full release check completed. Review the blocked checks before deploying.";window.cmbEvent?.("Full release completed",txt.textContent,state.textContent==="READY"?"✓":"!");run.disabled=false});
 document.getElementById("openReleaseHistory")?.addEventListener("click",()=>document.getElementById("releaseHistory")?.scrollIntoView({behavior:"smooth",block:"center"}));
 document.getElementById("openDeploymentControl")?.addEventListener("click",()=>document.getElementById("deploymentControl")?.scrollIntoView({behavior:"smooth",block:"center"}));
+})();
+</script>
+<script>
+(()=>{const b=document.getElementById("refreshReleaseInsight"),run=document.getElementById("runReleaseCheck"),out=document.getElementById("releaseInsightList");if(!out)return;
+const render=()=>{const items=[...document.querySelectorAll("#releaseCheckList .rc-item")];if(!items.length){out.innerHTML="<div class='rrd-empty'>Run a release check to see details.</div>";return}out.innerHTML=items.map(x=>{const bad=x.classList.contains("bad"),name=x.querySelector("b")?.textContent||"Check";const detail=bad?({Files:"Scan the Project File Inspector and make sure required files are reachable.",Build:"Run the Build Center check until it reports BUILD READY.","AI Review":"Complete the AI review milestone.","Ready to deploy":"Complete the Ready to deploy milestone."}[name]||"Review this release check."): "Passed — no action needed.";return "<div class='rrd-item "+(bad?"bad":"ok")+"'><i>"+(bad?"!":"✓")+"</i><div><b>"+name+"</b><span>"+detail+"</span></div></div>"}).join("")};
+run?.addEventListener("click",()=>setTimeout(render,40));b?.addEventListener("click",render);render();
 })();
 </script>
 </body>
