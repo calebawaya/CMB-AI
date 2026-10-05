@@ -1461,3 +1461,52 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  function render(){if(!enabled)return;preview.innerHTML=highlight(code.value)+"\n";preview.scrollTop=code.scrollTop;preview.scrollLeft=code.scrollLeft;}
  code.addEventListener("input",render);code.addEventListener("scroll",()=>{preview.scrollTop=code.scrollTop;preview.scrollLeft=code.scrollLeft});document.addEventListener("cmb:editor-refresh",render);setTimeout(render,0);
 })();
+/* CMB AI IDE workspace controls */
+(()=>{
+ const code=document.getElementById("code");if(!code)return;
+ const editor=code.closest(".editor");if(!editor)return;
+ let bar=document.getElementById("ideTabs");
+ if(!bar){bar=document.createElement("div");bar.id="ideTabs";bar.className="ide-tabs";editor.insertBefore(bar,editor.querySelector(".code-language-bar")||code);}
+ let find=document.getElementById("ideFind");
+ if(!find){find=document.createElement("div");find.id="ideFind";find.className="ide-find hidden";find.innerHTML='<input id="ideFindInput" class="input" placeholder="Find in file"><input id="ideReplaceInput" class="input" placeholder="Replace with"><button class="small" id="ideFindNext">Find</button><button class="small" id="ideReplaceOne">Replace</button><button class="small" id="ideReplaceAll">Replace all</button><button class="small" id="ideFindClose">×</button>';editor.insertBefore(find,code);}
+ let minimap=document.getElementById("ideMinimap");
+ if(!minimap){minimap=document.createElement("div");minimap.id="ideMinimap";minimap.className="ide-minimap";editor.appendChild(minimap);}
+ function openFiles(){return [...new Set(Object.keys(state.files).filter(Boolean))].slice(0,12)}
+ function renderTabs(){
+   bar.innerHTML="";
+   openFiles().forEach(f=>{
+    const b=document.createElement("button");b.type="button";b.className="ide-tab "+(f===state.currentFile?"active":"");b.textContent=f;b.title=f;
+    b.onclick=()=>openFile(f);bar.appendChild(b);
+   });
+   const add=document.createElement("button");add.type="button";add.className="ide-tab-add";add.textContent="+";add.onclick=addFile;bar.appendChild(add);
+ }
+ function renderMinimap(){
+   const lines=code.value.split("\n");const max=Math.max(...lines.map(x=>x.length),1);
+   minimap.innerHTML=lines.slice(0,120).map((line,i)=>{const w=Math.max(4,Math.round((line.length/max)*68));return '<i style="width:'+w+'px"></i>';}).join("");
+ }
+ const oldRenderFiles=window.renderFiles;
+ if(typeof oldRenderFiles==="function"){
+   const original=oldRenderFiles;
+   window.renderFiles=()=>{original();renderTabs();renderMinimap();};
+ }
+ document.addEventListener("cmb:editor-refresh",()=>{renderTabs();renderMinimap();});
+ code.addEventListener("input",renderMinimap);
+ code.addEventListener("scroll",()=>{const pct=code.scrollTop/Math.max(1,code.scrollHeight-code.clientHeight);minimap.style.setProperty("--scroll",pct);});
+ document.addEventListener("keydown",e=>{
+   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();find.classList.remove("hidden");document.getElementById("ideFindInput")?.focus();}
+   if(e.key==="Escape")find.classList.add("hidden");
+ });
+ document.getElementById("ideFindClose")?.addEventListener("click",()=>find.classList.add("hidden"));
+ document.getElementById("ideFindNext")?.addEventListener("click",()=>{
+   const q=document.getElementById("ideFindInput").value;if(!q)return;const start=code.selectionEnd;const at=code.value.indexOf(q,start);const pos=at<0?code.value.indexOf(q):at;if(pos>=0){code.focus();code.setSelectionRange(pos,pos+q.length);}
+ });
+ document.getElementById("ideReplaceOne")?.addEventListener("click",()=>{
+   const q=document.getElementById("ideFindInput").value,r=document.getElementById("ideReplaceInput").value;if(!q)return;
+   const pos=code.selectionStart,found=code.value.indexOf(q,pos);if(found>=0){code.setRangeText(r,found,found+q.length,"end");code.dispatchEvent(new Event("input"));}
+ });
+ document.getElementById("ideReplaceAll")?.addEventListener("click",()=>{
+   const q=document.getElementById("ideFindInput").value,r=document.getElementById("ideReplaceInput").value;if(!q)return;
+   code.value=code.value.split(q).join(r);code.dispatchEvent(new Event("input"));
+ });
+ renderTabs();renderMinimap();
+})();
