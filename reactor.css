@@ -25,7 +25,6 @@ body{
   transform:none !important;
 }
 
-/* Both layers occupy the entire viewport. The browser centers the image itself, not the page layout. */
 #cmbReactor .reactor-core,
 #cmbReactor .reactor-triangle{
   position:absolute !important;
@@ -47,14 +46,15 @@ body{
   box-sizing:border-box !important;
 }
 
-/* The circular artwork spins continuously around the exact center. */
+/* Fast continuous rotation — 360 degrees every 0.35 seconds. */
 #cmbReactor .reactor-core{
   z-index:1 !important;
-  transform:rotate(0deg) !important;
-  animation:cmbFullScreenSpin .65s linear infinite !important;
+  transform:rotate(0deg);
+  animation:cmbFullScreenSpin .35s linear infinite !important;
+  will-change:transform;
 }
 
-/* The triangle is on top and does not rotate. */
+/* The triangle stays locked in place. */
 #cmbReactor .reactor-triangle{
   z-index:2 !important;
   transform:none !important;
@@ -75,6 +75,6 @@ body{
 }
 
 @keyframes cmbFullScreenSpin{
-  from{transform:rotate(0deg) !important;}
-  to{transform:rotate(360deg) !important;}
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
 }
