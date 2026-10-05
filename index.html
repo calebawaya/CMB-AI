@@ -81,6 +81,10 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="aiSuggestions" class="ai-suggestions panel">
+  <div class="asug-head"><div><small>AI INSIGHTS</small><strong>Smart File Suggestions</strong><span>Get quick improvement ideas for the selected file.</span></div><button class="small" id="generateSuggestions">Analyze File</button></div>
+  <div id="suggestionList" class="asug-list"><div class="asug-empty">Select a file to begin analysis.</div></div>
+</section>
 <section id="fileCommand" class="file-command panel">
   <div class="fc-head"><div><small>FILE COMMAND</small><strong>Quick File Command</strong><span>Run a simple command against the selected project file.</span></div><span id="fileCommandState">READY</span></div>
   <form id="fileCommandForm" class="fc-form"><input id="fileCommandInput" class="input" placeholder="e.g. explain this file, find errors, improve readability"><button class="small primary" type="submit">Run</button></form>
@@ -200,6 +204,9 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 </script>
 <script>
 (()=>{const form=document.getElementById("fileCommandForm"),input=document.getElementById("fileCommandInput"),out=document.getElementById("fileCommandResult"),state=document.getElementById("fileCommandState");if(!form)return;let selected="";document.addEventListener("cmb:open-file",e=>{selected=e.detail?.file||"";state.textContent=selected?"SELECTED":"READY";});form.addEventListener("submit",async e=>{e.preventDefault();const q=input.value.trim();if(!selected||!q){out.textContent="Select a file and enter a command.";return}state.textContent="WORKING";out.textContent="CMB AI is processing "+selected+"…";try{const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:q+"\n\nSelected project file: "+selected})});if(!r.ok)throw new Error();const d=await r.json();out.textContent=d.response||d.message||d.answer||"AI returned no response.";state.textContent="READY";window.cmbEvent?.("File command completed",selected+" — AI command completed.","✦")}catch(err){out.textContent="AI backend is offline. Start the CMB AI backend and try again.";state.textContent="OFFLINE";window.cmbEvent?.("File command failed",selected+" — AI backend unavailable.","!")}input.value=""});})();
+</script>
+<script>
+(()=>{const b=document.getElementById("generateSuggestions"),l=document.getElementById("suggestionList");if(!b||!l)return;let selected="";document.addEventListener("cmb:open-file",e=>{selected=e.detail?.file||"";});b.onclick=async()=>{if(!selected){l.innerHTML="<div class='asug-empty'>Select a file to begin analysis.</div>";return}b.disabled=true;l.innerHTML="<div class='asug-empty'>CMB AI is analyzing "+selected+"…</div>";try{const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:"Analyze the selected project file and return exactly 4 concise practical improvement suggestions. Number them 1-4. File: "+selected})});if(!r.ok)throw new Error();const d=await r.json();const text=d.response||d.message||d.answer||"No suggestions returned.";l.innerHTML=text.split(/\n+/).filter(Boolean).slice(0,6).map(x=>"<div class='asug-item'>"+x.replace(/</g,"&lt;")+"</div>").join("");window.cmbEvent?.("AI file analysis completed",selected+" received smart improvement suggestions.","✦")}catch(e){l.innerHTML="<div class='asug-empty'>AI backend is offline. Start the CMB AI backend and try again.</div>";window.cmbEvent?.("AI file analysis failed",selected+" could not be analyzed.","!")}b.disabled=false;};})();
 </script>
 </body>
 </html>
