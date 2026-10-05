@@ -93,33 +93,43 @@ def ai_message():
     project = data.get("project", {}) or {}
     project_name = str(project.get("name", "CMB-AI project"))
     project_files = project.get("files", {}) or {}
+
     if not prompt:
         return jsonify({"ok": False, "error": "Prompt is required"}), 400
     if OpenAI is None:
         return jsonify({"ok": False, "error": "OpenAI package is not installed"}), 503
     if not os.getenv("OPENAI_API_KEY"):
         return jsonify({"ok": False, "error": "OPENAI_API_KEY is not configured on the server"}), 503
+
     try:
         client = OpenAI()
-        context = f"""You are helping build a web project in CMB-AI.
-Project name: {project_name}
-Current files:
-HTML:
-{str(project_files.get("index.html", ""))[:12000]}
-CSS:
-{str(project_files.get("style.css", ""))[:12000]}
-JavaScript:
-{str(project_files.get("script.js", ""))[:12000]}
+        file_context = "\n".join(
+            f"--- {name} ---\n{str(content)[:10000]}"
+            for name, content in project_files.items()
+        )
+        instructions = """You are CMB AI, a friendly coding assistant inside a project workspace.
+Help the user build real web projects step by step.
+Be beginner-friendly, practical, and concise.
+Use the supplied project context when it is relevant.
+When suggesting code, clearly identify the file it belongs in.
+Do not claim you changed files unless the user actually used a build/apply action.
+Prefer safe, maintainable HTML, CSS, and JavaScript.
+If the user asks what to do next, give one clear next step plus the reason."""
 
-User request:
-{prompt}
-"""
         response = client.responses.create(
             model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna"),
-            input=context
+            instructions=instructions,
+            input=f"""Project name: {project_name}
+
+Current project files:
+{file_context}
+
+User request:
+{prompt}"""
         )
         return jsonify({"ok": True, "answer": response.output_text})
     except Exception as exc:
+        print(f"CMB AI error: {exc}")
         return jsonify({"ok": False, "error": "AI request failed"}), 502
 
 @app.post("/api/ai/apply")
