@@ -46,15 +46,15 @@ body{
   box-sizing:border-box !important;
 }
 
-/* Fast continuous rotation — 360 degrees every 0.35 seconds. */
+/* Reactor is completely still. */
 #cmbReactor .reactor-core{
   z-index:1 !important;
-  transform:rotate(0deg);
-  animation:cmbFullScreenSpin .35s linear infinite !important;
-  will-change:transform;
+  transform:none !important;
+  animation:none !important;
+  will-change:auto;
 }
 
-/* The triangle stays locked in place. */
+/* The triangle also stays completely still. */
 #cmbReactor .reactor-triangle{
   z-index:2 !important;
   transform:none !important;
@@ -72,9 +72,4 @@ body{
 .app{
   position:relative;
   z-index:1;
-}
-
-@keyframes cmbFullScreenSpin{
-  from{transform:rotate(0deg);}
-  to{transform:rotate(360deg);}
 }
