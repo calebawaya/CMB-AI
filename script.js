@@ -865,3 +865,31 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    },0);
  });
 })();
+
+
+/* CMB AI — upgraded project generator */
+(()=>{
+ const btn=document.getElementById("buildProject");
+ if(!btn)return;
+ btn.addEventListener("click",()=>{
+   const idea=(document.getElementById("builderIdea")?.value||"").trim();
+   if(!idea)return;
+   setTimeout(()=>{
+     const safe=String(idea).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+     const title=safe.length>54?safe.slice(0,54)+"…":safe;
+     state.files["index.html"]='<!doctype html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta name="description" content="'+safe+'">\n<title>'+title+' — Built with CMB AI</title>\n<link rel="stylesheet" href="style.css">\n</head>\n<body>\n<header class="site-nav"><strong>CMB AI</strong><nav><a href="#features">Features</a><a href="#about">About</a><a href="#start">Start</a></nav></header>\n<main>\n<section class="hero"><span class="eyebrow">✦ BUILT WITH CMB AI</span><h1>'+safe+'</h1><p>Turn your idea into a clear, modern digital experience with a responsive foundation ready to customize.</p><a class="cta" href="#start">Start building →</a></section>\n<section id="features" class="section"><span class="eyebrow">CORE FEATURES</span><h2>Everything starts with a strong foundation.</h2><div class="grid"><article><b>01</b><h3>Plan</h3><p>Break the idea into practical steps and milestones.</p></article><article><b>02</b><h3>Build</h3><p>Create clean responsive pages with reusable sections.</p></article><article><b>03</b><h3>Launch</h3><p>Preview, improve, and prepare the project for deployment.</p></article></div></section>\n<section id="about" class="section highlight"><h2>Designed to grow with your idea.</h2><p>Your starter project is intentionally simple so you can keep adding features, pages, APIs, and AI capabilities.</p></section>\n<section id="start" class="section final"><h2>Ready to make it real?</h2><p>Edit the files in CMB AI Workspace and preview your changes instantly.</p><button class="cta" id="startBtn">Let’s build</button></section>\n</main>\n<footer>Built with CMB AI · Create. Make. Build.</footer>\n<script src="script.js"></script>\n</body>\n</html>';
+     state.files["style.css"]='*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,sans-serif;background:#050b16;color:#eef7ff;line-height:1.6}.site-nav{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:18px 7%;background:rgba(5,11,22,.82);backdrop-filter:blur(16px);border-bottom:1px solid rgba(90,190,255,.15)}nav{display:flex;gap:22px}a{color:inherit;text-decoration:none}.hero,.section{max-width:1100px;margin:auto;padding:110px 7%}.hero{text-align:center;min-height:70vh;display:flex;flex-direction:column;justify-content:center;align-items:center}.eyebrow{font-size:11px;letter-spacing:.18em;color:#54ddff;font-weight:800}.hero h1{font-size:clamp(42px,7vw,82px);line-height:1.02;margin:18px 0}.hero p{max-width:700px;color:#9bb0c9;font-size:18px}.cta{display:inline-block;margin-top:18px;padding:13px 22px;border:0;border-radius:12px;background:linear-gradient(135deg,#28c9ff,#786bff);color:white;font-weight:800;box-shadow:0 0 35px rgba(40,200,255,.2);cursor:pointer}.section h2{font-size:clamp(30px,5vw,52px);line-height:1.08}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:35px}.grid article,.highlight,.final{padding:28px;border:1px solid rgba(90,190,255,.14);border-radius:20px;background:rgba(13,27,45,.72)}.grid article b{color:#54ddff}.highlight{margin-bottom:30px}.final{text-align:center}footer{text-align:center;padding:35px;color:#71859d;border-top:1px solid rgba(90,190,255,.12)}@media(max-width:700px){nav{display:none}.hero,.section{padding:75px 6%}.grid{grid-template-columns:1fr}.hero h1{font-size:44px}}';
+     state.files["script.js"]='document.getElementById("startBtn")?.addEventListener("click",()=>alert("Your CMB AI project is ready to customize!"));\nconsole.log("CMB AI project online");';
+     state.currentFile="index.html";
+     if(typeof renderFiles==="function")renderFiles();
+     if(typeof renderEditor==="function")renderEditor();
+     if(typeof saveState==="function")saveState();
+     const result=document.getElementById("builderResult");
+     const status=document.getElementById("builderResultStatus");
+     const titleEl=document.getElementById("builderResultTitle");
+     if(titleEl)titleEl.textContent="Project built successfully";
+     if(status)status.textContent="READY";
+     if(result)result.innerHTML='<div class="builder-file"><div><b>✓ PROJECT CREATED</b><br><small>'+safe+'</small></div></div><div class="builder-file"><div><b>3 starter files</b><br><small>index.html · style.css · script.js</small></div></div><div class="builder-file"><div><b>Next step</b><br><small>Open Workspace → edit the code → Preview your project.</small></div></div>';
+   },120);
+ });
+})();
