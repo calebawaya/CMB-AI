@@ -132,4 +132,59 @@
     setTimeout(hydrateProjects,1400);
     setTimeout(syncActiveProject,1800);
   });
+
+  async function hydrateProjects(){
+    if(!window.CMBAIBackendConnected || !window.state) return;
+    try{
+      const result=await client.projects();
+      const remote=result.projects||[];
+      remote.forEach(remoteProject=>{
+        const local=window.state.projects.find(p=>String(p.backendId)===String(remoteProject.id));
+        if(local){ local.name=remoteProject.name; local.idea=remoteProject.description||""; local.progress=remoteProject.progress||0; local.files=remoteProject.files||local.files; }
+        else window.state.projects.push({backendId:remoteProject.id,id:"backend-"+remoteProject.id,name:remoteProject.name,idea:remoteProject.description||"",progress:remoteProject.progress||0,created:remoteProject.created_at,updatedAt:Date.now(),files:remoteProject.files||{}});
+      });
+      localStorage.setItem("cmbai_projects",JSON.stringify(window.state.projects));
+      if(typeof window.renderProjects==="function") window.renderProjects();
+      document.dispatchEvent(new CustomEvent("cmb:database-hydrated",{detail:{count:remote.length}}));
+    }catch(error){ console.warn("CMB AI database hydration failed:",error); }
+  }
+  async function persistCurrentFile(){
+    const state=window.state;
+    if(!state?.active?.backendId || !state.currentFile) return;
+    try{
+      const content=state.files[state.currentFile]||"";
+      await client.saveFile(state.active.backendId,state.currentFile,content);
+      await client.event(state.active.backendId,"file.saved","Frontend saved "+state.currentFile+" to SQLite");
+    }catch(error){ console.warn("CMB AI file persistence failed:",error); }
+  }
+  async function persistProjectMetadata(){
+    const state=window.state;
+    if(!state?.active) return;
+    const project=await ensureBackendProject(state.active);
+    if(!project) return;
+    await client.updateProject(project.id,{name:state.active.name||"Untitled Project",description:state.active.idea||"",progress:Number(state.active.progress||0)});
+    state.active.backendId=project.id;
+  }
+  function installWorkspaceHooks(){
+    if(window.__cmbDatabaseHooksInstalled) return;
+    window.__cmbDatabaseHooksInstalled=true;
+    if(typeof window.newProject==="function"){
+      const originalNewProject=window.newProject;
+      window.newProject=function(){ originalNewProject(); const project=window.state?.active; if(project) createBackendProjectFromState(project).then(()=>syncActiveProject()); };
+    }
+    if(typeof window.saveCurrent==="function"){
+      const originalSaveCurrent=window.saveCurrent;
+      window.saveCurrent=function(){ originalSaveCurrent(); persistCurrentFile(); };
+    }
+    if(typeof window.makePlan==="function"){
+      const originalMakePlan=window.makePlan;
+      window.makePlan=function(){ originalMakePlan(); persistProjectMetadata().catch(()=>{}); };
+    }
+  }
+  window.CMBAIDatabase={hydrateProjects,persistCurrentFile,persistProjectMetadata,installWorkspaceHooks};
+  document.addEventListener("cmb:backend-status",event=>{
+    if(event.detail?.online){ hydrateProjects(); installWorkspaceHooks(); setTimeout(syncActiveProject,800); }
+  });
+  document.addEventListener("DOMContentLoaded",()=>setTimeout(installWorkspaceHooks,300));
+
 })();
