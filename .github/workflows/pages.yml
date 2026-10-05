@@ -34,6 +34,50 @@ jobs:
           test -f script.js
           echo "Required site files are present."
 
+      - name: Validate JavaScript syntax
+        run: node --check script.js
+
+      - name: Validate local asset references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import unquote
+          import re
+          import sys
+
+          root = Path(".")
+          files_to_scan = ["index.html", "style.css", "reactor.css"]
+          missing = []
+
+          def check_ref(ref, source):
+              ref = unquote(ref.strip())
+              if not ref or ref.startswith(("#", "http://", "https://", "//", "data:", "mailto:", "javascript:")):
+                  return
+              ref = ref.split("?", 1)[0].split("#", 1)[0]
+              if not ref:
+                  return
+              path = root / ref.lstrip("/")
+              if not path.is_file():
+                  missing.append((source, ref))
+
+          for filename in files_to_scan:
+              path = root / filename
+              if not path.is_file():
+                  continue
+              text = path.read_text(encoding="utf-8", errors="ignore")
+              for match in re.findall(r'(?:src|href)=["\']([^"\']+)["\']', text, re.I):
+                  check_ref(match, filename)
+              for match in re.findall(r'url\(\s*["\']?([^)"\']+)["\']?\s*\)', text, re.I):
+                  check_ref(match, filename)
+
+          if missing:
+              print("Missing local assets:")
+              for source, ref in sorted(set(missing)):
+                  print(f" - {source}: {ref}")
+              sys.exit(1)
+
+          print("Local asset references are valid.")
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
