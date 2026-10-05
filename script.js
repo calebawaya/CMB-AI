@@ -712,3 +712,20 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  });
  function escape(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 })();
+
+
+/* CMB AI — read real GitHub repository files */
+(()=>{
+ const btn=document.getElementById("githubPrepare"),repoInput=document.getElementById("githubRepo"),branch=document.getElementById("githubBranch"),list=document.getElementById("githubFiles"),status=document.getElementById("githubStatus"),summary=document.getElementById("githubSummary");if(!btn)return;
+ const original=btn.onclick;
+ btn.onclick=async()=>{
+   const repo=repoInput.value.trim();if(!repo){repoInput.focus();return}
+   status.innerHTML="<i></i> CONNECTING";summary.textContent="Reading repository…";list.innerHTML='<div class="builder-empty">Connecting to GitHub…</div>';reactorThinking();
+   try{
+    const r=await fetch("http://127.0.0.1:5000/api/github/tree?repo="+encodeURIComponent(repo)+"&branch="+encodeURIComponent(branch.value.trim()||"main"));
+    const data=await r.json();if(!data.ok)throw new Error(data.error||"GitHub connection failed");
+    status.classList.add("connected");status.innerHTML="<i></i> CONNECTED";summary.textContent=data.repo+" · "+data.branch+" · "+data.files.length+" repository files";list.innerHTML=data.files.map(name=>'<div class="github-file-row"><span>▣ '+escape(name)+'</span><small>REMOTE</small></div>').join("")||'<div class="builder-empty">Repository has no files.</div>';reactorResponding();setTimeout(()=>setReactorState("ready"),900);
+   }catch(e){status.classList.remove("connected");status.innerHTML="<i></i> OFFLINE";summary.textContent=e.message||"Could not connect to GitHub. Configure GITHUB_TOKEN in the backend.";list.innerHTML='<div class="builder-empty">GitHub connection is unavailable. Start the backend and configure GITHUB_TOKEN.</div>';reactorError();setTimeout(()=>setReactorState("ready"),900)}
+ };
+ function escape(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+})();
