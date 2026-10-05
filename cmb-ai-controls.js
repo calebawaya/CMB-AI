@@ -5,6 +5,22 @@
   const result=document.getElementById("acaResult"),stateEl=document.getElementById("acaState");
   if(!actions.length||!result)return;
 
+  const backendDot=document.getElementById("acaBackendDot");
+  const backendState=document.getElementById("acaBackendState");
+  async function checkBackend(){
+    try{
+      const r=await fetch("http://127.0.0.1:5000/api/health",{cache:"no-store"});
+      if(!r.ok)throw new Error("offline");
+      backendDot?.classList.add("online"); backendDot?.classList.remove("offline");
+      if(backendState)backendState.textContent="Backend online";
+    }catch(e){
+      backendDot?.classList.add("offline"); backendDot?.classList.remove("online");
+      if(backendState)backendState.textContent="Backend offline";
+    }
+  }
+  checkBackend();
+  setInterval(checkBackend,20000);
+
   const prompts={
     explain:"Explain this code clearly, section by section. Do not modify the code.",
     improve:"Review this code and propose practical improvements while preserving its purpose.",
