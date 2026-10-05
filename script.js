@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s),$=s=>[...document.querySelectorAll(s)];\n\n/* CMB AI reactor state — visual feedback for the AI core */\nfunction setReactorState(state){\n  const reactor=document.getElementById("cmbReactor");\n  if(!reactor)return;\n  reactor.dataset.state=state;\n  reactor.classList.remove("reactor-ready","reactor-thinking","reactor-responding","reactor-error");\n  reactor.classList.add("reactor-"+state);\n}\nsetReactorState("ready");\n\nfunction reactorThinking(){setReactorState("thinking")}\nfunction reactorResponding(){setReactorState("responding")}\nfunction reactorError(){setReactorState("error")}\n
+const $=s=>document.querySelector(s),qsa=s=>[...document.querySelectorAll(s)];\n\n/* CMB AI reactor state — visual feedback for the AI core */\nfunction setReactorState(state){\n  const reactor=document.getElementById("cmbReactor");\n  if(!reactor)return;\n  reactor.dataset.state=state;\n  reactor.classList.remove("reactor-ready","reactor-thinking","reactor-responding","reactor-error");\n  reactor.classList.add("reactor-"+state);\n}\nsetReactorState("ready");\n\nfunction reactorThinking(){setReactorState("thinking")}\nfunction reactorResponding(){setReactorState("responding")}\nfunction reactorError(){setReactorState("error")}\n
 
 const builder={blocks:[],selected:null,history:[],future:[],historyLock:false};
 function snapshot(){return JSON.stringify(builder.blocks)}
@@ -29,9 +29,9 @@ function save(){
 }
 function toast(x){const t=$("#toast");t.textContent=x;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
 function view(n){
-  $$(".view").forEach(x=>x.classList.add("hidden"));
+  qsa(".view").forEach(x=>x.classList.add("hidden"));
   $("#"+n).classList.remove("hidden");
-  $$(".nav").forEach(x=>x.classList.toggle("active",x.dataset.view===n));
+  qsa(".nav").forEach(x=>x.classList.toggle("active",x.dataset.view===n));
   const names={dashboard:"Build something great.",workspace:"Your project workspace.",builder:"Design your website.",projects:"Your projects.",github:"Connect and deploy.",settings:"Make CMB AI yours."};
   $("#title").textContent=names[n];$("#eyebrow").textContent=n.toUpperCase();
   if(n==="projects")renderProjects();
@@ -64,7 +64,7 @@ function makePlan(){
   $("#projectName").textContent=state.active.name;
   const tasks=["Define the main user problem","Design the page structure","Build the HTML interface","Style the responsive UI","Add JavaScript interactions","Test desktop and mobile","Prepare for GitHub"];
   $("#tasks").innerHTML=tasks.map(x=>"<label class='task'><input type='checkbox'> "+x+"</label>").join("");
-  $$(".task input").forEach(x=>x.onchange=()=>setProgress(Math.round($$(".task input:checked").length/tasks.length*100)));
+  qsa(".task input").forEach(x=>x.onchange=()=>setProgress(Math.round(qsa(".task input:checked").length/tasks.length*100)));
   save();addChat("CMB AI","I created a 7-step build plan for your idea.");toast("Build plan created");
 }
 function addChat(who,msg){
@@ -100,13 +100,13 @@ function renderFiles(){
   const grouped=folders.map(folder=>"<div class='folder'>▾ "+folder+"</div>"+names.filter(f=>f.startsWith(folder+"/")).map(fileRow).join("")).join("");
   const root=names.filter(f=>!f.includes("/")).map(fileRow).join("");
   $("#fileList").innerHTML=grouped+root;
-  $$(".file-item").forEach(x=>x.onclick=()=>openFile(x.dataset.file));
+  qsa(".file-item").forEach(x=>x.onclick=()=>openFile(x.dataset.file));
   openFile(state.currentFile);
   $("#fileCount").textContent=names.filter(f=>!f.endsWith("/.gitkeep")).length;
 }
 function openFile(f){
   state.currentFile=f;$("#editorTitle").textContent=f;$("#code").value=state.files[f]||"";
-  $$(".file-item").forEach(x=>x.classList.toggle("active",x.dataset.file===f));
+  qsa(".file-item").forEach(x=>x.classList.toggle("active",x.dataset.file===f));
 }
 function addFolder(){
   const n=prompt("Folder name, e.g. components");
@@ -144,8 +144,8 @@ function buildPreview(){
   const withJs=withCss.replace("</body>","<script>"+script.replace(/<\/script/gi,"<\\/script")+"</script></body>");
   $("#previewFrame").srcdoc=withJs;$("#previewModal").classList.remove("hidden");
 }
-$$(".nav").forEach(x=>x.onclick=()=>view(x.dataset.view));
-$$("[data-open]").forEach(x=>x.onclick=()=>view(x.dataset.open));
+qsa(".nav").forEach(x=>x.onclick=()=>view(x.dataset.view));
+qsa("[data-open]").forEach(x=>x.onclick=()=>view(x.dataset.open));
 $("#newProject").onclick=newProject;$("#newProject2").onclick=newProject;$("#start").onclick=newProject;$("#plan").onclick=makePlan;
 $("#addFile").onclick=addFile;$("#addFolder").onclick=addFolder;$("#saveCode").onclick=saveCurrent;
 $("#chatForm").onsubmit=async e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";reactorThinking();showTyping();try{const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q,project:{name:state.active?.name||"CMB-AI project",files:state.files}})});const data=await r.json();hideTyping();if(data.ok){addChat("CMB AI",data.answer);reactorResponding();}else{answer(q);reactorError();}}catch(err){hideTyping();answer(q);reactorError();}finally{setTimeout(()=>setReactorState("ready"),900)}};\n");}
@@ -242,9 +242,9 @@ if(!builder.history.length)builder.history=[snapshot()];
 function setDevice(device){
  const canvas=$("#builderCanvas");if(!canvas)return;
  canvas.classList.remove("device-desktop","device-tablet","device-mobile");canvas.classList.add("device-"+device);
- $$(".device").forEach(b=>b.classList.toggle("active",b.dataset.device===device));
+ qsa(".device").forEach(b=>b.classList.toggle("active",b.dataset.device===device));
 }
-$$(".device").forEach(b=>b.onclick=()=>setDevice(b.dataset.device));
+qsa(".device").forEach(b=>b.onclick=()=>setDevice(b.dataset.device));
 
 if($("#openLivePreview"))$("#openLivePreview").onclick=openLivePreview;
 if($("#refreshLivePreview"))$("#refreshLivePreview").onclick=refreshLivePreview;
