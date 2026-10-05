@@ -81,6 +81,10 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="buildHistory" class="build-history panel">
+  <div class="bh-head"><div><small>BUILD HISTORY</small><strong>Recent Build Results</strong><span>Keep the latest checks visible while you work.</span></div><button class="small" id="clearBuildHistory">Clear</button></div>
+  <div id="buildHistoryList" class="bh-list"><div class="bh-empty">No build checks recorded yet.</div></div>
+</section>
 <section id="buildControl" class="build-control panel">
   <div class="bc-head"><div><small>BUILD CONTROL</small><strong>CMB AI Build Center</strong><span>Run a safe frontend build check before publishing.</span></div><span id="buildState">READY</span></div>
   <div class="bc-actions"><button class="small primary" id="runBuildCheck">Run Build Check</button><button class="small" id="clearBuildLog">Clear Log</button></div>
