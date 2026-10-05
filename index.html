@@ -81,6 +81,15 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="releaseActions" class="release-actions panel">
+  <div class="ra-head"><div><small>RELEASE ACTIONS</small><strong>One-Click Release Workflow</strong><span>Run the release checks in the correct order.</span></div><strong id="releaseActionState">READY</strong></div>
+  <div class="ra-buttons">
+    <button class="small primary" id="runFullRelease">Run Full Release Check</button>
+    <button class="small" id="openReleaseHistory">View History</button>
+    <button class="small" id="openDeploymentControl">Deployment Control</button>
+  </div>
+  <div id="releaseActionText">CMB AI will run the build, verify the release gate, and update the deployment decision.</div>
+</section>
 <section id="releaseSummary" class="release-summary panel">
   <div class="rs-head"><div><small>RELEASE STATUS</small><strong>Deployment Decision</strong><span>Summarize the final release gate in one place.</span></div><strong id="releaseDecision">NOT CHECKED</strong></div>
   <div id="releaseSummaryText">Run the final release check to generate a deployment decision.</div>
@@ -289,6 +298,15 @@ clear?.addEventListener("click",()=>{history=[];localStorage.removeItem(key);ren
 (()=>{const root=document.getElementById("projectReadiness");if(!root)return;
 const targets={readyFiles:"buildArtifacts",readyBuild:"buildControl",readyAI:"aiMilestones",readyDeploy:"deploymentControl"};
 Object.entries(targets).forEach(([id,target])=>{const el=document.getElementById(id);if(!el)return;el.parentElement.style.cursor="pointer";el.parentElement.title="Open "+target;el.parentElement.addEventListener("click",()=>{const panel=document.getElementById(target);panel?.scrollIntoView({behavior:"smooth",block:"center"});window.cmbEvent?.("Readiness navigation","Opened "+target+" from the release gate.","→")})});
+})();
+</script>
+<script>
+(()=>{const run=document.getElementById("runFullRelease"),state=document.getElementById("releaseActionState"),txt=document.getElementById("releaseActionText");if(!run)return;
+const click=id=>document.getElementById(id)?.click();
+run.addEventListener("click",async()=>{run.disabled=true;state.textContent="RUNNING";txt.textContent="Running build check…";window.cmbEvent?.("Full release started","CMB AI is running the complete release workflow.","🚀");
+click("runBuildCheck");await new Promise(r=>setTimeout(r,900));txt.textContent="Running final release check…";click("runReleaseCheck");await new Promise(r=>setTimeout(r,120));state.textContent=document.getElementById("releaseDecision")?.textContent==="RELEASE READY"?"READY":"BLOCKED";txt.textContent=state.textContent==="READY"?"Full release check passed. Deployment Control is ready.":"Full release check completed. Review the blocked checks before deploying.";window.cmbEvent?.("Full release completed",txt.textContent,state.textContent==="READY"?"✓":"!");run.disabled=false});
+document.getElementById("openReleaseHistory")?.addEventListener("click",()=>document.getElementById("releaseHistory")?.scrollIntoView({behavior:"smooth",block:"center"}));
+document.getElementById("openDeploymentControl")?.addEventListener("click",()=>document.getElementById("deploymentControl")?.scrollIntoView({behavior:"smooth",block:"center"}));
 })();
 </script>
 </body>
