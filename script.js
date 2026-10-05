@@ -81,7 +81,14 @@ function showTyping(){
 function hideTyping(){ $("#cmbTyping")?.remove(); }
 function answer(q){
   const s=q.toLowerCase();
-  let a=s.includes("html")?"Use semantic HTML for the page structure.":s.includes("css")?"Keep layout and responsive styling in style.css.":s.includes("javascript")||s.includes("js")?"Use script.js for interactions and logic.":s.includes("github")?"Your CMB-AI repository is connected to GitHub Pages.":"Start with a small version, preview it, test it, then add features.";
+  let a="";
+  if(s.includes("html")) a="For "+(state.active?.name||"your project")+", use semantic HTML for the structure. Keep sections, headings, forms, and navigation organized.";
+  else if(s.includes("css")) a="Keep the visual design in style.css. Start with layout, spacing, responsive rules, then add the blue CMB AI visual effects.";
+  else if(s.includes("javascript")||s.includes("js")) a="Use script.js for interactions and logic. Keep UI functions separate from project data so the workspace stays easier to maintain.";
+  else if(s.includes("github")) a="Your CMB-AI project is connected to GitHub. Test the project locally first, then commit the finished files and publish through GitHub Pages.";
+  else if(s.includes("file")||s.includes("files")) a="Your current project has "+Object.keys(state.files||{}).length+" files. I can help you decide what each file should contain and how they connect.";
+  else if(s.includes("project")||s.includes("build")) a="Let's build "+(state.active?.name||"your project")+" in small steps: plan the interface, build the HTML, style it, add JavaScript, test it, then prepare it for GitHub.";
+  else a="I understand. Tell me what you want to build or change, and I can guide you through the next development step.";
   addChat("CMB AI",a);
 }
 function fileRow(f){
