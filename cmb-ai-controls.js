@@ -96,6 +96,9 @@
 (()=>{
   const github=document.getElementById("github");
   if(!github||document.getElementById("releaseReport"))return;
+  const style=document.createElement("style");
+  style.textContent=`.release-report{margin:10px 18px 0;padding:14px;border:1px solid rgba(56,189,248,.2);background:rgba(3,12,24,.78)}.rr-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.rr-head>div:first-child{display:grid;gap:4px}.rr-head small{font-size:9px;color:#38bdf8;letter-spacing:.8px}.rr-head strong{font-size:13px}.rr-head span{font-size:10px;color:#94a3b8}.rr-buttons{display:flex;gap:7px;flex-wrap:wrap}.release-report pre{margin:10px 0 0;padding:10px;white-space:pre-wrap;word-break:break-word;border:1px solid rgba(148,163,184,.16);border-radius:7px;background:#020617;color:#cbd5e1;font:10px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.release-report button{cursor:pointer}@media(max-width:700px){.rr-head{align-items:flex-start;flex-direction:column}.rr-buttons{width:100%}.rr-buttons button{flex:1}}`;
+  document.head.appendChild(style);
   const panel=document.createElement("section");
   panel.id="releaseReport";
   panel.className="release-report panel";
