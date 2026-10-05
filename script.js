@@ -607,3 +607,21 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  window.cmbBuilderCreateFiles=buildStarterFiles;
  function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 })();
+
+
+/* CMB AI — One-click project build */
+(()=>{
+ const btn=document.getElementById("buildProject"); if(!btn)return;
+ btn.addEventListener("click",()=>{
+   const idea=(document.getElementById("builderIdea")?.value||"").trim();
+   if(!idea){document.getElementById("builderIdea")?.focus();return}
+   btn.disabled=true;btn.textContent="⚡ Building…";reactorThinking();
+   setTimeout(()=>{
+     if(typeof window.cmbBuilderCreateFiles==="function")window.cmbBuilderCreateFiles();
+     const tasks=document.getElementById("tasks");
+     if(tasks){tasks.innerHTML='<div class="task"><label><input type="checkbox"> Project structure created</label></div><div class="task"><label><input type="checkbox"> Interface design started</label></div><div class="task"><label><input type="checkbox"> Core functionality</label></div><div class="task"><label><input type="checkbox"> Test and preview</label></div><div class="task"><label><input type="checkbox"> Prepare for GitHub</label></div>';}
+     if(typeof updateProgress==="function")updateProgress();
+     btn.disabled=false;btn.textContent="⚡ Build project";reactorResponding();setTimeout(()=>setReactorState("ready"),900);
+   },700);
+ });
+})();
