@@ -1344,3 +1344,21 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.getElementById("buildRun")?.addEventListener("click",()=>{document.getElementById("commandActivity").textContent="Build pipeline started…";setTimeout(()=>{document.getElementById("commandActivity").textContent="Build pipeline completed.";refresh()},500)});
  document.getElementById("buildDeploy")?.addEventListener("click",()=>{document.getElementById("commandActivity").textContent="Deployment process started…";setTimeout(()=>{document.getElementById("commandActivity").textContent="Deployment status updated.";refresh()},700)});
 })();
+
+/* CMB AI — activity timeline */
+(()=>{
+ const list=document.getElementById("activityList"),clear=document.getElementById("clearActivity");
+ if(!list)return;
+ const key="cmbai_activity_log",events=JSON.parse(localStorage.getItem(key)||"[]");
+ const icon=t=>t==="AI"?"✦":t==="BUILD"?"⚙":t==="DEPLOY"?"🚀":t==="CHECK"?"✓":"•";
+ function render(){list.innerHTML=events.slice(0,20).map(e=>'<div class="activity-item"><span>'+icon(e.type)+'</span><div><b>'+e.message+'</b><small>'+e.time+'</small></div></div>').join("")||'<div class="activity-empty">No activity recorded yet.</div>'}
+ function add(message,type="SYSTEM"){events.unshift({message,type,time:new Date().toLocaleTimeString()});events.splice(20);localStorage.setItem(key,JSON.stringify(events));render();const a=document.getElementById("commandActivity");if(a)a.textContent=message}
+ window.cmbLogActivity=add;render();
+ document.getElementById("buildRun")?.addEventListener("click",()=>add("Build pipeline started.","BUILD"));
+ document.getElementById("buildValidate")?.addEventListener("click",()=>add("Project validation requested.","CHECK"));
+ document.getElementById("buildDeploy")?.addEventListener("click",()=>add("Deployment process requested.","DEPLOY"));
+ document.getElementById("aiPreviewChanges")?.addEventListener("click",()=>add("AI project change preview requested.","AI"));
+ document.getElementById("saveCode")?.addEventListener("click",()=>add("Project code saved.","SYSTEM"));
+ document.getElementById("preview")?.addEventListener("click",()=>add("Live project preview opened.","SYSTEM"));
+ clear?.addEventListener("click",()=>{events.splice(0);localStorage.setItem(key,"[]");render()});
+})();
