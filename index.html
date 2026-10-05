@@ -81,6 +81,10 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="buildArtifacts" class="build-artifacts panel">
+  <div class="ba-head"><div><small>BUILD ARTIFACTS</small><strong>Project File Inspector</strong><span>Inspect important project files before deployment.</span></div><button class="small" id="scanArtifacts">Scan Files</button></div>
+  <div id="artifactList" class="ba-list"><div class="ba-empty">Ready to scan project files.</div></div>
+</section>
 <section id="buildHistory" class="build-history panel">
   <div class="bh-head"><div><small>BUILD HISTORY</small><strong>Recent Build Results</strong><span>Keep the latest checks visible while you work.</span></div><button class="small" id="clearBuildHistory">Clear</button></div>
   <div id="buildHistoryList" class="bh-list"><div class="bh-empty">No build checks recorded yet.</div></div>
@@ -164,5 +168,8 @@ const add=(t,ok=true)=>l.insertAdjacentHTML("beforeend",'<div class="'+(ok?"ok":
 b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";window.cmbEvent?.("Build check started","CMB AI is validating required frontend files.","⚡");for(const f of files){try{const r=await fetch(f,{cache:"no-store"});add((r.ok?"✓ ":"✕ ")+f+" — "+(r.ok?"available":"HTTP "+r.status),r.ok)}catch(e){add("✕ "+f+" — unreachable",false)}}const bad=[...l.querySelectorAll(".bad")].length;s.textContent=bad?"ISSUES FOUND":"BUILD READY";window.cmbEvent?.("Build check completed",bad?bad+" required file(s) need attention.":"All required frontend files are reachable.","✓");window.cmbRecordBuild?.(!bad,bad);b.disabled=false;b.textContent=bad?"Run Again":"Run Build Check"};c.onclick=()=>{l.innerHTML="<div>Build log cleared.</div>";s.textContent="READY";};})();
 </script>
 <div id="deploymentGuard" class="deployment-guard" role="status"><span>●</span><strong>Deployment Guard</strong><small>Checking required files…</small></div>
+<script>
+(()=>{const b=document.getElementById("scanArtifacts"),l=document.getElementById("artifactList");if(!b||!l)return;const files=["index.html","style.css","script.js","reactor.css","cmb-ai-controls.js","cmb-ai-diff.js","backend/app.py"];b.onclick=async()=>{b.disabled=true;l.innerHTML="";let ok=0;for(const f of files){try{const r=await fetch(f,{cache:"no-store"});const good=r.ok;if(good)ok++;l.insertAdjacentHTML("beforeend",'<div class="ba-item '+(good?"ok":"bad")+'"><i>'+(good?"✓":"!")+'</i><b>'+f+'</b><span>'+(good?"Available":"Not reachable")+'</span></div>')}catch(e){l.insertAdjacentHTML("beforeend",'<div class="ba-item bad"><i>!</i><b>'+f+'</b><span>Not reachable</span></div>')}}l.insertAdjacentHTML("afterbegin",'<div class="ba-summary">'+ok+"/"+files.length+" project files available</div>");window.cmbEvent?.("Project files scanned",ok+"/"+files.length+" required project files are reachable.","▣");b.disabled=false};})();
+</script>
 </body>
 </html>
