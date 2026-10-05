@@ -1,4 +1,4 @@
-/* CMB-AI reactor — perfectly centered, edge-to-edge, ultra-fast continuous rotation */
+/* CMB-AI reactor — centered reactor, static triangle, rotating circular energy field */
 html,
 body{
   width:100%;
@@ -22,36 +22,47 @@ body{
   background:#020617;
 }
 
-#cmbReactor::before,
-#cmbReactor::after,
-#cmbReactor .reactor-ring,
-#cmbReactor .reactor-core::before,
-#cmbReactor .reactor-core::after{
+#cmbReactor .reactor-ring{
   display:none;
-  content:none;
 }
 
-/* The exact uploaded artwork is centered on the viewport, not anchored to a corner. */
+/* The uploaded artwork stays locked to the exact center of the page. */
 #cmbReactor .reactor-core{
   display:block;
   position:absolute;
   left:50%;
   top:50%;
-  width:200vmax;
-  height:200vmax;
+  width:142vmax;
+  height:142vmax;
   margin:0;
-  transform-origin:50% 50%;
   transform:translate(-50%,-50%) rotate(0deg);
-  clip-path:none;
+  transform-origin:50% 50%;
   background-image:url("Neon%20Blue%20Arc%20Reactor%20Core.png");
   background-position:50% 50%;
   background-repeat:no-repeat;
-  background-size:cover;
+  background-size:min(92vw,119vh) auto;
   background-color:#020617;
+  clip-path:none;
   filter:none;
   opacity:1;
   will-change:transform;
-  animation:cmbUltraFastContinuousSpin 1.5s linear infinite;
+  animation:cmbCircleSpin .8s linear infinite;
+}
+
+/* A second copy holds only the triangular reactor structure still. */
+#cmbReactor .reactor-core::after{
+  content:"";
+  display:block;
+  position:absolute;
+  inset:0;
+  background-image:url("Neon%20Blue%20Arc%20Reactor%20Core.png");
+  background-position:50% 50%;
+  background-repeat:no-repeat;
+  background-size:min(92vw,119vh) auto;
+  background-color:transparent;
+  clip-path:polygon(50% 20%,84% 93%,16% 93%);
+  transform:none;
+  animation:none;
 }
 
 .app{
@@ -59,19 +70,12 @@ body{
   z-index:1;
 }
 
-/* No fade, no pause, no hold — immediately loops into the next rotation. */
-@keyframes cmbUltraFastContinuousSpin{
+/* Only the circular/outer artwork rotates. The triangle above does not move. */
+@keyframes cmbCircleSpin{
   from{
     transform:translate(-50%,-50%) rotate(0deg);
   }
   to{
     transform:translate(-50%,-50%) rotate(360deg);
-  }
-}
-
-@media(prefers-reduced-motion:reduce){
-  #cmbReactor .reactor-core{
-    animation:none;
-    transform:translate(-50%,-50%);
   }
 }
