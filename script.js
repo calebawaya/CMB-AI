@@ -1396,3 +1396,15 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.getElementById("preview")?.addEventListener("click",()=>log("Live preview opened.","PREVIEW"));
  window.addEventListener("cmb:ai-accepted",()=>log("AI changes accepted and applied.","AI"));
 })();
+
+/* CMB AI — multi-language development lab */
+(()=>{
+ const select=document.getElementById("languageSelect"),info=document.getElementById("languageInfo"),tags=document.getElementById("languageTags");
+ if(!select||!info)return;
+ const data={
+  HTML:["Web structure","Markup","html"],CSS:["Web styling","Stylesheets","css"],JavaScript:["Web logic","Frontend / Backend","js"],TypeScript:["Typed JavaScript","Frontend / Backend","ts"],Python:["AI, automation, backend","General purpose","py"],Java:["Enterprise and Android","General purpose","java"],C:["Systems programming","Low-level","c"],"C++":["Games and systems","Low-level","cpp"],"C#":[".NET applications","General purpose","cs"],Go:["Cloud and backend","General purpose","go"],Rust:["Safe systems software","Systems","rs"],PHP:["Web backend","Server-side","php"],Ruby:["Web and scripting","General purpose","rb"],Swift:["Apple development","App development","swift"],Kotlin:["Android and backend","General purpose","kt"],SQL:["Databases","Query language","sql"],Shell:["Linux automation","Scripting","sh"],PowerShell:["Windows automation","Scripting","ps1"],R:["Statistics and data","Data science","r"],Dart:["Flutter apps","App development","dart"],Lua:["Games and embedded scripting","Scripting","lua"],Scala:["JVM applications","General purpose","scala"],Perl:["Text processing","Scripting","pl"]
+ };
+ const render=()=>{const d=data[select.value];info.textContent=select.value+" — "+d[0];tags.innerHTML="<span>"+d[1]+"</span><span>."+d[2]+"</span><span>CMB AI ready</span>"};
+ select.addEventListener("change",render);render();
+ window.cmbLanguageInfo=()=>data[select.value];
+})();
