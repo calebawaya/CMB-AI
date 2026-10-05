@@ -85,6 +85,10 @@
   <div class="rs-head"><div><small>RELEASE STATUS</small><strong>Deployment Decision</strong><span>Summarize the final release gate in one place.</span></div><strong id="releaseDecision">NOT CHECKED</strong></div>
   <div id="releaseSummaryText">Run the final release check to generate a deployment decision.</div>
 </section>
+<section id="releaseHistory" class="release-history panel">
+  <div class="rh-head"><div><small>RELEASE HISTORY</small><strong>Deployment Gate History</strong><span>Keep the latest release decisions visible.</span></div><button class="small" id="clearReleaseHistory">Clear</button></div>
+  <div id="releaseHistoryList" class="rh-list"><div class="rh-empty">No release checks recorded yet.</div></div>
+</section>
 <section id="deploymentControl" class="deployment-control panel">
   <div class="dc-head"><div><small>DEPLOYMENT CONTROL</small><strong>GitHub Pages Release</strong><span>Deployment is locked until every release check passes.</span></div><strong id="deploymentControlState">LOCKED</strong></div>
   <div class="dc-actions">
@@ -274,6 +278,12 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 (()=>{const run=document.getElementById("runReleaseCheck"),btn=document.getElementById("prepareDeployment"),state=document.getElementById("deploymentControlState"),txt=document.getElementById("deploymentControlText"),list=document.getElementById("releaseCheckList");if(!btn||!run)return;
 const sync=()=>{const ready=document.getElementById("releaseDecision")?.textContent==="RELEASE READY";btn.disabled=!ready;state.textContent=ready?"READY":"LOCKED";state.className=ready?"ready":"locked";txt.textContent=ready?"Release gate passed. The GitHub Pages workflow can now be started from GitHub Actions.":"Run the Final Deployment Checklist first."};
 run.addEventListener("click",()=>setTimeout(sync,20));btn.addEventListener("click",()=>{if(btn.disabled)return;window.cmbEvent?.("Deployment prepared","Release gate passed. Open GitHub Actions to start the Pages workflow.","🚀");txt.textContent="Deployment prepared. Start the latest GitHub Pages workflow from GitHub Actions.";btn.textContent="Deployment Prepared";btn.disabled=true;});sync();
+})();</script>
+<script>
+(()=>{const run=document.getElementById("runReleaseCheck"),list=document.getElementById("releaseCheckList"),out=document.getElementById("releaseHistoryList"),clear=document.getElementById("clearReleaseHistory");if(!run||!out)return;const key="cmbReleaseHistory";let history=[];try{history=JSON.parse(localStorage.getItem(key)||"[]")}catch{}
+const render=()=>{out.innerHTML=history.length?history.map(x=>"<div class='rh-item "+(x.ready?"ready":"blocked")+"'><i>"+(x.ready?"✓":"!")+"</i><div><b>"+x.status+"</b><span>"+x.detail+"</span></div><time>"+x.time+"</time></div>").join(""):"<div class='rh-empty'>No release checks recorded yet.</div>"};
+run.addEventListener("click",()=>setTimeout(()=>{const bad=list?.querySelectorAll(".rc-item.bad").length||0;const ready=!bad&&!!list?.children.length;history.unshift({ready,status:ready?"RELEASE READY":"BLOCKED",detail:ready?"All release checks passed.":" "+bad+" release check(s) need attention.",time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})});history=history.slice(0,10);localStorage.setItem(key,JSON.stringify(history));render();window.cmbEvent?.("Release history updated",ready?"Release recorded as ready.":"Blocked release recorded for review.",ready?"✓":"!");},30));
+clear?.addEventListener("click",()=>{history=[];localStorage.removeItem(key);render()});render();
 })();</script>
 </body>
 </html>
