@@ -61,6 +61,18 @@
   });
 })();
 
+/* CMB AI — live task progress sync */
+(()=>{
+ const fill=document.getElementById("progressFill"),textEl=document.getElementById("progressText"),meta=document.getElementById("progressMeta");
+ if(!fill&&!textEl&&!meta)return;
+ document.addEventListener("cmb:task-progress",event=>{
+   const d=event.detail||{},percent=Number(d.percent)||0,total=Number(d.total)||0,done=Number(d.completed)||0;
+   if(fill)fill.style.width=Math.max(0,Math.min(100,percent))+"%";
+   if(textEl)textEl.textContent=percent+"%";
+   if(meta)meta.textContent=done+" of "+total+" tasks completed";
+ });
+})();
+
 /* CMB AI — restore persisted event stream */
 (()=>{
   document.addEventListener("cmb:project-events-restored",event=>{
