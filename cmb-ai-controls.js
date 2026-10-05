@@ -123,3 +123,78 @@
     try{await navigator.clipboard.writeText(out.textContent);window.cmbEvent?.("Release report copied","Deployment report copied to clipboard.","✓");}catch(e){window.cmbEvent?.("Release report copy failed","Clipboard access was unavailable.","!");}
   });
 })();
+
+/* CMB AI — real AI change workflow: accept, reject, undo */
+(()=>{
+  const panel=document.getElementById("acaChangePanel");
+  const accept=document.getElementById("acaAccept");
+  const reject=document.getElementById("acaReject");
+  const undo=document.getElementById("acaUndo");
+  if(!panel||!accept||!reject||!undo)return;
+
+  let lastAccepted=null;
+  let pendingFile=null;
+  let pendingBefore=null;
+
+  const textOf=id=>document.getElementById(id)?.textContent||"";
+  const editor=()=>document.getElementById("code");
+
+  function syncEditor(value,file){
+    const box=editor();
+    if(!box)return false;
+    box.value=value;
+    box.dispatchEvent(new Event("input",{bubbles:true}));
+    box.dispatchEvent(new Event("change",{bubbles:true}));
+    if(window.state?.files)window.state.files[file]=value;
+    if(typeof window.saveCurrent==="function")window.saveCurrent();
+    document.dispatchEvent(new CustomEvent("cmb:editor-refresh"));
+    return true;
+  }
+
+  accept.addEventListener("click",()=>{
+    const file=window.state?.currentFile||"index.html";
+    const before=textOf("acaBefore");
+    const proposed=textOf("acaAfter");
+    if(!proposed.trim()){
+      window.cmbEvent?.("AI change unavailable","There is no proposed code to accept.","!");
+      return;
+    }
+    pendingFile=file;
+    pendingBefore=before;
+    lastAccepted={file,before:before||window.state?.files?.[file]||"",after:proposed};
+    if(syncEditor(proposed,file)){
+      panel.classList.add("hidden");
+      const stateEl=document.getElementById("acaState");
+      if(stateEl)stateEl.textContent="Change accepted";
+      window.reactorResponding?.();
+      window.cmbEvent?.("AI code applied","The proposed code is now in the editor for "+file+".","✓");
+    }
+  },true);
+
+  reject.addEventListener("click",()=>{
+    panel.classList.add("hidden");
+    pendingFile=null;
+    pendingBefore=null;
+    const stateEl=document.getElementById("acaState");
+    if(stateEl)stateEl.textContent="AI ready";
+    window.cmbEvent?.("AI change rejected","The proposed code was discarded without changing the editor.","×");
+  },true);
+
+  undo.addEventListener("click",()=>{
+    if(!lastAccepted){
+      window.cmbEvent?.("Nothing to undo","No accepted AI code change is available.","!");
+      return;
+    }
+    if(syncEditor(lastAccepted.before,lastAccepted.file)){
+      const restored=lastAccepted.file;
+      lastAccepted=null;
+      pendingFile=null;
+      pendingBefore=null;
+      panel.classList.add("hidden");
+      const stateEl=document.getElementById("acaState");
+      if(stateEl)stateEl.textContent="Change undone";
+      window.reactorResponding?.();
+      window.cmbEvent?.("AI code restored","The previous version of "+restored+" was restored.","↶");
+    }
+  },true);
+})();
