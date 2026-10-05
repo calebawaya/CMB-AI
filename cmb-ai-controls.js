@@ -91,3 +91,32 @@
     window.cmbEvent?.("AI change undone","The last accepted AI change was restored.","↶");
   },true);
 })();
+
+/* CMB AI — release report */
+(()=>{
+  const github=document.getElementById("github");
+  if(!github||document.getElementById("releaseReport"))return;
+  const panel=document.createElement("section");
+  panel.id="releaseReport";
+  panel.className="release-report panel";
+  panel.innerHTML=`<div class="rr-head"><div><small>RELEASE REPORT</small><strong>Deployment Report</strong><span>Generate a compact report you can review before publishing.</span></div><div class="rr-buttons"><button class="small primary" id="generateReleaseReport">Generate</button><button class="small" id="copyReleaseReport">Copy</button></div></div><pre id="releaseReportText">No release report generated yet.</pre>`;
+  const anchor=document.getElementById("releaseSummary");
+  anchor?.parentNode?.insertBefore(panel,anchor);
+  const report=()=>{
+    const decision=document.getElementById("releaseDecision")?.textContent||"NOT CHECKED";
+    const confidence=document.getElementById("releaseConfidence")?.textContent||"0%";
+    const checks=[...document.querySelectorAll("#releaseCheckList .rc-item")];
+    const passed=checks.filter(x=>x.classList.contains("ok")).length;
+    const blocked=checks.filter(x=>x.classList.contains("bad")).length;
+    const build=document.getElementById("buildState")?.textContent||"READY";
+    const time=new Date().toLocaleString();
+    return `CMB AI RELEASE REPORT\n====================\nDecision: ${decision}\nConfidence: ${confidence}\nRelease checks: ${passed} passed / ${blocked} blocked\nBuild status: ${build}\nGenerated: ${time}\n\nNext step: ${decision==="RELEASE READY"?"Open Deployment Control and start the GitHub Pages workflow.":"Review Release Insight and resolve the blocked checks."}`;
+  };
+  document.getElementById("generateReleaseReport")?.addEventListener("click",()=>{
+    const out=document.getElementById("releaseReportText");out.textContent=report();window.cmbEvent?.("Release report generated","CMB AI generated a deployment report.","▤");
+  });
+  document.getElementById("copyReleaseReport")?.addEventListener("click",async()=>{
+    const out=document.getElementById("releaseReportText");if(out.textContent==="No release report generated yet.")out.textContent=report();
+    try{await navigator.clipboard.writeText(out.textContent);window.cmbEvent?.("Release report copied","Deployment report copied to clipboard.","✓");}catch(e){window.cmbEvent?.("Release report copy failed","Clipboard access was unavailable.","!");}
+  });
+})();
