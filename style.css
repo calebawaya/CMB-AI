@@ -446,3 +446,9 @@ body.light-theme .health-dashboard{background:rgba(255,255,255,.86);border-color
 .deployment-guard>span{color:#4ade80;font-size:10px}.deployment-guard strong{font-size:10px}.deployment-guard small{color:var(--muted);font-size:9px}
 .deployment-guard.guard-error{border-color:rgba(248,113,113,.35)}.deployment-guard.guard-error>span{color:#f87171}
 @media(max-width:700px){.deployment-guard{right:8px;bottom:8px;max-width:calc(100vw - 16px);flex-wrap:wrap}}
+
+/* Deployment diagnostics */
+.deployment-diagnostics{margin:18px 18px 24px;padding:14px;border:1px solid rgba(96,165,250,.22);background:linear-gradient(145deg,rgba(8,15,35,.94),rgba(4,9,24,.88));box-shadow:0 0 28px rgba(37,99,235,.08)}
+.dd-head{display:flex;align-items:center;justify-content:space-between;gap:14px}.dd-head div{display:grid;gap:4px}.dd-head small{font-size:9px;color:#60a5fa;letter-spacing:.8px}.dd-head strong{font-size:13px}.dd-head span{font-size:10px;color:var(--muted)}
+.dd-list{display:grid;gap:7px;margin-top:12px}.dd-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:rgba(2,6,23,.55);font-size:10px}.dd-item i{font-style:normal;color:#60a5fa}.dd-item.ok i{color:#4ade80}.dd-item.bad i{color:#f87171}.dd-item b{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.dd-summary{padding:9px 10px;border-radius:8px;font-size:10px;border:1px solid rgba(96,165,250,.2);background:rgba(37,99,235,.07)}.dd-summary.ok{color:#4ade80}.dd-summary.bad{color:#f87171}
+@media(max-width:700px){.dd-head{align-items:flex-start;flex-direction:column}.dd-head button{width:100%}}
