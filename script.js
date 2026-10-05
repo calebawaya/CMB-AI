@@ -545,3 +545,26 @@ function createNamedSnapshot(){
  toast("Named snapshot saved");renderAiSnapshotStatus();renderAiSnapshots();
 }
 $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
+
+
+/* CMB AI — AI Builder */
+(()=>{
+  const idea=document.getElementById("builderIdea"),chars=document.getElementById("builderChars"),btn=document.getElementById("generateBuild"),result=document.getElementById("builderResult"),title=document.getElementById("builderResultTitle"),status=document.getElementById("builderResultStatus");
+  if(!idea||!chars||!btn||!result)return;
+  idea.addEventListener("input",()=>chars.textContent=idea.value.length+" / 1000");
+  btn.addEventListener("click",async()=>{
+    const q=idea.value.trim(); if(!q){idea.focus();return}
+    btn.disabled=true;btn.textContent="Building…";status.textContent="THINKING";result.innerHTML='<div class="builder-empty">CMB AI is designing your project structure…</div>';reactorThinking();
+    try{
+      const r=await fetch("http://127.0.0.1:5000/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:"Create a practical starter project plan for this idea. Include a project name, short description, recommended files, and 5 development tasks. Keep it beginner-friendly. Idea: "+q,project:{name:q,files:state.files}})});
+      const data=await r.json();
+      if(!data.ok)throw new Error(data.error||"Builder failed");
+      const text=data.answer||"Project plan generated.";
+      title.textContent="Generated project plan";status.textContent="READY";
+      result.innerHTML='<div class="builder-file"><div><b>✦ AI PLAN</b><br><small>Generated from your idea</small></div></div><div class="builder-file"><div><b>Project idea</b><br><small>'+escapeHtml(q)+'</small></div></div><div class="builder-file"><div><b>Development plan</b><br><small>'+escapeHtml(text).replace(/\n/g,"<br>")+'</small></div></div>';
+      reactorResponding();setTimeout(()=>setReactorState("ready"),900);
+    }catch(err){status.textContent="OFFLINE";result.innerHTML='<div class="builder-empty">AI Builder could not reach the local backend. Start the CMB AI Python server and try again.</div>';reactorError();setTimeout(()=>setReactorState("ready"),900)}
+    finally{btn.disabled=false;btn.textContent="✦ Generate project"}
+  });
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+})();
