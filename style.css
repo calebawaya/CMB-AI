@@ -312,3 +312,12 @@ body.light-theme .terminal-output{background:#101a2a;color:#dbeafe}
   .preview-device-tools{display:none}
   .preview-shell,.preview-shell.preview-tablet,.preview-shell.preview-mobile{left:3vw;right:3vw;width:auto;transform:none}
 }
+
+
+/* AI project editor bar */
+.ai-command-bar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 18px;padding:16px 18px;border:1px solid rgba(70,210,255,.18);border-radius:14px;background:rgba(5,18,34,.72);box-shadow:0 0 28px rgba(0,170,255,.06)}
+.ai-command-bar>div:first-child{display:flex;flex-direction:column;gap:3px;min-width:220px}.ai-command-bar small{color:rgba(220,235,255,.55)}
+#aiCommandForm{display:flex;flex:1;gap:8px;max-width:760px}.ai-command-bar .input{flex:1;min-width:0}.ai-command-bar button{white-space:nowrap}
+#aiCommandStatus{font-size:11px;color:#54ddff;min-width:170px}
+@media(max-width:850px){.ai-command-bar{flex-direction:column;align-items:stretch}.ai-command-bar>div:first-child{min-width:0}#aiCommandForm{max-width:none}.ai-command-bar button{width:100%}#aiCommandStatus{min-width:0}}
+body.light-theme .ai-command-bar{background:rgba(255,255,255,.88);border-color:rgba(30,100,180,.16)}
