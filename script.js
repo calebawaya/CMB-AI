@@ -644,3 +644,19 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.addEventListener("change",e=>{if(e.target.matches("#tasks input[type=checkbox]"))syncTaskProgress()});
  window.cmbSyncTaskProgress=syncTaskProgress;
 })();
+
+
+/* CMB AI — workspace live preview */
+(()=>{
+ const preview=document.getElementById("preview"); if(!preview)return;
+ preview.addEventListener("click",()=>{
+   const modal=document.getElementById("previewModal"); if(!modal)return;
+   const frame=modal.querySelector("iframe");
+   const html=state.files?.["index.html"]||"";
+   const css=state.files?.["style.css"]||"";
+   const js=state.files?.["script.js"]||"";
+   const doc=html.replace("</head>",'<style>'+css.replace(/<\\/style/gi,"")+'</style></head>').replace("</body>",'<script>'+js.replace(/<\\/script/gi,"")+'</script></body>');
+   if(frame)frame.srcdoc=doc;
+   modal.classList.remove("hidden");
+ });
+})();
