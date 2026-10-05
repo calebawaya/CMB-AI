@@ -1781,6 +1781,11 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  const events=[];
  const render=()=>{list.innerHTML=events.length?events.slice(0,30).map(e=>'<div class="as-item"><i>'+e.icon+'</i><div><b>'+e.title+'</b><span>'+e.detail+'</span></div><time>'+new Date(e.at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})+'</time></div>').join(""):'<div class="as-empty">Waiting for workspace events…</div>';};
  window.cmbEvent=(title,detail,icon="●")=>{events.unshift({title,detail,icon,at:Date.now()});render();};
+ document.addEventListener("cmb:project-events-restored",event=>{
+   const restored=event.detail?.events||[];
+   restored.forEach(e=>events.push({title:e.event_type||"Workspace event",detail:e.message||"",icon:"↺",at:e.created_at?new Date(e.created_at).getTime():Date.now()}));
+   events.sort((a,b)=>b.at-a.at); render();
+ });
  clear?.addEventListener("click",()=>{events.length=0;render()});
  document.addEventListener("cmb:editor-refresh",()=>window.cmbEvent("Editor refreshed","Current file and editor state synchronized.","✦"));
  document.addEventListener("cmb:workspace-sync",()=>window.cmbEvent("Workspace synchronized","Files, editor, and project state are aligned.","↻"));
