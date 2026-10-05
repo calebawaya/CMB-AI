@@ -295,7 +295,7 @@
       window.state.files=local.files;
       window.state.currentFile=Object.keys(local.files)[0]||"index.html";
       localStorage.setItem("cmbai_projects",JSON.stringify(window.state.projects));
-      if(typeof window.openProject==="function") window.openProject(local);
+      if(typeof window.openProject==="function") window.openProject(local,{skipBackend:true});
       document.dispatchEvent(new CustomEvent("cmb:active-project-hydrated",{detail:{projectId:remote.id,tasks:local.tasks.length,chat:local.chat.length,events:local.events.length}}));
       return remote;
     }catch(error){
