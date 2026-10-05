@@ -1306,3 +1306,18 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   }
  });
 })();
+
+/* CMB AI — GitHub Pages live deployment status */
+(()=>{
+ const link=document.getElementById("pagesDeployLink"),status=document.getElementById("pagesDeployStatus");
+ if(!link||!status)return;
+ const repo=location.hostname==="calebawaya.github.io" ? "calebawaya/CMB-AI" : "";
+ const parts=repo.split("/");
+ if(parts.length===2){
+  link.href="https://"+parts[0]+".github.io/"+parts[1]+"/";
+  link.textContent="Open Live Site";
+ }else{
+  link.href="https://github.com/calebawaya/CMB-AI/actions";
+  link.textContent="Open Deploy Actions";
+ }
+})();
