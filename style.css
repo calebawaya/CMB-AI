@@ -394,3 +394,15 @@ body.light-theme .health-dashboard{background:rgba(255,255,255,.86);border-color
 .ide-minimap i{display:block;height:2px;margin:2px 0;border-radius:2px;background:#7c8db5;opacity:.55}
 .editor #code{padding-right:100px!important}
 @media(max-width:700px){.ide-minimap{display:none}.editor #code{padding-right:15px!important}.ide-find .input{width:100%}}
+
+/* Advanced editor intelligence */
+.editor{position:relative}
+.editor-gutter{position:absolute;left:1px;top:111px;width:42px;height:275px;padding:15px 7px;overflow:hidden;text-align:right;pointer-events:none;z-index:4;background:#080d17;border-right:1px solid #202c43;color:#596782;font:12px/1.6 Consolas,monospace}
+.editor-gutter span{display:block;height:19.2px}
+.editor #code{padding-left:55px!important}
+.editor-suggestions{position:absolute;left:58px;top:150px;z-index:8;min-width:180px;max-width:280px;padding:5px;border:1px solid var(--line);border-radius:9px;background:#101827;box-shadow:0 15px 40px rgba(0,0,0,.35)}
+.editor-suggestions button{display:block;width:100%;padding:7px 9px;border:0;border-radius:6px;background:transparent;color:#dce6f7;text-align:left;font:11px Consolas,monospace;cursor:pointer}
+.editor-suggestions button:hover{background:#202c43}
+.editor-diagnostics{margin-top:8px;padding:8px 10px;border:1px solid rgba(74,222,128,.25);border-radius:8px;background:rgba(74,222,128,.06);color:#4ade80;font-size:10px;font-weight:700}
+.editor-diagnostics.error{border-color:rgba(250,204,21,.3);background:rgba(250,204,21,.07);color:#facc15}
+@media(max-width:700px){.editor-gutter{display:none}.editor #code{padding-left:15px!important}.editor-suggestions{left:15px;right:15px;max-width:none}}
