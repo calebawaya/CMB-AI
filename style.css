@@ -253,3 +253,12 @@ body::after{
 .builder-file{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid rgba(80,190,255,.14);border-radius:10px;background:rgba(0,15,35,.45)}
 .builder-file b{color:#dff8ff}.builder-file small{color:rgba(220,235,255,.5)}
 @media(max-width:850px){.builder-console{grid-template-columns:1fr}.builder-hero{align-items:flex-start;flex-direction:column}.builder-status{align-self:flex-start}}
+
+
+/* BUILDER FEATURE TOOLBAR */
+.builder-tools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:7px;border:1px solid rgba(80,190,255,.14);border-radius:12px;background:rgba(0,10,28,.5);width:max-content;max-width:100%}
+.builder-tool{transition:.18s ease}.builder-tool:hover{border-color:rgba(50,215,255,.4)!important;transform:translateY(-1px)}
+.builder-tool.active{background:rgba(0,160,230,.16);border-color:rgba(55,220,255,.42)!important;box-shadow:0 0 18px rgba(0,180,255,.12)}
+.builder-tool-panel{padding:12px;border:1px solid rgba(80,190,255,.13);border-radius:10px;background:rgba(0,12,30,.42)}
+.builder-task{display:flex;gap:10px;align-items:flex-start;padding:11px;border-bottom:1px solid rgba(80,190,255,.09)}
+.builder-task:last-child{border-bottom:0}.builder-task input{accent-color:#38dfff;margin-top:3px}.builder-task.done span{text-decoration:line-through;opacity:.5}
