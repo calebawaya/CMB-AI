@@ -1419,3 +1419,45 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  lang.addEventListener("change",update);update();
  btn.addEventListener("click",()=>{const l=lang.value,file=(name.value||"main."+ext[l]).trim();state.files[file]=templates[l]||"";state.currentFile=file;renderFiles?.();renderEditor?.();saveState?.();msg.textContent="✓ Created "+file;window.cmbLogActivity?.("Created "+file+" from "+l+" template.","SYSTEM");window.cmbConsoleLog?.("Created language file "+file,"LANG");window.cmbNotify?.("Language file created",file,"success");});
 })();
+
+
+/* CMB AI language-aware editor upgrade */
+(()=>{
+ const code=document.getElementById("code"); if(!code)return;
+ const extMap={html:["HTML","⌁"],htm:["HTML","⌁"],css:["CSS","◈"],js:["JavaScript","JS"],mjs:["JavaScript","JS"],ts:["TypeScript","TS"],tsx:["TypeScript React","TS"],jsx:["JavaScript React","JS"],py:["Python","PY"],java:["Java","☕"],c:["C","C"],cpp:["C++","C++"],cc:["C++","C++"],cs:["C#","C#"],go:["Go","GO"],rs:["Rust","RS"],php:["PHP","PHP"],rb:["Ruby","RB"],swift:["Swift","SW"],kt:["Kotlin","KT"],kts:["Kotlin","KT"],sql:["SQL","DB"],sh:["Shell","SH"],bash:["Shell","SH"],ps1:["PowerShell","PS"],r:["R","R"],dart:["Dart","DA"],lua:["Lua","LU"],scala:["Scala","SC"],pl:["Perl","PL"],json:["JSON","{}"],xml:["XML","<>"],yaml:["YAML","YML"],yml:["YAML","YML"],md:["Markdown","MD"]};
+ const info=name=>{const ext=(name.split(".").pop()||"").toLowerCase();return extMap[ext]||["Plain Text","TXT"]};
+ let bar=document.getElementById("editorLanguageBar");
+ if(!bar){bar=document.createElement("div");bar.id="editorLanguageBar";bar.className="code-language-bar";bar.innerHTML='<span class="code-file-icon" id="editorFileIcon">TXT</span><strong id="editorLanguageName">Plain Text</strong><span id="editorLanguageMode">text</span><span class="code-editor-tip">Tab inserts spaces · Ctrl/Cmd+S saves</span>';const editor=code.closest(".editor");editor?.insertBefore(bar,code);}
+ const nameEl=document.getElementById("editorLanguageName"),iconEl=document.getElementById("editorFileIcon"),modeEl=document.getElementById("editorLanguageMode");
+ function update(){const [name,icon]=info(state.currentFile||"");nameEl.textContent=name;iconEl.textContent=icon;modeEl.textContent=(state.currentFile.split(".").pop()||"txt").toUpperCase();code.dataset.language=name;code.dataset.extension=(state.currentFile.split(".").pop()||"").toLowerCase();document.dispatchEvent(new Event("cmb:editor-refresh"));}
+ const observer=new MutationObserver(update);observer.observe(document.getElementById("editorTitle"),{childList:true,subtree:true});
+ code.addEventListener("keydown",e=>{
+   if(e.key==="Tab"){e.preventDefault();const start=code.selectionStart,end=code.selectionEnd;code.setRangeText("  ",start,end,"end");}
+   if(e.key==="Enter"){const before=code.value.slice(0,code.selectionStart);const line=before.slice(before.lastIndexOf("\n")+1);const indent=(line.match(/^\s*/)||[""])[0];if(indent){e.preventDefault();const pos=code.selectionStart;code.setRangeText("\n"+indent,pos,code.selectionEnd,"end");}}
+ });
+ code.addEventListener("input",()=>{code.dataset.dirty="true";bar.classList.add("dirty");});
+ document.getElementById("saveCode")?.addEventListener("click",()=>{code.dataset.dirty="false";bar.classList.remove("dirty");setTimeout(update,0);});
+ update();
+})();
+
+/* Lightweight local syntax highlighting preview */
+(()=>{
+ const code=document.getElementById("code");if(!code)return;
+ const button=document.createElement("button");button.type="button";button.className="small editor-highlight-toggle";button.textContent="Syntax: ON";
+ document.querySelector(".editor-actions")?.appendChild(button);
+ let enabled=true;
+ button.onclick=()=>{enabled=!enabled;button.textContent="Syntax: "+(enabled?"ON":"OFF");document.getElementById("editorSyntaxPreview")?.classList.toggle("hidden",!enabled);};
+ const wrap=code.parentElement,preview=document.createElement("pre");preview.id="editorSyntaxPreview";preview.className="editor-syntax-preview";wrap?.insertBefore(preview,code);
+ const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+ function highlight(src){
+   let x=esc(src),tokens=[];
+   const stash=v=>{const id="§§TOK"+tokens.length+"§§";tokens.push(v);return id;};
+   x=x.replace(/(&lt;!--[\s\S]*?--&gt;|\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/)/g,m=>stash('<span class="tok-comment">'+m+"</span>"));
+   x=x.replace(/(&quot;[^&]*?&quot;|'[^']*')/g,m=>stash('<span class="tok-string">'+m+"</span>"));
+   x=x.replace(/\b(true|false|null|undefined|None|True|False|public|private|class|function|def|return|import|from|const|let|var|if|else|for|while|new|async|await|SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|TABLE)\b/g,'<span class="tok-key">$1</span>');
+   x=x.replace(/\b(\d+(?:\.\d+)?)\b/g,'<span class="tok-number">$1</span>');
+   tokens.forEach((v,i)=>{x=x.replaceAll("§§TOK"+i+"§§",v)});return x;
+ }
+ function render(){if(!enabled)return;preview.innerHTML=highlight(code.value)+"\n";preview.scrollTop=code.scrollTop;preview.scrollLeft=code.scrollLeft;}
+ code.addEventListener("input",render);code.addEventListener("scroll",()=>{preview.scrollTop=code.scrollTop;preview.scrollLeft=code.scrollLeft});document.addEventListener("cmb:editor-refresh",render);setTimeout(render,0);
+})();
