@@ -24,7 +24,7 @@ function redoBuilder(){if(!builder.future.length)return toast("Nothing to redo")
 function duplicateSelected(){const b=builder.blocks.find(x=>x.id===builder.selected);if(!b)return toast("Select a block first");pushHistory();const copy=JSON.parse(JSON.stringify(b));copy.id=Date.now()+Math.random();builder.blocks.splice(builder.blocks.indexOf(b)+1,0,copy);builder.selected=copy.id;renderBuilder();selectBlock(copy.id)}
 function moveSelected(dir){const i=builder.blocks.findIndex(x=>x.id===builder.selected);if(i<0)return toast("Select a block first");const n=i+dir;if(n<0||n>=builder.blocks.length)return;pushHistory();[builder.blocks[i],builder.blocks[n]]=[builder.blocks[n],builder.blocks[i]];renderBuilder();selectBlock(builder.blocks[n].id)}
 
-const state={assets:[],
+const state=window.state={assets:[],
   projects:JSON.parse(localStorage.getItem("cmbai_projects")||"[]"),
   active:null,
   files:{
