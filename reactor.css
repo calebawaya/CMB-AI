@@ -1,0 +1,9 @@
+/* Full-screen rotating triangular reactor background */
+#cmbReactor{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;overflow:hidden;background:#020617 url("assets/reactor-bg.svg") center/cover no-repeat;opacity:.78;transform-origin:center;animation:cmbReactorRotate 28s linear infinite}
+#cmbReactor::before{content:"";position:absolute;inset:-15%;background:radial-gradient(circle at center,rgba(18,205,255,.34),transparent 38%,rgba(0,31,100,.25) 68%,rgba(0,0,0,.35) 100%);mix-blend-mode:screen;animation:cmbReactorPulse 3s ease-in-out infinite}
+#cmbReactor::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at center,transparent 25%,rgba(0,0,0,.22) 72%,rgba(0,0,0,.52) 100%);}
+#cmbReactor .reactor-ring,#cmbReactor .reactor-core{display:none}
+.app{position:relative;z-index:1}
+@keyframes cmbReactorRotate{from{transform:rotate(0deg) scale(1.08)}to{transform:rotate(360deg) scale(1.08)}}
+@keyframes cmbReactorPulse{0%,100%{opacity:.45;transform:scale(.96)}50%{opacity:.9;transform:scale(1.06)}}
+@media(prefers-reduced-motion:reduce){#cmbReactor{animation:none}#cmbReactor::before{animation:none}}
