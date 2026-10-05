@@ -770,3 +770,19 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  });
  function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
 })();
+/* CMB AI — GitHub file viewer workspace sync */
+(()=>{
+ const list=document.getElementById("githubFiles");
+ if(!list)return;
+ document.addEventListener("click",e=>{
+   const row=e.target.closest("#githubFiles [data-github-path]");
+   if(!row)return;
+   const path=row.dataset.githubPath;
+   if(!path)return;
+   setTimeout(()=>{
+     const title=document.getElementById("editorTitle");
+     if(title)title.textContent=path;
+     document.querySelectorAll("#githubFiles [data-github-path]").forEach(x=>x.classList.toggle("active",x===row));
+   },0);
+ });
+})();
