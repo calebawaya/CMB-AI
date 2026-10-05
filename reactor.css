@@ -1,36 +1,58 @@
-/* CMB-AI reactor background — uses the exact uploaded reactor image */
+/* CMB-AI reactor background — exact uploaded image, centered and full-screen */
+html,
+body{
+  width:100%;
+  min-width:100%;
+  height:100%;
+  min-height:100%;
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
+  background:#020617;
+}
+
 #cmbReactor{
   position:fixed;
   inset:0;
   width:100vw;
   height:100vh;
+  min-width:100vw;
+  min-height:100vh;
   z-index:0;
   pointer-events:none;
   overflow:hidden;
   background:#020617;
 }
 
-/* Hide the old CSS reactor parts so they do not change the uploaded artwork. */
+/* Hide the old CSS reactor parts so they cannot add shapes or gaps. */
 #cmbReactor::before,
 #cmbReactor::after,
 #cmbReactor .reactor-ring,
 #cmbReactor .reactor-core::before,
 #cmbReactor .reactor-core::after{
   display:none;
+  content:none;
 }
 
-/* The uploaded image fills the complete background, then rotates fast. */
+/* Exact uploaded artwork: centered, oversized, and covering the whole viewport. */
 #cmbReactor .reactor-core{
   display:block;
   position:absolute;
-  inset:-12%;
-  width:124%;
-  height:124%;
-  transform-origin:center;
+  left:50%;
+  top:50%;
+  width:140vw;
+  height:140vh;
+  transform-origin:center center;
+  transform:translate(-50%,-50%) rotate(0deg) scale(1.06);
   clip-path:none;
-  background:url("Neon%20Blue%20Arc%20Reactor%20Core.png") center/cover no-repeat;
+  background-image:url("Neon%20Blue%20Arc%20Reactor%20Core.png");
+  background-position:center center;
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-color:#020617;
   filter:none;
   opacity:0;
+  will-change:transform,opacity;
   animation:cmbExactReactorRevealSpin 4s linear 1.2s infinite;
 }
 
@@ -39,19 +61,19 @@
   z-index:1;
 }
 
-/* First the reactor image appears, then it immediately enters a fast rotation. */
+/* The exact image appears first, stays centered, then rotates fast with no gaps. */
 @keyframes cmbExactReactorRevealSpin{
   0%{
     opacity:0;
-    transform:rotate(0deg) scale(1.06);
+    transform:translate(-50%,-50%) rotate(0deg) scale(1.06);
   }
   18%{
     opacity:1;
-    transform:rotate(0deg) scale(1.06);
+    transform:translate(-50%,-50%) rotate(0deg) scale(1.06);
   }
   100%{
     opacity:1;
-    transform:rotate(360deg) scale(1.06);
+    transform:translate(-50%,-50%) rotate(360deg) scale(1.06);
   }
 }
 
@@ -59,6 +81,6 @@
   #cmbReactor .reactor-core{
     animation:none;
     opacity:1;
-    transform:scale(1.06);
+    transform:translate(-50%,-50%) scale(1.06);
   }
 }
