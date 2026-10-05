@@ -625,3 +625,22 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    },700);
  });
 })();
+
+
+/* CMB AI — live task progress */
+(()=>{
+ function syncTaskProgress(){
+   const tasks=[...document.querySelectorAll("#tasks input[type=checkbox]")];
+   if(!tasks.length)return;
+   const done=tasks.filter(x=>x.checked).length;
+   const percent=Math.round(done/tasks.length*100);
+   const bar=document.getElementById("progressBar"),text=document.getElementById("progressText"),dash=document.getElementById("progressCount");
+   if(bar)bar.style.width=percent+"%";
+   if(text)text.textContent=percent+"%";
+   if(dash)dash.textContent=percent+"%";
+   tasks.forEach(x=>x.closest(".task")?.classList.toggle("done",x.checked));
+   localStorage.setItem("cmbai_task_progress",JSON.stringify({done,total:tasks.length,percent}));
+ }
+ document.addEventListener("change",e=>{if(e.target.matches("#tasks input[type=checkbox]"))syncTaskProgress()});
+ window.cmbSyncTaskProgress=syncTaskProgress;
+})();
