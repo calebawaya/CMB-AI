@@ -1669,3 +1669,49 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    run(map[btn.dataset.acaAction]||"Review this code.");
  }));
 })();
+
+
+/* AI coding assistant change review */
+(()=>{
+ const panel=document.getElementById("acaChangePanel"),before=document.getElementById("acaBefore"),after=document.getElementById("acaAfter"),summary=document.getElementById("acaChangeSummary");
+ if(!panel||!before||!after)return;
+ let pending=null;
+ const esc=s=>String(s||"");
+ function showChange(file,next,instruction){
+   pending={file,next};
+   before.textContent=state.files[file]||""; after.textContent=next;
+   const oldLines=(state.files[file]||"").split("\n"),newLines=next.split("\n");
+   const changed=oldLines.reduce((n,line,i)=>n+(line!==newLines[i]?1:0),0)+Math.max(0,newLines.length-oldLines.length);
+   summary.textContent="AI proposed changes to "+file+" • approximately "+changed+" changed line(s). Review before accepting.";
+   panel.classList.remove("hidden");
+ }
+ window.cmbAIPreviewChange=async instruction=>{
+   const file=state.currentFile||"index.html",source=state.files[file]||"";
+   summary.textContent="Generating proposed change…";panel.classList.remove("hidden");reactorThinking?.();
+   try{
+    const res=await fetch("http://127.0.0.1:5000/api/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instruction,files:{...state.files},current_file:file})});
+    if(!res.ok)throw new Error();
+    const data=await res.json(),updated=data.files||data.updated_files||data.project||{};
+    const next=typeof updated[file]==="string"?updated[file]:null;
+    if(next===null)throw new Error();
+    showChange(file,next,instruction);reactorResponding?.();
+   }catch(e){summary.textContent="AI could not generate a change. Check that the backend is running.";reactorError?.()}
+ };
+ document.querySelectorAll("[data-aca-action]").forEach(btn=>{
+   const old=btn.onclick;
+   btn.addEventListener("click",e=>{
+     e.preventDefault();
+     const map={explain:"Explain this code clearly.",improve:"Improve this code while preserving its purpose.",debug:"Fix the bugs and errors in this code.",optimize:"Optimize this code while preserving its behavior."};
+     if(map[btn.dataset.acaAction])window.cmbAIPreviewChange(map[btn.dataset.acaAction]);
+   });
+ });
+ document.getElementById("acaAccept")?.addEventListener("click",()=>{
+   if(!pending)return;
+   state.files[pending.file]=pending.next;state.currentFile=pending.file;
+   saveState?.();renderFiles?.();renderEditor?.();document.dispatchEvent(new Event("cmb:editor-refresh"));document.dispatchEvent(new Event("cmb:workspace-sync"));
+   summary.textContent="✓ AI change accepted and saved.";pending=null;
+ });
+ document.getElementById("acaReject")?.addEventListener("click",()=>{
+   pending=null;panel.classList.add("hidden");summary.textContent="Change rejected.";
+ });
+})();
