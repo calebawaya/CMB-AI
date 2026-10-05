@@ -1715,3 +1715,18 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    pending=null;panel.classList.add("hidden");summary.textContent="Change rejected.";
  });
 })();
+
+
+/* Deployment Guard */
+(()=>{
+ const el=document.getElementById("deploymentGuard");if(!el)return;
+ const small=el.querySelector("small"),required=["index.html","style.css","script.js"];
+ function check(){
+  const missing=required.filter(f=>!(state.files&&state.files[f]!==undefined));
+  if(missing.length){small.textContent="Missing: "+missing.join(", ");el.classList.add("guard-error");}
+  else{small.textContent="Required site files detected • safe to deploy";el.classList.remove("guard-error");}
+ }
+ document.addEventListener("cmb:editor-refresh",check);
+ document.addEventListener("cmb:workspace-sync",check);
+ check();
+})();
