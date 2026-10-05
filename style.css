@@ -380,3 +380,17 @@ body.light-theme .health-dashboard{background:rgba(255,255,255,.86);border-color
 .tok-key{font-weight:800}
 .tok-number{font-weight:700}
 @media(max-width:700px){.code-editor-tip{width:100%;margin-left:0}.editor-syntax-preview{left:20px;right:20px;top:135px}}
+
+/* CMB AI IDE workspace */
+.ide-tabs{display:flex;align-items:center;gap:3px;overflow:auto;margin:0 0 7px;padding:5px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+.ide-tab,.ide-tab-add{flex:0 0 auto;border:1px solid transparent;background:transparent;color:var(--muted);padding:7px 10px;border-radius:7px;font:700 10px/1 system-ui;cursor:pointer}
+.ide-tab:hover{background:var(--panel);color:var(--text)}
+.ide-tab.active{background:var(--accent);color:#fff}
+.ide-tab-add{font-size:15px;color:var(--text)}
+.ide-find{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 7px;padding:7px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}
+.ide-find .input{width:150px;padding:8px;font-size:11px}
+.ide-find .small{padding:7px 9px}
+.ide-minimap{position:absolute;right:6px;top:111px;width:82px;height:275px;padding:7px;overflow:hidden;border-left:1px solid rgba(120,107,255,.2);background:rgba(5,9,18,.7);opacity:.8;pointer-events:none;z-index:3}
+.ide-minimap i{display:block;height:2px;margin:2px 0;border-radius:2px;background:#7c8db5;opacity:.55}
+.editor #code{padding-right:100px!important}
+@media(max-width:700px){.ide-minimap{display:none}.editor #code{padding-right:15px!important}.ide-find .input{width:100%}}
