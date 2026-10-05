@@ -285,5 +285,11 @@ const render=()=>{out.innerHTML=history.length?history.map(x=>"<div class='rh-it
 run.addEventListener("click",()=>setTimeout(()=>{const bad=list?.querySelectorAll(".rc-item.bad").length||0;const ready=!bad&&!!list?.children.length;history.unshift({ready,status:ready?"RELEASE READY":"BLOCKED",detail:ready?"All release checks passed.":" "+bad+" release check(s) need attention.",time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})});history=history.slice(0,10);localStorage.setItem(key,JSON.stringify(history));render();window.cmbEvent?.("Release history updated",ready?"Release recorded as ready.":"Blocked release recorded for review.",ready?"✓":"!");},30));
 clear?.addEventListener("click",()=>{history=[];localStorage.removeItem(key);render()});render();
 })();</script>
+<script>
+(()=>{const root=document.getElementById("projectReadiness");if(!root)return;
+const targets={readyFiles:"buildArtifacts",readyBuild:"buildControl",readyAI:"aiMilestones",readyDeploy:"deploymentControl"};
+Object.entries(targets).forEach(([id,target])=>{const el=document.getElementById(id);if(!el)return;el.parentElement.style.cursor="pointer";el.parentElement.title="Open "+target;el.parentElement.addEventListener("click",()=>{const panel=document.getElementById(target);panel?.scrollIntoView({behavior:"smooth",block:"center"});window.cmbEvent?.("Readiness navigation","Opened "+target+" from the release gate.","→")})});
+})();
+</script>
 </body>
 </html>
