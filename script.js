@@ -1075,3 +1075,43 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   }
  });
 })();
+
+
+/* CMB AI — AI change preview / accept / reject */
+(()=>{
+ const form=document.getElementById("aiCommandForm"),input=document.getElementById("aiCommand"),status=document.getElementById("aiCommandStatus");
+ const previewBtn=document.getElementById("aiPreviewChanges"),acceptBtn=document.getElementById("aiAcceptChanges"),rejectBtn=document.getElementById("aiRejectChanges");
+ if(!form||!input||!previewBtn)return;
+ let pending=null;
+ async function requestChanges(){
+   const instruction=input.value.trim();
+   if(!instruction){status.textContent="Enter a change first.";return}
+   status.textContent="AI is preparing a change preview…"; reactorThinking();
+   previewBtn.disabled=true;
+   try{
+    const res=await fetch("http://127.0.0.1:5000/api/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instruction,files:{...state.files},current_file:state.currentFile})});
+    if(!res.ok)throw new Error("AI request failed");
+    const data=await res.json(), updated=data.files||data.updated_files||data.project;
+    if(!updated||typeof updated!=="object")throw new Error("No changes returned");
+    pending={files:{...updated},current_file:data.current_file||state.currentFile,instruction};
+    const changed=Object.keys(pending.files).filter(k=>pending.files[k]!==state.files[k]);
+    status.textContent="Preview ready: "+(changed.length||0)+" file(s) changed.";
+    acceptBtn.disabled=false; rejectBtn.disabled=false; reactorResponding();
+   }catch(err){status.textContent="Could not create the AI preview.";reactorError()}
+   finally{previewBtn.disabled=false}
+ }
+ previewBtn.addEventListener("click",requestChanges);
+ form.addEventListener("submit",e=>{e.preventDefault();requestChanges()});
+ acceptBtn?.addEventListener("click",()=>{
+   if(!pending)return;
+   Object.keys(pending.files).forEach(name=>{if(typeof pending.files[name]==="string")state.files[name]=pending.files[name]});
+   state.currentFile=pending.current_file||state.currentFile;
+   if(typeof renderFiles==="function")renderFiles(); if(typeof renderEditor==="function")renderEditor(); if(typeof saveState==="function")saveState(); if(typeof cmbRefreshLivePreview==="function")cmbRefreshLivePreview();
+   status.textContent="✓ Changes accepted and saved to the Workspace.";
+   pending=null; acceptBtn.disabled=true; rejectBtn.disabled=true; input.value=""; reactorResponding();
+ });
+ rejectBtn?.addEventListener("click",()=>{
+   pending=null; acceptBtn.disabled=true; rejectBtn.disabled=true; status.textContent="Changes rejected. Your project was not modified."; reactorReady();
+ });
+ window.cmbPendingAiChange=()=>pending;
+})();
