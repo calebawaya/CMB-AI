@@ -262,3 +262,10 @@ body::after{
 .builder-tool-panel{padding:12px;border:1px solid rgba(80,190,255,.13);border-radius:10px;background:rgba(0,12,30,.42)}
 .builder-task{display:flex;gap:10px;align-items:flex-start;padding:11px;border-bottom:1px solid rgba(80,190,255,.09)}
 .builder-task:last-child{border-bottom:0}.builder-task input{accent-color:#38dfff;margin-top:3px}.builder-task.done span{text-decoration:line-through;opacity:.5}
+
+
+/* LIVE PROJECT PREVIEW */
+.preview-shell{position:fixed;inset:5vh 5vw;z-index:9999;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(65,220,255,.28);border-radius:18px;background:#06101d;box-shadow:0 25px 100px rgba(0,0,0,.65),0 0 50px rgba(0,180,255,.16)}
+.preview-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(5,18,38,.96);border-bottom:1px solid rgba(80,190,255,.16)}
+.preview-shell iframe{flex:1;width:100%;border:0;background:white}
+.preview-modal.hidden{display:none!important}
