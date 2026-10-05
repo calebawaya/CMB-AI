@@ -1185,3 +1185,39 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  update();
  window.addEventListener("cmb:ai-accepted",()=>snapshot("AI change accepted"));
 })();
+
+
+/* CMB AI — project checker */
+(()=>{
+ const btn=document.getElementById("projectCheck"),modal=document.getElementById("checkModal"),results=document.getElementById("checkResults"),status=document.getElementById("checkStatus");
+ if(!btn||!modal||!results)return;
+ function item(ok,title,detail){return '<div class="check-item '+(ok?"check-ok":"check-bad")+'"><b>'+(ok?"✓":"!")+ " "+title+'</b><small>'+detail+'</small></div>'}
+ function run(){
+  const files=state.files||{}, names=Object.keys(files), issues=[], checks=[];
+  const htmlFiles=names.filter(n=>/\.html?$/i.test(n));
+  const cssFiles=names.filter(n=>/\.css$/i.test(n));
+  const jsFiles=names.filter(n=>/\.js$/i.test(n));
+  checks.push(["Project files",names.length>0,names.length+" file(s) found."]);
+  checks.push(["HTML entry point",!!files["index.html"],files["index.html"]?"index.html is present.":"index.html is missing."]);
+  htmlFiles.forEach(n=>{
+   const x=files[n]||"";
+   const ok=/<html[\s>]/i.test(x)&&/<\/html>/i.test(x)&&/<head[\s>]/i.test(x)&&/<body[\s>]/i.test(x);
+   checks.push([n+" structure",ok,ok?"HTML document structure looks valid.":"Missing html, head, or body structure."]);
+   const hrefs=[...x.matchAll(/(?:href|src)=["']([^"']+)["']/gi)].map(m=>m[1]).filter(x=>!/^https?:|^data:|^#|^mailto:|^tel:/i.test(x));
+   hrefs.forEach(p=>{const clean=p.split("#")[0].split("?")[0].replace(/^\.\//,"");if(clean&&!files[clean])issues.push(n+" references missing file: "+clean)});
+  });
+  checks.push(["Stylesheet",cssFiles.length>0,cssFiles.length?cssFiles.length+" CSS file(s) found.":"No CSS file found."]);
+  checks.push(["JavaScript",jsFiles.length>0,jsFiles.length?jsFiles.length+" JS file(s) found.":"No JavaScript file found."]);
+  Object.keys(files).filter(n=>/\.js$/i.test(n)).forEach(n=>{
+   const x=files[n]||"", balanced=(x.split("{").length===x.split("}").length);
+   checks.push([n+" braces",balanced,balanced?"Basic brace balance passed.":"Unbalanced { } braces detected."]);
+  });
+  issues.forEach(x=>checks.push(["Broken file reference",false,x]));
+  const bad=checks.filter(x=>!x[1]).length, total=checks.length;
+  results.innerHTML='<div class="check-score"><b>'+(bad?"⚠ "+bad+" issue(s) found":"✓ Project looks healthy")+'</b><small>'+total+" checks completed</small></div>"+checks.map(x=>item(x[1],x[0],x[2])).join("");
+  status.textContent=bad?bad+" issue(s)":"✓ No basic issues";
+  modal.classList.remove("hidden");
+ }
+ btn.addEventListener("click",run);
+ document.getElementById("closeCheck")?.addEventListener("click",()=>modal.classList.add("hidden"));
+})();
