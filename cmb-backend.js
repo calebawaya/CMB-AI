@@ -187,4 +187,28 @@
   });
   document.addEventListener("DOMContentLoaded",()=>setTimeout(installWorkspaceHooks,300));
 
+
+  async function saveChatMessage(projectId,role,message){
+    if(!projectId || !message) return null;
+    try{return await client.chat(projectId,role,message);}catch(error){console.warn("CMB AI chat persistence failed:",error);return null;}
+  }
+  async function loadChatHistory(projectId){
+    if(!projectId) return [];
+    try{const result=await client.request("/project/"+encodeURIComponent(projectId)+"/chat"); return result.messages||[];}catch(error){console.warn("CMB AI chat history failed:",error);return [];}
+  }
+  async function logAIEvent(projectId,type,message){
+    if(!projectId) return;
+    try{await client.event(projectId,type,message);}catch(error){console.warn("CMB AI event persistence failed:",error);}
+  }
+  window.CMBAIChat={save:saveChatMessage,load:loadChatHistory,logEvent:logAIEvent};
+  document.addEventListener("cmb:ai-chat-message",event=>{
+    const detail=event.detail||{};
+    const projectId=detail.projectId||window.state?.active?.backendId;
+    if(projectId && detail.message) saveChatMessage(projectId,detail.role||"user",detail.message);
+  });
+  document.addEventListener("cmb:ai-event",event=>{
+    const detail=event.detail||{};
+    const projectId=detail.projectId||window.state?.active?.backendId;
+    if(projectId && detail.message) logAIEvent(projectId,detail.type||"ai.event",detail.message);
+  });
 })();
