@@ -37,3 +37,26 @@
   apply?.addEventListener("click",()=>{if(!generated)return;const names=Object.keys(generated);if(typeof state==="undefined"||!state.files){resultEl.textContent="Workspace state is unavailable.";return}names.forEach(name=>state.files[name]=String(generated[name]??""));state.currentFile=names[0]||state.currentFile;try{save()}catch(e){}try{renderFiles()}catch(e){}resultEl.textContent=names.length+" generated file(s) added to the workspace.";status("APPLIED");window.cmbEvent?.("AI files added","Generated files were added to the current workspace.","✓");document.dispatchEvent(new CustomEvent("cmb:ai-files-generated",{detail:{files:generated}}));apply.disabled=true;try{openFile(state.currentFile)}catch(e){}});
   open?.addEventListener("click",()=>{const name=Object.keys(generated||{})[0];if(!name)return;try{openFile(name)}catch(e){}window.cmbEvent?.("Generated file opened",name+" opened in the workspace editor.","▣")});
 })();
+
+/* CMB AI — persist AI action-plan tasks */
+(()=>{
+  const originalBuild=window.buildActionPlan;
+  if(typeof originalBuild==="function"){
+    window.buildActionPlan=function(){
+      const result=originalBuild.apply(this,arguments);
+      setTimeout(()=>{
+        document.querySelectorAll('#actionPlanList input[type="checkbox"]').forEach(box=>{
+          const label=box.closest('label')?.querySelector('span')?.textContent?.trim();
+          if(label)document.dispatchEvent(new CustomEvent("cmb:ai-task-created",{detail:{title:label}}));
+        });
+      },100);
+      return result;
+    };
+  }
+  document.addEventListener("change",event=>{
+    const box=event.target;
+    if(!box.matches('#actionPlanList input[type="checkbox"]'))return;
+    const taskId=box.dataset.taskId||box.closest('label')?.dataset?.taskId;
+    if(taskId)document.dispatchEvent(new CustomEvent("cmb:ai-task-updated",{detail:{taskId,completed:box.checked}}));
+  });
+})();
