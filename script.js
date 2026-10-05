@@ -1600,3 +1600,45 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.addEventListener("cmb:editor-refresh",refresh);
  refresh();
 })();
+
+/* CMB AI unified workspace synchronization */
+(()=>{
+ const code=document.getElementById("code"),preview=document.getElementById("preview"),terminal=document.getElementById("terminalOutput");
+ if(!code)return;
+ const status=()=>{
+   let el=document.getElementById("workspaceSyncStatus");
+   if(!el){
+    const editor=code.closest(".editor");el=document.createElement("span");el.id="workspaceSyncStatus";el.className="workspace-sync-status";el.textContent="● Synced";
+    editor?.querySelector(".editor-head")?.appendChild(el)||editor?.prepend(el);
+   }
+   return el;
+ };
+ function markSaved(){status().textContent="● Synced";status().classList.remove("unsaved");}
+ function markDirty(){status().textContent="● Unsaved changes";status().classList.add("unsaved");}
+ code.addEventListener("input",markDirty);
+ code.addEventListener("change",markDirty);
+ document.addEventListener("cmb:editor-refresh",()=>{
+   markSaved();
+   setTimeout(()=>{document.getElementById("editorGutter")?.scrollTo(0,code.scrollTop)},0);
+ });
+ document.addEventListener("cmb:workspace-sync",()=>{
+   try{saveState?.();}catch{}
+   renderFiles?.();renderEditor?.();
+   document.dispatchEvent(new Event("cmb:editor-refresh"));
+   const out=document.getElementById("terminalOutput");
+   if(out)out.textContent+="\n[SYNC] Editor → files → workspace synchronized.";
+   status().textContent="● Workspace synced";
+   setTimeout(markSaved,1200);
+ });
+ const oldPreview=window.openPreview;
+ document.addEventListener("cmb:preview-sync",()=>{
+   document.getElementById("preview")?.click();
+ });
+ document.addEventListener("keydown",e=>{
+   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){
+     setTimeout(()=>{document.dispatchEvent(new Event("cmb:workspace-sync"));},40);
+   }
+ });
+ const badge=status();
+ badge.title="Editor, project files, preview and workspace state";
+})();
