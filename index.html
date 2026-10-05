@@ -100,5 +100,11 @@
   </form>
   <div id="acaResult" class="aca-result">Select an action or ask a coding question.</div>
 </section>
+
+<section id="acaChangePanel" class="aca-change-panel panel hidden">
+  <div class="aca-change-head"><strong>AI Code Change</strong><div><button class="small" id="acaReject">Reject</button><button class="small primary" id="acaAccept">Accept Change</button></div></div>
+  <div id="acaChangeSummary" class="aca-change-summary">No pending change.</div>
+  <div class="aca-diff-grid"><div><b>Current</b><pre id="acaBefore"></pre></div><div><b>AI Proposed</b><pre id="acaAfter"></pre></div></div>
+</section>
 </body>
 </html>
