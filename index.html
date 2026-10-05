@@ -81,6 +81,10 @@
   <div><i id="quickWorkspace"></i><span>Workspace</span><b>Ready</b></div>
   <div><i id="quickDeploy"></i><span>Deployment</span><b>Guarded</b></div>
 </div>
+<section id="releaseChecklist" class="release-checklist panel">
+  <div class="rc-head"><div><small>RELEASE CHECK</small><strong>Final Deployment Checklist</strong><span>Confirm the critical release conditions before publishing.</span></div><button class="small primary" id="runReleaseCheck">Run Release Check</button></div>
+  <div id="releaseCheckList" class="rc-list"><div class="rc-empty">Ready to run the final release check.</div></div>
+</section>
 <section id="projectReadiness" class="project-readiness panel">
   <div class="pr-head"><div><small>PROJECT READINESS</small><strong>CMB AI Release Gate</strong><span>One view of whether the workspace is ready for deployment.</span></div><strong id="readinessScore">0%</strong></div>
   <div class="pr-grid">
@@ -247,6 +251,9 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 </script>
 <script>
 (()=>{const score=document.getElementById("readinessScore"),mil=document.querySelectorAll("#aiMilestones [data-milestone]");if(!score)return;const update=()=>{const done=[...mil].filter(x=>x.checked).length;const pct=Math.round(done/Math.max(mil.length,1)*100);score.textContent=pct+"%";const map=[["readyFiles",done>=2],["readyBuild",done>=4],["readyAI",done>=3],["readyDeploy",done>=5]];map.forEach(([id,ok])=>{const d=document.getElementById(id);if(d){d.className=ok?"ready":"";d.parentElement.querySelector("b").textContent=ok?"Ready":"Waiting"}})};mil.forEach(x=>x.addEventListener("change",update));update();})();
+</script>
+<script>
+(()=>{const b=document.getElementById("runReleaseCheck"),l=document.getElementById("releaseCheckList");if(!b||!l)return;b.onclick=()=>{const checks=[["Files",[...document.querySelectorAll("#buildArtifacts .ba-item.ok")].length>0],["Build",document.getElementById("buildState")?.textContent==="BUILD READY"],["AI Review",[...document.querySelectorAll("#aiMilestones [data-milestone]")].find(x=>x.dataset.milestone==="AI review completed")?.checked],["Ready to deploy",[...document.querySelectorAll("#aiMilestones [data-milestone]")].find(x=>x.dataset.milestone==="Ready to deploy")?.checked]];l.innerHTML=checks.map(([name,ok])=>"<div class='rc-item "+(ok?"ok":"bad")+"'><i>"+(ok?"✓":"!")+"</i><b>"+name+"</b><span>"+(ok?"Passed":"Needs attention")+"</span></div>").join("");const good=checks.every(x=>x[1]);window.cmbEvent?.("Release check completed",good?"All release checks passed.":"Some release checks need attention.",good?"✓":"!");};})();
 </script>
 </body>
 </html>
