@@ -729,3 +729,44 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  };
  function escape(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 })();
+
+
+/* CMB AI — GitHub remote file inspection */
+(()=>{
+ const list=document.getElementById("githubFiles");
+ if(!list)return;
+ list.addEventListener("click",async e=>{
+   const row=e.target.closest("[data-github-path]");
+   if(!row)return;
+   const repoInput=document.getElementById("githubRepo");
+   const branchInput=document.getElementById("githubBranch");
+   const repoName=(repoInput?.value||"").trim();
+   const branch=(branchInput?.value||"main").trim()||"main";
+   const path=row.dataset.githubPath;
+   if(!repoName||repoName.split("/").length!==2||!path)return;
+   const parts=repoName.split("/");
+   const raw="https://raw.githubusercontent.com/"+encodeURIComponent(parts[0])+"/"+encodeURIComponent(parts[1])+"/"+branch.split("/").map(encodeURIComponent).join("/")+"/"+path.split("/").map(encodeURIComponent).join("/");
+   row.disabled=true;
+   const old=row.innerHTML;
+   row.innerHTML="<span>◌ Loading "+escapeHtml(path)+"…</span>";
+   reactorThinking();
+   try{
+     const response=await fetch(raw,{cache:"no-store"});
+     if(!response.ok)throw new Error("Remote file could not be loaded");
+     const content=await response.text();
+     state.files[path]=content;
+     state.currentFile=path;
+     if(typeof renderFiles==="function")renderFiles();
+     if(typeof renderEditor==="function")renderEditor();
+     document.querySelector('[data-open="workspace"]')?.click();
+     reactorResponding();
+     setTimeout(()=>setReactorState("ready"),700);
+   }catch(err){
+     row.innerHTML=old;
+     reactorError();
+     setTimeout(()=>setReactorState("ready"),900);
+     alert("CMB AI could not load this public GitHub file. Check the repository, branch, and file path.");
+   }finally{row.disabled=false}
+ });
+ function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
+})();
