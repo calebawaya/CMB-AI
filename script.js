@@ -1839,12 +1839,13 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
 
 /* GitHub Pages deployment monitor */
 (()=>{
- const state=document.getElementById("deploymentControlState"),txt=document.getElementById("deploymentControlText"),btn=document.getElementById("prepareDeployment");
+ const state=document.getElementById("deploymentControlState"),txt=document.getElementById("deploymentControlText"),btn=document.getElementById("prepareDeployment"),failure=document.getElementById("deploymentFailureDetails");
  if(!state||!txt)return;
  let timer=null,active=false;
  const labels={not_started:["WAITING","No active GitHub Pages workflow run.","●"],running:["DEPLOYING","GitHub Actions is currently deploying CMB AI…","→"],success:["SUCCESSFUL","GitHub Pages deployment completed successfully.","✓"],failed:["FAILED","GitHub Actions reported a deployment failure. Open Actions for the run details.","!"],unavailable:["UNKNOWN","Deployment status is unavailable. Check the backend connection and GITHUB_TOKEN.","?"]};
  const render=d=>{
    const key=d?.status||"unavailable", v=labels[key]||labels.unavailable;
+   if(failure){const jobs=d?.run?.failed_jobs||[]; if(key==="failed"&&jobs.length){failure.classList.remove("hidden");failure.innerHTML="<b>Deployment failure details</b>"+jobs.map(j=>"<div><strong>"+(j.name||"Failed job")+"</strong>"+((j.failed_steps||[]).length?"<span>Failed step: "+j.failed_steps.map(s=>s.name).filter(Boolean).join(", ")+"</span>":"")+" </div>").join("");}else{failure.classList.add("hidden");failure.innerHTML="";}}
    state.textContent=v[0];state.className=key==="success"?"ready":key==="failed"?"locked":"";
    if(active && key==="running")txt.textContent=v[1];
    else if(key!=="not_started")txt.textContent=v[1];
