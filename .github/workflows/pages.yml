@@ -135,6 +135,57 @@ jobs:
           print('Local asset references are valid.')
           PY
 
+      - name: Validate CMB AI integration contracts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sys
+
+          errors = []
+
+          html = Path("index.html").read_text(encoding="utf-8")
+          js = Path("script.js").read_text(encoding="utf-8")
+          controls = Path("cmb-ai-controls.js").read_text(encoding="utf-8")
+          bridge = Path("cmb-backend.js").read_text(encoding="utf-8")
+          backend = Path("backend/app.py").read_text(encoding="utf-8")
+
+          required_frontend = [
+              ("index.html", "cmb-backend.js", html),
+              ("index.html", "cmb-ai-controls.js", html),
+              ("index.html", "cmb-ai-diff.js", html),
+              ("cmb-ai-controls.js", "prompt", controls),
+              ("cmb-backend.js", "CMBAIBackend", bridge),
+          ]
+
+          for source, needle, text in required_frontend:
+              if needle not in text:
+                  errors.append(f"{source} is missing required integration marker: {needle}")
+
+          required_routes = [
+              "/api/health",
+              "/api/ai",
+              "/api/preflight",
+              "/api/github/deployment-status",
+          ]
+          for route in required_routes:
+              if route not in backend:
+                  errors.append(f"backend/app.py is missing required route: {route}")
+
+          if "127.0.0.1:5000/api" not in bridge:
+              errors.append("cmb-backend.js is missing the local backend fallback URL.")
+
+          if "CMB_API_BASE" not in bridge or "CMB_API_BASE" not in controls or "CMB_API_BASE" not in js:
+              errors.append("The configurable CMB_API_BASE contract is incomplete.")
+
+          if errors:
+              print("CMB AI integration contract errors:")
+              for error in errors:
+                  print(" -", error)
+              sys.exit(1)
+
+          print("CMB AI integration contracts passed deployment validation.")
+          PY
+
       - name: Prepare clean Pages artifact
         run: |
           set -e
