@@ -12,6 +12,8 @@
       return data;
     },
     health(){ return this.request("/health"); },
+    aiStatus(){ return this.request("/ai/status"); },
+    ai(prompt, projectId){ return this.request("/ai", {method:"POST",body:JSON.stringify({prompt,project_id:projectId||null})}); },
     databaseStatus(){ return this.request("/db/status"); },
     projects(){ return this.request("/projects"); },
     project(id){ return this.request(`/project/${encodeURIComponent(id)}`); },
