@@ -1747,7 +1747,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    result.textContent="CMB AI is analyzing "+file+"…"; if(stateEl)stateEl.textContent="AI working";
    reactorThinking?.();
    try{
-     const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:instruction+"\n\nCurrent file: "+file+"\n\nCode:\n"+source})});
+     const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:instruction+"\n\nCurrent file: "+file+"\n\nCode:\n"+source})});
      if(!res.ok)throw new Error("AI request failed");
      const data=await res.json();
      result.textContent=data.response||data.message||data.answer||"AI returned no explanation.";
