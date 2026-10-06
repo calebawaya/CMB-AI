@@ -1638,6 +1638,13 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  setTimeout(()=>{refreshGutter();validate();},0);
 })();
 
+/* CMB AI theme-reactor synchronization */
+(()=>{const root=document.documentElement,reactor=document.getElementById("cmbReactor");if(!reactor)return;
+ function hexToRgb(h){const n=parseInt(h.slice(1),16);return [(n>>16)&255,(n>>8)&255,n&255]}
+ function apply(){const glow=getComputedStyle(root).getPropertyValue("--cmb-background-glow").trim()||"#253b9a";const [r,g,b]=hexToRgb(glow);root.style.setProperty("--cmb-rgb",r+","+g+","+b);reactor.style.setProperty("--reactor-glow","rgba("+r+","+g+","+b+",");}
+ apply();new MutationObserver(apply).observe(root,{attributes:true,attributeFilter:["style"]});
+})();
+ 
 /* CMB AI project file explorer */
 (()=>{
  const list=document.getElementById("fileList");if(!list)return;
