@@ -10,6 +10,18 @@ function setReactorState(state){
 }
 setReactorState("ready");
 
+(function initBackgroundCustomizer(){
+ const bg=document.getElementById("cmbVisibleBackground"),base=document.getElementById("backgroundColor"),glow=document.getElementById("backgroundGlow"),range=document.getElementById("backgroundGlowRange"),value=document.getElementById("backgroundGlowValue");
+ if(!bg||!base||!glow||!range)return;
+ const presets={midnight:["#020617","#253b9a"],blue:["#020617","#0284c7"],purple:["#090016","#7c3aed"],green:["#00130f","#059669"],red:["#160203","#dc2626"]};
+ const rgba=(hex,a)=>{const n=parseInt(hex.slice(1),16);return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")"};
+ function apply(save=true){const strength=Number(range.value)/100;value.textContent=range.value+"%";bg.style.background=["radial-gradient(circle at 15% 20%,"+rgba(glow.value,strength)+" 0%,transparent 32%)","radial-gradient(circle at 85% 18%,"+rgba(glow.value,strength*.78)+" 0%,transparent 30%)","radial-gradient(circle at 78% 82%,"+rgba(glow.value,strength*.65)+" 0%,transparent 34%)","linear-gradient(135deg,"+base.value+","+base.value+" 50%,"+base.value+")"].join(",");document.documentElement.style.setProperty("--cmb-background",base.value);document.documentElement.style.setProperty("--cmb-background-glow",glow.value);if(save)localStorage.setItem("cmbai_background",JSON.stringify({base:base.value,glow:glow.value,strength:range.value}))}
+ function load(){try{const x=JSON.parse(localStorage.getItem("cmbai_background")||"null");if(x){base.value=x.base||base.value;glow.value=x.glow||glow.value;range.value=x.strength??range.value}}catch{}apply(false)}
+ [base,glow,range].forEach(x=>x.addEventListener("input",()=>apply(true)));
+ document.querySelectorAll("[data-background-preset]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.backgroundPreset;if(k==="reset"){base.value="#020617";glow.value="#253b9a";range.value=45}else if(presets[k]){base.value=presets[k][0];glow.value=presets[k][1];range.value=55}apply(true);window.cmbEvent?.("Background changed","CMB AI background updated.","🎨")}));
+ load();
+})();
+
 function reactorThinking(){setReactorState("thinking")}
 function reactorResponding(){setReactorState("responding")}
 function reactorError(){setReactorState("error")}
