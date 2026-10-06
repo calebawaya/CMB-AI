@@ -1867,6 +1867,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   wrap.innerHTML=card("Frontend",true,"Interface loaded")+card("Backend",backend,backend?"API online":"API offline")+card("Workspace",workspace,"Editor and local storage ready")+deploymentCard(deployment,deploymentText);
   btn.disabled=false;btn.textContent="Check again";
   window.CMBAIDeploymentStatus=deployment;
+  document.dispatchEvent(new CustomEvent("cmb:health",{detail:{frontend:true,backend,workspace,deployment}}));
  }
  btn.addEventListener("click",check);
  document.addEventListener("cmb:deployment-status",check);
@@ -1923,5 +1924,25 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.addEventListener("cmb:editor-refresh",()=>window.cmbEvent("Editor refreshed","Current file and editor state synchronized.","✦"));
  document.addEventListener("cmb:workspace-sync",()=>window.cmbEvent("Workspace synchronized","Files, editor, and project state are aligned.","↻"));
  document.addEventListener("cmb:preview-sync",()=>window.cmbEvent("Preview requested","Live project preview was refreshed.","▶"));
+ document.addEventListener("cmb:health",e=>{
+   const d=e.detail||{};
+   window.cmbEvent("Health check","Frontend "+(d.frontend?"OK":"FAIL")+" • Backend "+(d.backend?"OK":"OFFLINE")+" • Workspace "+(d.workspace?"OK":"FAIL")+" • Deployment "+(d.deployment||"unknown"),"♥");
+ });
+ document.addEventListener("cmb:backend-status",e=>{
+   const d=e.detail||{};
+   window.cmbEvent("Backend status",d.online?"Backend API is online.":"Backend API is offline.","●");
+ });
+ document.addEventListener("cmb:deployment-status",e=>{
+   const d=e.detail||{};
+   if(d.status) window.cmbEvent("Deployment status",String(d.status).toUpperCase(),"↻");
+ });
+ document.addEventListener("cmb:ai-event",e=>{
+   const d=e.detail||{};
+   window.cmbEvent(d.title||"AI event",d.message||d.detail||"AI activity received.","AI");
+ });
+ document.addEventListener("cmb:task-progress",e=>{
+   const d=e.detail||{};
+   if(Number.isFinite(Number(d.percent))) window.cmbEvent("AI task progress",Number(d.percent)+"% • "+(Number(d.completed)||0)+" of "+(Number(d.total)||0)+" tasks completed","▣");
+ });
  window.cmbEvent("System online","CMB AI event stream initialized.","✓");
 })();
