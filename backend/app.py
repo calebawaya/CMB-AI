@@ -255,8 +255,11 @@ def delete_project(project_id):
 def save_project_file(project_id):
     data = request.get_json(silent=True) or {}
     path = str(data.get("path", "")).strip()
-    if not path or ".." in Path(path).parts:
-        return jsonify({"ok": False, "error": "A safe file path is required"}), 400
+    normalized_path = path.replace("\\", "/").lstrip("/")
+    path_parts = [part for part in normalized_path.split("/") if part]
+    if not normalized_path or any(part in {".", ".."} for part in path_parts) or ":" in normalized_path:
+        return jsonify({"ok": False, "error": "A safe relative file path is required"}), 400
+    path = "/".join(path_parts)
     content = str(data.get("content", ""))
     with db() as connection:
         if not connection.execute("SELECT id FROM projects WHERE id = ?", (project_id,)).fetchone():
@@ -275,6 +278,8 @@ def save_project_file(project_id):
 def delete_project_file(project_id):
     path = str(request.args.get("path", "")).strip()
     with db() as connection:
+        if not connection.execute("SELECT id FROM projects WHERE id=?", (project_id,)).fetchone():
+            return jsonify({"ok": False, "error": "Project not found"}), 404
         result = connection.execute(
             "DELETE FROM project_files WHERE project_id = ? AND path = ?", (project_id, path)
         )
@@ -338,8 +343,13 @@ def create_event(project_id):
 
 @app.get("/api/project/<int:project_id>/events")
 def get_events(project_id):
-    limit = max(1, min(100, int(request.args.get("limit", 50))))
+    try:
+        limit = max(1, min(100, int(request.args.get("limit", 50))))
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "error": "limit must be an integer from 1 to 100"}), 400
     with db() as connection:
+        if not connection.execute("SELECT id FROM projects WHERE id=?", (project_id,)).fetchone():
+            return jsonify({"ok": False, "error": "Project not found"}), 404
         events = connection.execute(
             "SELECT * FROM workspace_events WHERE project_id=? ORDER BY id DESC LIMIT ?",
             (project_id, limit),
@@ -350,6 +360,8 @@ def get_events(project_id):
 @app.get("/api/project/<int:project_id>/chat")
 def get_chat(project_id):
     with db() as connection:
+        if not connection.execute("SELECT id FROM projects WHERE id=?", (project_id,)).fetchone():
+            return jsonify({"ok": False, "error": "Project not found"}), 404
         messages = connection.execute(
             "SELECT * FROM chat_messages WHERE project_id=? ORDER BY id ASC", (project_id,)
         ).fetchall()
