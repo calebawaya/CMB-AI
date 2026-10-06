@@ -55,16 +55,29 @@ jobs:
           from pathlib import Path
           index = Path("_site/index.html")
           text = index.read_text(encoding="utf-8")
-          tag = '<script src="cmb-ai-health-sync.js"></script>'
-          if tag not in text:
-              marker = "</body>"
+          health = '<script src="cmb-ai-health-sync.js"></script>'
+          controls = '<script src="cmb-ai-controls.js"></script>'
+          if health not in text:
+              marker = controls
               if marker not in text:
-                  raise SystemExit("index.html has no closing body tag")
-              text = text.replace(marker, tag + "\n" + marker, 1)
-              index.write_text(text, encoding="utf-8")
+                  raise SystemExit("cmb-ai-controls.js script tag not found")
+              text = text.replace(marker, health + "\n" + marker, 1)
+          elif text.index(health) > text.index(controls):
+              text = text.replace(health, "", 1)
+              text = text.replace(controls, health + "\n" + controls, 1)
+          index.write_text(text, encoding="utf-8")
           PY
           test -f _site/index.html
           test -f _site/cmb-ai-health-sync.js
+          python - <<'PY'
+          from pathlib import Path
+          text = Path("_site/index.html").read_text(encoding="utf-8")
+          health = text.index('<script src="cmb-ai-health-sync.js"></script>')
+          controls = text.index('<script src="cmb-ai-controls.js"></script>')
+          if health >= controls:
+              raise SystemExit("AI health sync must load before AI controls")
+          print("Verified: AI health sync loads before AI controls")
+          PY
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
