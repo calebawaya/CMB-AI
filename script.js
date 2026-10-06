@@ -291,7 +291,7 @@ qsa(".nav").forEach(x=>x.onclick=()=>view(x.dataset.view));
 qsa("[data-open]").forEach(x=>x.onclick=()=>view(x.dataset.open));
 $("#newProject").onclick=newProject;$("#newProject2").onclick=newProject;$("#start").onclick=newProject;$("#plan").onclick=makePlan;
 $("#addFile").onclick=addFile;$("#addFolder").onclick=addFolder;$("#saveCode").onclick=saveCurrent;
-$("#chatForm").onsubmit=async e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";reactorThinking();showTyping();try{const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q,project:{name:state.active?.name||"CMB-AI project",files:state.files}})});const data=await r.json();hideTyping();if(data.ok){addChat("CMB AI",data.answer);reactorResponding();}else{answer(q);reactorError();}}catch(err){hideTyping();answer(q);reactorError();}finally{setTimeout(()=>setReactorState("ready"),900)}};
+$("#chatForm").onsubmit=async e=>{e.preventDefault();const q=$("#chatInput").value.trim();if(!q)return;addChat("You",q);$("#chatInput").value="";reactorThinking();showTyping();try{const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q,project:{name:state.active?.name||"CMB-AI project",files:state.files}})});const data=await r.json();hideTyping();if(data.ok){addChat("CMB AI",data.answer);reactorResponding();}else{answer(q);reactorError();}}catch(err){hideTyping();answer(q);reactorError();}finally{setTimeout(()=>setReactorState("ready"),900)}};
 function updateSelected(){
  const b=builder.blocks.find(x=>x.id===builder.selected);if(!b)return;
  b.title=$("#propText").value;b.size=$("#propSize").value;b.align=$("#propAlign").value;b.color=$("#propColor").value;b.bg=$("#propBg").value;b.padding=$("#propPadding").value;b.font=$("#propFont").value;
@@ -438,7 +438,7 @@ async function checkBackendStatus(){
  const el=$("#backendStatus"); if(!el)return;
  el.textContent="Checking...";
  try{
-  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/health",{method:"GET"});
+  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/health",{method:"GET"});
   const data=await r.json();
   el.textContent=data.ok?"● Online":"● Offline";
   el.classList.toggle("online",!!data.ok);
@@ -448,7 +448,7 @@ $("#checkBackend")?.addEventListener("click",checkBackendStatus);
 
 async function createProjectOnBackend(project){
  try{
-  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/project",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:project.name})});
+  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/project",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:project.name})});
   const data=await r.json();
   if(data.ok) toast("Project synced with Python backend");
   return data;
@@ -457,7 +457,7 @@ async function createProjectOnBackend(project){
 
 async function loadProjectsFromBackend(){
  try{
-  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/projects");
+  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/projects");
   const data=await r.json();
   if(data.ok && Array.isArray(data.projects) && data.projects.length){
    data.projects.forEach(p=>{if(!state.projects.some(x=>x.backendId===p.id)){state.projects.push({id:Date.now()+Math.random(),backendId:p.id,name:p.name,description:"Python backend project",updatedAt:Date.now()})}});
@@ -471,7 +471,7 @@ loadProjectsFromBackend();
 async function syncProjectName(project){
  if(!project || !project.backendId || !project.name) return;
  try{
-  await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/project/"+encodeURIComponent(project.backendId),{
+  await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/project/"+encodeURIComponent(project.backendId),{
    method:"PATCH",
    headers:{"Content-Type":"application/json"},
    body:JSON.stringify({name:project.name})
@@ -481,7 +481,7 @@ async function syncProjectName(project){
 
 function updateBackendProjectCount(){
  const el=$("#backendProjects"); if(!el)return;
- fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/projects").then(r=>r.json()).then(d=>{
+ fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/projects").then(r=>r.json()).then(d=>{
   el.textContent=d.ok?"Backend: "+d.projects.length:"Backend: --";
  }).catch(()=>{el.textContent="Backend: offline"});
 }
@@ -496,7 +496,7 @@ async function askPythonAI(){
  button.disabled=true;button.textContent="Thinking...";
  out.textContent="Connecting to Python AI...";
  try{
-  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,project:{name:state.active?.name||"CMB-AI project",files:state.files}})});
+  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,project:{name:state.active?.name||"CMB-AI project",files:state.files}})});
   const data=await r.json();
   out.textContent=data.ok?data.answer:(data.error||"AI request failed");
   if(data.ok) reactorResponding(); else reactorError();
@@ -513,7 +513,7 @@ async function applyAiCodeChange(){
  button.disabled=true;button.textContent="Building...";
  out.textContent="AI is preparing project changes...";
  try{
-  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request:prompt,files:state.files})});
+  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request:prompt,files:state.files})});
   const data=await r.json();
   if(!data.ok){out.textContent=data.error||"Could not apply changes";return}
   ["index.html","style.css","script.js"].forEach(f=>{if(typeof data.files?.[f]==="string")state.files[f]=data.files[f]});
@@ -534,7 +534,7 @@ async function previewAiCodeChange(){
  reactorThinking();
  out.textContent="Preparing proposed changes...";
  try{
-  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request:prompt,files:state.files})});
+  const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request:prompt,files:state.files})});
   const data=await r.json(); if(!data.ok){out.textContent=data.error||"Could not prepare changes";return}
   pendingAiFiles=data.files||{};
   details.innerHTML="";
@@ -678,7 +678,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
     const q=idea.value.trim(); if(!q){idea.focus();return}
     btn.disabled=true;btn.textContent="Building…";status.textContent="THINKING";result.innerHTML='<div class="builder-empty">CMB AI is designing your project structure…</div>';reactorThinking();
     try{
-      const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:"Create a practical starter project plan for this idea. Include a project name, short description, recommended files, and 5 development tasks. Keep it beginner-friendly. Idea: "+q,project:{name:q,files:state.files}})});
+      const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:"Create a practical starter project plan for this idea. Include a project name, short description, recommended files, and 5 development tasks. Keep it beginner-friendly. Idea: "+q,project:{name:q,files:state.files}})});
       const data=await r.json();
       if(!data.ok)throw new Error(data.error||"Builder failed");
       const text=data.answer||"Project plan generated.";
@@ -849,7 +849,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    if(!request)return;
    reactorThinking();fix.disabled=true;fix.textContent="✦ Fixing…";
    try{
-    const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request,files:state.files})});
+    const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request,files:state.files})});
     const data=await r.json();if(!data.ok)throw new Error(data.error||"AI fix failed");
     Object.entries(data.files||{}).forEach(([name,value])=>{if(value!==null&&value!==undefined)state.files[name]=value});
     if(typeof renderFiles==="function")renderFiles();if(typeof renderEditor==="function")renderEditor();if(typeof saveState==="function")saveState();
@@ -887,7 +887,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    const repo=repoInput.value.trim();if(!repo){repoInput.focus();return}
    status.innerHTML="<i></i> CONNECTING";summary.textContent="Reading repository…";list.innerHTML='<div class="builder-empty">Connecting to GitHub…</div>';reactorThinking();
    try{
-    const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/github/tree?repo="+encodeURIComponent(repo)+"&branch="+encodeURIComponent(branch.value.trim()||"main"));
+    const r=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/github/tree?repo="+encodeURIComponent(repo)+"&branch="+encodeURIComponent(branch.value.trim()||"main"));
     const data=await r.json();if(!data.ok)throw new Error(data.error||"GitHub connection failed");
     status.classList.add("connected");status.innerHTML="<i></i> CONNECTED";summary.textContent=data.repo+" · "+data.branch+" · "+data.files.length+" repository files";list.innerHTML=data.files.map(name=>'<button type="button" class="github-file-row github-file-button" data-github-path="'+escape(name)+'"><span>▣ '+escape(name)+'</span><small>OPEN</small></button>').join("")||'<div class="builder-empty">Repository has no files.</div>';reactorResponding();setTimeout(()=>setReactorState("ready"),900);
    }catch(e){status.classList.remove("connected");status.innerHTML="<i></i> OFFLINE";summary.textContent=e.message||"Could not connect to GitHub. Configure GITHUB_TOKEN in the backend.";list.innerHTML='<div class="builder-empty">GitHub connection is unavailable. Start the backend and configure GITHUB_TOKEN.</div>';reactorError();setTimeout(()=>setReactorState("ready"),900)}
@@ -1099,7 +1099,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    html=html.replace(/<link[^>]+href=["']style\.css["'][^>]*>/gi,"");
    html=html.replace(/<script[^>]+src=["']script\.js["'][^>]*><\/script>/gi,"");
    html=html.replace("</head>",'<style>'+css.replace(/<\/style/gi,"")+'</style></head>');
-   const navScript='<script>(function(){document.addEventListener("click",function(e){const a=e.target.closest("a[href]");if(!a)return;const h=a.getAttribute("href");if(!h||h.startsWith("#")||/^(https?:|mailto:|tel:)/i.test(h))return;e.preventDefault();parent.postMessage({type:"cmb-preview-page",file:h},"*")});})();<\/script>';
+   const navScript='<script>(function(){document.addEventListener("click",function(e){const a=e.target.closest("a[href]");if(!a)return;const h=a.getAttribute("href");if(!h||h.startsWith("#")||/^(https?:|mailto:|tel:)+"/i.test(h))return;e.preventDefault();parent.postMessage({type:"cmb-preview-page",file:h},"*")});})();<\/script>';
    html=html.replace("</body>",navScript+'<script>'+js.replace(/<\/script/gi,"")+'</script></body>');
    return html;
  }
@@ -1137,7 +1137,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   status.textContent="AI is analyzing your project…";
   reactorThinking();
   try{
-   const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+   const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
     instruction,
     files,
     current_file:state.currentFile
@@ -1175,7 +1175,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    status.textContent="AI is preparing a change preview…"; reactorThinking();
    previewBtn.disabled=true;
    try{
-    const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instruction,files:{...state.files},current_file:state.currentFile})});
+    const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instruction,files:{...state.files},current_file:state.currentFile})});
     if(!res.ok)throw new Error("AI request failed");
     const data=await res.json(), updated=data.files||data.updated_files||data.project;
     if(!updated||typeof updated!=="object")throw new Error("No changes returned");
@@ -1381,7 +1381,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   localStorage.setItem("cmbai_deploy_repo",r);localStorage.setItem("cmbai_deploy_branch",b);
   log.textContent="Preparing GitHub Pages deployment…";status.textContent="GitHub deployment";
   try{
-   const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/github/deploy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({repo:r,branch:b,files:state.files||{}})});
+   const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/github/deploy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({repo:r,branch:b,files:state.files||{}})});
    if(!res.ok)throw new Error("Deployment endpoint unavailable");
    const data=await res.json();
    log.textContent=data.url?"✓ Deployment started: "+data.url:"✓ GitHub deployment request sent.";
@@ -1538,8 +1538,8 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  function highlight(src){
    let x=esc(src),tokens=[];
    const stash=v=>{const id="§§TOK"+tokens.length+"§§";tokens.push(v);return id;};
-   x=x.replace(/(&lt;!--[\s\S]*?--&gt;|\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/)/g,m=>stash('<span class="tok-comment">'+m+"</span>"));
-   x=x.replace(/(&quot;[^&]*?&quot;|'[^']*')/g,m=>stash('<span class="tok-string">'+m+"</span>"));
+   x=x.replace(/(&lt;!--[\s\S]*?--&gt;|\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/)+"/g,m=>stash('<span class="tok-comment">'+m+"</span>"));
+   x=x.replace(/(&quot;[^&]*?&quot;|'[^']*')+"/g,m=>stash('<span class="tok-string">'+m+"</span>"));
    x=x.replace(/\b(true|false|null|undefined|None|True|False|public|private|class|function|def|return|import|from|const|let|var|if|else|for|while|new|async|await|SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|TABLE)\b/g,'<span class="tok-key">$1</span>');
    x=x.replace(/\b(\d+(?:\.\d+)?)\b/g,'<span class="tok-number">$1</span>');
    tokens.forEach((v,i)=>{x=x.replaceAll("§§TOK"+i+"§§",v)});return x;
@@ -1746,7 +1746,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    result.textContent="CMB AI is analyzing "+file+"…"; if(stateEl)stateEl.textContent="AI working";
    reactorThinking?.();
    try{
-     const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:instruction+"\n\nCurrent file: "+file+"\n\nCode:\n"+source})});
+     const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:instruction+"\n\nCurrent file: "+file+"\n\nCode:\n"+source})});
      if(!res.ok)throw new Error("AI request failed");
      const data=await res.json();
      result.textContent=data.response||data.message||data.answer||"AI returned no explanation.";
@@ -1782,7 +1782,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    const file=state.currentFile||"index.html",source=state.files[file]||"";
    summary.textContent="Generating proposed change…";panel.classList.remove("hidden");reactorThinking?.();
    try{
-    const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instruction,files:{...state.files},current_file:file})});
+    const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/ai/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instruction,files:{...state.files},current_file:file})});
     if(!res.ok)throw new Error();
     const data=await res.json(),updated=data.files||data.updated_files||data.project||{};
     const next=typeof updated[file]==="string"?updated[file]:null;
@@ -1858,7 +1858,7 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  }
  async function check(){
   btn.disabled=true;btn.textContent="Checking…";
-  const backend=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
+  const backend=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
   const workspace=!!window.localStorage&&!!document.querySelector("#code");
   const deployment=await getDeployment();
   const deploymentText={success:"Successful",failed:"Failed",running:"Deploying…",not_started:"No active run",unavailable:"Status unavailable"}[deployment]||deployment;
