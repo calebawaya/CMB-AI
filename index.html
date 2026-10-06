@@ -312,6 +312,7 @@ const checks=[
 render(checks);
 const good=checks.every(x=>x[1]);
 window.cmbEvent?.("Release check completed",good?"All release checks passed.":"Some release checks need attention.",good?"✓":"!");
+document.dispatchEvent(new CustomEvent("cmb:preflight",{detail:{source:"release-check",ok:good,failed:checks.filter(x=>!x[1]).length,checks}}));
 if(pre?.warnings?.length)window.cmbEvent?.("Preflight warnings",pre.warnings.length+" warning(s) found. Review before deployment.","!");
 b.disabled=false;b.textContent="Run Release Check";
 };})();
