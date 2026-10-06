@@ -1879,8 +1879,11 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  document.addEventListener("cmb:preflight",render);
  document.addEventListener("cmb:deployment-status",setDeployment);
  document.addEventListener("cmb:release-gate",render);
- new MutationObserver(render).observe(document.body,{subtree:true,childList:true,characterData:true});
- check=render;render();
+ document.getElementById("runReleaseCheck")?.addEventListener("click",()=>setTimeout(render,80));
+ document.getElementById("runBuildCheck")?.addEventListener("click",()=>setTimeout(render,80));
+ document.getElementById("prepareDeployment")?.addEventListener("click",()=>setTimeout(render,80));
+ window.addEventListener("cmb:deployment-guard-refresh",render);
+ render();
 })();
 
 /* Live health monitor + deployment status */
