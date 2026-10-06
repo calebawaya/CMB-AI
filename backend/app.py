@@ -512,6 +512,41 @@ JavaScript:\n{str(files.get('script.js',''))[:14000]}"""
         return jsonify({"ok": False, "error": "Could not generate a safe code change"}), 502
 
 
+@app.get("/api/github/deployment-status")
+def github_deployment_status():
+    repo = str(request.args.get("repo", "calebawaya/CMB-AI")).strip()
+    branch = str(request.args.get("branch", "main")).strip() or "main"
+    if not repo or "/" not in repo:
+        return jsonify({"ok": False, "error": "Repository must look like owner/name"}), 400
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        return jsonify({"ok": False, "error": "GITHUB_TOKEN is not configured on the server"}), 503
+    import urllib.request
+    import urllib.parse
+    url = f"https://api.github.com/repos/{repo}/actions/runs?branch={urllib.parse.quote(branch)}&per_page=10"
+    try:
+        req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json", "Authorization": f"Bearer {token}", "User-Agent": "CMB-AI"})
+        with urllib.request.urlopen(req, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        runs = payload.get("workflow_runs", [])
+        latest = runs[0] if runs else None
+        if not latest:
+            return jsonify({"ok": True, "repo": repo, "branch": branch, "status": "not_started", "conclusion": None, "run": None})
+        status = latest.get("status") or "unknown"
+        conclusion = latest.get("conclusion")
+        if status == "completed":
+            state = "success" if conclusion == "success" else "failed"
+        else:
+            state = "running"
+        return jsonify({"ok": True, "repo": repo, "branch": branch, "status": state, "workflow_status": status, "conclusion": conclusion,
+                        "run": {"id": latest.get("id"), "name": latest.get("name"), "event": latest.get("event"),
+                                "created_at": latest.get("created_at"), "updated_at": latest.get("updated_at"),
+                                "html_url": latest.get("html_url")}})
+    except Exception as exc:
+        print(f"GitHub deployment status error: {exc}")
+        return jsonify({"ok": False, "error": "Could not read GitHub Actions deployment status"}), 502
+
+
 @app.get("/api/github/tree")
 def github_tree():
     repo = str(request.args.get("repo", "")).strip()
