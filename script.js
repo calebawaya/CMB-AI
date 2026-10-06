@@ -1379,18 +1379,19 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
   const r=repo.value.trim(),b=branch.value.trim()||"main";
   if(!valid()){log.textContent="Enter a GitHub repository as owner/repository.";status.textContent="GitHub repo required";return}
   localStorage.setItem("cmbai_deploy_repo",r);localStorage.setItem("cmbai_deploy_branch",b);
-  log.textContent="Preparing GitHub Pages deployment…";status.textContent="GitHub deployment";
+  log.textContent="Checking GitHub Pages deployment status…";status.textContent="Checking deployment";
   try{
-   const res=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/github/deploy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({repo:r,branch:b,files:state.files||{}})});
-   if(!res.ok)throw new Error("Deployment endpoint unavailable");
-   const data=await res.json();
-   log.textContent=data.url?"✓ Deployment started: "+data.url:"✓ GitHub deployment request sent.";
-   status.textContent="Deployment started";
+    const res=await fetch((window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/github/deployment-status?repo="+encodeURIComponent(r)+"&branch="+encodeURIComponent(b));
+    if(!res.ok)throw new Error("Status endpoint unavailable");
+    const data=await res.json();
+    const stateName=data.status||"not_started";
+    log.textContent=stateName==="success"?"✓ GitHub Pages is deployed.":stateName==="running"?"→ GitHub Pages deployment is running.":stateName==="failed"?"⚠ The latest deployment failed. Check Actions for details.":"○ No active deployment run.";
+    status.textContent=stateName==="success"?"Deployment ready":stateName==="running"?"Deploying…":stateName==="failed"?"Deployment failed":"Waiting for deployment";
   }catch(e){
-   log.textContent="⚠ GitHub deployment needs the backend deployment endpoint and GITHUB_TOKEN.";
-   status.textContent="Backend deployment not connected";
+    log.textContent="⚠ Deployment status requires the CMB AI backend and GitHub configuration.";
+    status.textContent="Backend unavailable";
   }
- });
+});
 })();
 
 /* CMB AI — GitHub Pages live deployment status */
