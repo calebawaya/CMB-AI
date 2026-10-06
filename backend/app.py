@@ -11,6 +11,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 BASE_DIR = Path(__file__).resolve().parent
 DB_FILE = BASE_DIR / "cmb_ai.db"
 SCHEMA_FILE = BASE_DIR / "schema.sql"
+AI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6-luna")
 
 try:
     from openai import OpenAI
@@ -95,7 +96,7 @@ def health():
         "database_file": DB_FILE.name,
         "project_count": project_count,
         "ai_package": OpenAI is not None,
-        "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
+        "ai_configured": bool(os.getenv("OPENAI_API_KEY")),\n        "ai_model": AI_MODEL,
         "github_configured": bool(os.getenv("GITHUB_TOKEN")),
     })
 
@@ -118,10 +119,25 @@ def system_status():
         "flask": True,
         "sqlite": DB_FILE.exists(),
         "openai_package": OpenAI is not None,
-        "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+        "openai_configured": bool(os.getenv("OPENAI_API_KEY")),\n        "openai_model": AI_MODEL,
         "github_configured": bool(os.getenv("GITHUB_TOKEN")),
         "database": DB_FILE.name,
         "tables": counts,
+    })
+
+
+@app.get("/api/ai/status")
+def ai_status():
+    package_ready = OpenAI is not None
+    key_configured = bool(os.getenv("OPENAI_API_KEY"))
+    ready = package_ready and key_configured
+    return jsonify({
+        "ok": ready,
+        "service": "CMB-AI AI backend",
+        "status": "ready" if ready else "not_ready",
+        "openai_package": package_ready,
+        "api_key_configured": key_configured,
+        "model": AI_MODEL,
     })
 
 
@@ -352,30 +368,74 @@ def save_chat(project_id):
 def ai_message():
     data = request.get_json(silent=True) or {}
     prompt = str(data.get("prompt", "")).strip()
-    project = data.get("project", {}) or {}
-    project_name = str(project.get("name", "CMB-AI project"))
-    project_files = project.get("files", {}) or {}
+    project_id = data.get("project_id")
+
     if not prompt:
         return jsonify({"ok": False, "error": "Prompt is required"}), 400
+    if len(prompt) > 12000:
+        return jsonify({"ok": False, "error": "Prompt is too long (maximum 12000 characters)"}), 400
     if OpenAI is None:
         return jsonify({"ok": False, "error": "OpenAI package is not installed"}), 503
     if not os.getenv("OPENAI_API_KEY"):
         return jsonify({"ok": False, "error": "OPENAI_API_KEY is not configured on the server"}), 503
+
+    project = data.get("project", {}) or {}
+    if project_id is not None:
+        try:
+            project_id = int(project_id)
+        except (TypeError, ValueError):
+            return jsonify({"ok": False, "error": "project_id must be an integer"}), 400
+        with db() as connection:
+            stored_project = project_payload(connection, project_id)
+        if not stored_project:
+            return jsonify({"ok": False, "error": "Project not found"}), 404
+        project = stored_project
+
+    project_name = str(project.get("name", "CMB-AI project"))
+    project_files = project.get("files", {}) or {}
+
     try:
         client = OpenAI()
-        file_context = "\n".join(f"--- {name} ---\n{str(content)[:10000]}" for name, content in project_files.items())
+        file_context = "\n".join(
+            f"--- {name} ---\n{str(content)[:10000]}"
+            for name, content in list(project_files.items())[:30]
+        )
         instructions = """You are CMB AI, a friendly coding assistant inside a project workspace.
 Help the user build real web projects step by step. Be beginner-friendly, practical, and concise.
 Use the supplied project context when relevant. When suggesting code, identify the file.
 Do not claim you changed files unless the user used an apply action."""
         response = client.responses.create(
-            model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna"),
+            model=AI_MODEL,
             instructions=instructions,
             input=f"Project name: {project_name}\n\nCurrent project files:\n{file_context}\n\nUser request:\n{prompt}",
         )
-        return jsonify({"ok": True, "answer": response.output_text})
+        answer = str(getattr(response, "output_text", "") or "").strip()
+        if not answer:
+            return jsonify({"ok": False, "error": "AI returned an empty response"}), 502
+
+        if project_id is not None:
+            with db() as connection:
+                connection.execute(
+                    "INSERT INTO chat_messages(project_id,role,message) VALUES(?,?,?)",
+                    (project_id, "user", prompt),
+                )
+                connection.execute(
+                    "INSERT INTO chat_messages(project_id,role,message) VALUES(?,?,?)",
+                    (project_id, "assistant", answer),
+                )
+                log_event(connection, project_id, "ai.response", "CMB AI generated a response")
+
+        return jsonify({
+            "ok": True,
+            "answer": answer,
+            "model": AI_MODEL,
+            "project_id": project_id,
+        })
     except Exception as exc:
-        print(f"CMB AI error: {exc}")
+        print(f"CMB AI error: {type(exc).__name__}: {exc}")
+        if project_id is not None:
+            with db() as connection:
+                log_event(connection, project_id, "ai.error", "CMB AI request failed")
         return jsonify({"ok": False, "error": "AI request failed"}), 502
 
 
