@@ -523,29 +523,106 @@ def github_deployment_status():
     token = os.getenv("GITHUB_TOKEN")
     if not token:
         return jsonify({"ok": False, "error": "GITHUB_TOKEN is not configured on the server"}), 503
+
     import urllib.request
     import urllib.parse
-    url = f"https://api.github.com/repos/{repo}/actions/runs?branch={urllib.parse.quote(branch)}&per_page=10"
+
+    api_headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {token}",
+        "User-Agent": "CMB-AI",
+    }
+    runs_url = (
+        f"https://api.github.com/repos/{repo}/actions/runs"
+        f"?branch={urllib.parse.quote(branch)}&per_page=20"
+    )
+
     try:
-        req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json", "Authorization": f"Bearer {token}", "User-Agent": "CMB-AI"})
+        req = urllib.request.Request(runs_url, headers=api_headers)
         with urllib.request.urlopen(req, timeout=15) as response:
             payload = json.loads(response.read().decode("utf-8"))
+
         runs = payload.get("workflow_runs", [])
-        latest = runs[0] if runs else None
+        # Only monitor the CMB AI Pages workflow. This prevents an unrelated
+        # Actions workflow from being reported as a Pages deployment failure.
+        pages_runs = [
+            run for run in runs
+            if str(run.get("path", "")).endswith(".github/workflows/pages.yml")
+            or run.get("name") == "Deploy CMB AI to GitHub Pages"
+        ]
+        latest = pages_runs[0] if pages_runs else None
+
         if not latest:
-            return jsonify({"ok": True, "repo": repo, "branch": branch, "status": "not_started", "conclusion": None, "run": None})
+            return jsonify({
+                "ok": True, "repo": repo, "branch": branch,
+                "status": "not_started", "conclusion": None, "run": None
+            })
+
         status = latest.get("status") or "unknown"
         conclusion = latest.get("conclusion")
         if status == "completed":
             state = "success" if conclusion == "success" else "failed"
-        else:
+        elif status in {"queued", "in_progress", "waiting", "requested", "pending"}:
             state = "running"
-        return jsonify({"ok": True, "repo": repo, "branch": branch, "status": state, "workflow_status": status, "conclusion": conclusion,
-                        "run": {"id": latest.get("id"), "name": latest.get("name"), "event": latest.get("event"),
-                                "created_at": latest.get("created_at"), "updated_at": latest.get("updated_at"),
-                                "html_url": latest.get("html_url")}})
+        else:
+            state = "unknown"
+
+        run_info = {
+            "id": latest.get("id"),
+            "name": latest.get("name"),
+            "event": latest.get("event"),
+            "created_at": latest.get("created_at"),
+            "updated_at": latest.get("updated_at"),
+            "html_url": latest.get("html_url"),
+        }
+
+        # When a deployment fails, inspect its jobs so the dashboard can show
+        # the actual failed job/step instead of a generic FAILED message.
+        if state == "failed" and latest.get("id"):
+            jobs_url = f"https://api.github.com/repos/{repo}/actions/runs/{latest['id']}/jobs?per_page=20"
+            jobs_req = urllib.request.Request(jobs_url, headers=api_headers)
+            with urllib.request.urlopen(jobs_req, timeout=15) as jobs_response:
+                jobs_payload = json.loads(jobs_response.read().decode("utf-8"))
+
+            failed_jobs = []
+            for job in jobs_payload.get("jobs", []):
+                if job.get("conclusion") not in {"failure", "cancelled", "timed_out", "action_required"}:
+                    continue
+                failed_steps = [
+                    {
+                        "name": step.get("name"),
+                        "status": step.get("status"),
+                        "conclusion": step.get("conclusion"),
+                        "number": step.get("number"),
+                    }
+                    for step in (job.get("steps") or [])
+                    if step.get("conclusion") in {"failure", "cancelled", "timed_out", "action_required"}
+                ]
+                failed_jobs.append({
+                    "name": job.get("name"),
+                    "conclusion": job.get("conclusion"),
+                    "html_url": job.get("html_url"),
+                    "failed_steps": failed_steps,
+                })
+
+            run_info["failed_jobs"] = failed_jobs
+            if failed_jobs:
+                run_info["failure_summary"] = (
+                    f"{len(failed_jobs)} failed job(s): " +
+                    ", ".join(job["name"] for job in failed_jobs if job.get("name"))
+                )
+
+        return jsonify({
+            "ok": True,
+            "repo": repo,
+            "branch": branch,
+            "status": state,
+            "workflow_status": status,
+            "conclusion": conclusion,
+            "run": run_info,
+        })
     except Exception as exc:
-        print(f"GitHub deployment status error: {exc}")
+        print(f"GitHub deployment status error: {type(exc).__name__}: {exc}")
         return jsonify({"ok": False, "error": "Could not read GitHub Actions deployment status"}), 502
 
 
