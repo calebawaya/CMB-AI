@@ -584,3 +584,13 @@ body.light-theme .health-dashboard{background:rgba(255,255,255,.86);border-color
 
 /* CMB AI — user background customization */
 .background-customizer{margin-top:14px}.background-customizer>p{margin:6px 0 18px}.background-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.background-controls label{display:flex;flex-direction:column;gap:8px;color:var(--muted);font-size:12px;font-weight:700}.background-controls input[type="color"]{width:100%;height:44px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer}.background-range{grid-column:1/-1}.background-controls input[type="range"]{width:100%;accent-color:var(--accent);cursor:pointer}.background-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}@media(max-width:700px){.background-controls{grid-template-columns:1fr}.background-range{grid-column:auto}}
+
+/* CMB AI background effects controls */
+.background-effects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.background-effects label{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--muted);font-size:12px;font-weight:700}
+.background-effects label:last-child{grid-column:1/-1;display:flex;flex-direction:column;align-items:stretch}
+.background-effects input[type="range"]{width:100%;accent-color:var(--accent)}
+.cmb-static-bg #cmbVisibleBackground{animation:none!important}
+.cmb-no-grid #cmbVisibleBackground::after{display:none!important}
+#cmbReactor .reactor-core,#cmbReactor .reactor-triangle{opacity:var(--cmb-reactor-opacity,.8)}
+@media(max-width:700px){.background-effects{grid-template-columns:1fr}.background-effects label:last-child{grid-column:auto}}
