@@ -244,6 +244,9 @@
   list.innerHTML=results.map(x=>'<div class="dd-item '+(x.ok?"ok":"bad")+'"><i>'+(x.ok?"✓":"!")+'</i><span><b>'+esc(x.file)+'</b> — '+(x.ok?"available":"not available")+" ("+esc(x.status)+')</span></div>').join("");
   const good=results.every(x=>x.ok);
   list.insertAdjacentHTML("afterbegin",'<div class="dd-summary '+(good?"ok":"bad")+'">'+(good?"✓ Preflight passed — required frontend files are reachable.":"⚠ Preflight found a missing or unreachable frontend file.")+"</div>");
+  const detail={files:results,ok:good,checked:results.length,failed:results.filter(x=>!x.ok).length};
+  document.dispatchEvent(new CustomEvent("cmb:preflight",{detail}));
+  window.cmbEvent?.("Preflight completed",good?"All required frontend files are reachable.":detail.failed+" frontend file(s) are missing or unreachable.",good?"✓":"!");
   button.disabled=false;button.textContent="Run again";
  });
 })();
