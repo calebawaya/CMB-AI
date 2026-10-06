@@ -1849,7 +1849,16 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    if(active && key==="running")txt.textContent=v[1];
    else if(key!=="not_started")txt.textContent=v[1];
    if(key==="success"){active=false;window.cmbEvent?.("Deployment successful",v[1],"✓");if(btn){btn.textContent="Deployment Successful";btn.disabled=true;}}
-   if(key==="failed"){active=false;window.cmbEvent?.("Deployment failed",v[1],"!");if(btn){btn.textContent="Deployment Failed";btn.disabled=false;}}
+   if(key==="failed"){
+   active=false;
+   const run=d?.run||{};
+   const detail=run.failure_summary||(
+     run.failed_jobs?.flatMap(j=>(j.failed_steps||[]).map(s=>s.name)).filter(Boolean).join(", ")
+   )||v[1];
+   txt.textContent=detail;
+   window.cmbEvent?.("Deployment failed",detail,"!");
+   if(btn){btn.textContent="Deployment Failed";btn.disabled=false;}
+ }
    document.dispatchEvent(new CustomEvent("cmb:deployment-status",{detail:d}));
  };
  const poll=async()=>{
