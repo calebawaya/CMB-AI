@@ -6,7 +6,7 @@ import sqlite3
 from pathlib import Path
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_FILE = BASE_DIR / "cmb_ai.db"
@@ -73,6 +73,16 @@ def log_event(connection, project_id, event_type, message):
     )
 
 
+@app.get("/")
+def root():
+    return jsonify({
+        "ok": True,
+        "service": "CMB-AI backend",
+        "status": "online",
+        "health": "/api/health",
+    })
+
+
 @app.get("/api/health")
 def health():
     with db() as connection:
@@ -80,9 +90,38 @@ def health():
     return jsonify({
         "ok": True,
         "service": "CMB-AI backend",
+        "status": "online",
         "database": "sqlite",
         "database_file": DB_FILE.name,
         "project_count": project_count,
+        "ai_package": OpenAI is not None,
+        "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
+        "github_configured": bool(os.getenv("GITHUB_TOKEN")),
+    })
+
+
+@app.get("/api/system")
+def system_status():
+    with db() as connection:
+        tables = connection.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+        ).fetchall()
+        counts = {}
+        for table in tables:
+            name = table["name"]
+            counts[name] = connection.execute(f'SELECT COUNT(*) FROM "{name}"').fetchone()[0]
+    return jsonify({
+        "ok": True,
+        "service": "CMB-AI backend",
+        "status": "online",
+        "python": True,
+        "flask": True,
+        "sqlite": DB_FILE.exists(),
+        "openai_package": OpenAI is not None,
+        "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+        "github_configured": bool(os.getenv("GITHUB_TOKEN")),
+        "database": DB_FILE.name,
+        "tables": counts,
     })
 
 
