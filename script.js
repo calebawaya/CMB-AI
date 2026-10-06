@@ -17,7 +17,16 @@ setReactorState("ready");
  const rgba=(hex,a)=>{const n=parseInt(hex.slice(1),16);return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")"};
  function apply(save=true){const strength=Number(range.value)/100;value.textContent=range.value+"%";bg.style.background=["radial-gradient(circle at 15% 20%,"+rgba(glow.value,strength)+" 0%,transparent 32%)","radial-gradient(circle at 85% 18%,"+rgba(glow.value,strength*.78)+" 0%,transparent 30%)","radial-gradient(circle at 78% 82%,"+rgba(glow.value,strength*.65)+" 0%,transparent 34%)","linear-gradient(135deg,"+base.value+","+base.value+" 50%,"+base.value+")"].join(",");document.documentElement.style.setProperty("--cmb-background",base.value);document.documentElement.style.setProperty("--cmb-background-glow",glow.value);if(save)localStorage.setItem("cmbai_background",JSON.stringify({base:base.value,glow:glow.value,strength:range.value}))}
  function load(){try{const x=JSON.parse(localStorage.getItem("cmbai_background")||"null");if(x){base.value=x.base||base.value;glow.value=x.glow||glow.value;range.value=x.strength??range.value}}catch{}apply(false)}
- [base,glow,range].forEach(x=>x.addEventListener("input",()=>apply(true)));
+ const animated=document.getElementById("backgroundAnimated"),grid=document.getElementById("backgroundGrid"),intensity=document.getElementById("reactorIntensity");
+function effects(save=true){
+  document.body.classList.toggle("cmb-static-bg",animated&&!animated.checked);
+  document.body.classList.toggle("cmb-no-grid",grid&&!grid.checked);
+  document.documentElement.style.setProperty("--cmb-reactor-opacity",((intensity?.value||80)/100));
+  if(save)localStorage.setItem("cmbai_background_effects",JSON.stringify({animated:animated?.checked!==false,grid:grid?.checked!==false,intensity:intensity?.value||80}));
+}
+function loadEffects(){try{const x=JSON.parse(localStorage.getItem("cmbai_background_effects")||"null");if(x){if(animated)animated.checked=x.animated!==false;if(grid)grid.checked=x.grid!==false;if(intensity)intensity.value=x.intensity||80}}catch{}effects(false)}
+[base,glow,range].forEach(x=>x.addEventListener("input",()=>apply(true)));
+[animated,grid,intensity].filter(Boolean).forEach(x=>x.addEventListener("input",()=>effects(true)));
  document.querySelectorAll("[data-background-preset]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.backgroundPreset;if(k==="reset"){base.value="#020617";glow.value="#253b9a";range.value=45}else if(presets[k]){base.value=presets[k][0];glow.value=presets[k][1];range.value=55}apply(true);window.cmbEvent?.("Background changed","CMB AI background updated.","🎨")}));
  load();
 })();
