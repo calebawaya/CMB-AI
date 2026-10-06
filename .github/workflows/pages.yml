@@ -177,6 +177,24 @@ jobs:
           if "CMB_API_BASE" not in bridge or "CMB_API_BASE" not in controls or "CMB_API_BASE" not in js:
               errors.append("The configurable CMB_API_BASE contract is incomplete.")
 
+          # The backend bridge must load before controls that call it.
+          script_order = [
+              "cmb-backend.js",
+              "script.js",
+              "cmb-ai-controls.js",
+              "cmb-ai-diff.js",
+          ]
+          positions = []
+          for name in script_order:
+              marker = f'<script src="{name}"'
+              pos = html.find(marker)
+              if pos < 0:
+                  errors.append(f"index.html is missing required script tag: {name}")
+              else:
+                  positions.append((pos, name))
+          if positions != sorted(positions):
+              errors.append("index.html script load order is incorrect; backend bridge must load before AI controls.")
+
           if errors:
               print("CMB AI integration contract errors:")
               for error in errors:
