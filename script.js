@@ -1944,5 +1944,10 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    const d=e.detail||{};
    if(Number.isFinite(Number(d.percent))) window.cmbEvent("AI task progress",Number(d.percent)+"% • "+(Number(d.completed)||0)+" of "+(Number(d.total)||0)+" tasks completed","▣");
  });
+ document.addEventListener("cmb:preflight",e=>{
+   const d=e.detail||{};
+   window.cmbEvent("Preflight diagnostics",d.ok?"Preflight passed — frontend files are reachable.":(Number(d.failed)||0)+" frontend file(s) failed preflight.","⚙");
+   document.dispatchEvent(new CustomEvent("cmb:health",{detail:{preflight:!!d.ok,preflightFailed:Number(d.failed)||0}}));
+ });
  window.cmbEvent("System online","CMB AI event stream initialized.","✓");
 })();
