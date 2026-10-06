@@ -439,6 +439,53 @@ Do not claim you changed files unless the user used an apply action."""
         return jsonify({"ok": False, "error": "AI request failed"}), 502
 
 
+@app.post("/api/preflight")
+def preflight():
+    data = request.get_json(silent=True) or {}
+    files = data.get("files", {}) or {}
+    if not isinstance(files, dict):
+        return jsonify({"ok": False, "error": "files must be an object"}), 400
+
+    issues = []
+    warnings = []
+    names = {str(k) for k in files.keys()}
+    for required in ("index.html",):
+        if required not in names:
+            issues.append({"severity": "error", "code": "missing_file", "file": required, "message": f"Required file {required} is missing."})
+
+    html = str(files.get("index.html", ""))
+    css = str(files.get("style.css", ""))
+    js = str(files.get("script.js", ""))
+
+    if html and "<html" not in html.lower():
+        warnings.append({"severity": "warning", "code": "html_root", "file": "index.html", "message": "index.html does not appear to contain an <html> root element."})
+    if html and "<title" not in html.lower():
+        warnings.append({"severity": "warning", "code": "missing_title", "file": "index.html", "message": "index.html has no <title> element."})
+    if html and "<script" in html.lower() and js and "script.js" not in html:
+        warnings.append({"severity": "warning", "code": "script_reference", "file": "index.html", "message": "index.html contains a script tag, but script.js was not detected in its source."})
+    if html and "<link" in html.lower() and css and "style.css" not in html:
+        warnings.append({"severity": "warning", "code": "css_reference", "file": "index.html", "message": "index.html contains stylesheet links, but style.css was not detected in its source."})
+
+    brace_balance = js.count("{") - js.count("}")
+    if js and brace_balance != 0:
+        issues.append({"severity": "error", "code": "js_braces", "file": "script.js", "message": "JavaScript braces appear unbalanced."})
+
+    paren_balance = js.count("(") - js.count(")")
+    if js and paren_balance != 0:
+        issues.append({"severity": "error", "code": "js_parentheses", "file": "script.js", "message": "JavaScript parentheses appear unbalanced."})
+
+    status = "fail" if issues else ("warn" if warnings else "pass")
+    return jsonify({
+        "ok": True,
+        "status": status,
+        "ready": not issues,
+        "checked_files": sorted(names),
+        "issues": issues,
+        "warnings": warnings,
+        "summary": {"errors": len(issues), "warnings": len(warnings), "files": len(names)}
+    })
+
+
 @app.post("/api/ai/apply")
 def apply_ai_change():
     data = request.get_json(silent=True) or {}
@@ -459,7 +506,7 @@ CSS:\n{str(files.get('style.css',''))[:14000]}
 JavaScript:\n{str(files.get('script.js',''))[:14000]}"""
     try:
         client = OpenAI()
-        response = client.responses.create(model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna"), input=prompt)
+        response = client.responses.create(model=AI_MODEL, input=prompt)
         return jsonify({"ok": True, "files": json.loads(response.output_text.strip())})
     except Exception:
         return jsonify({"ok": False, "error": "Could not generate a safe code change"}), 502
