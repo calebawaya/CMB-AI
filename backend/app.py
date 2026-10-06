@@ -224,7 +224,10 @@ def update_project(project_id):
                 if key == "name":
                     value = str(value).strip() or existing["name"]
                 if key == "progress":
-                    value = max(0, min(100, int(value)))
+                    try:
+                        value = max(0, min(100, int(value)))
+                    except (TypeError, ValueError):
+                        return jsonify({"ok": False, "error": "Progress must be an integer from 0 to 100"}), 400
                 fields.append(f"{key} = ?")
                 values.append(value)
         if fields:
@@ -296,6 +299,8 @@ def create_task(project_id):
             "INSERT INTO project_tasks(project_id,title,position) VALUES(?,?,?)",
             (project_id, title, position),
         )
+        connection.execute("UPDATE projects SET updated_at=CURRENT_TIMESTAMP WHERE id=?", (project_id,))
+        log_event(connection, project_id, "task.created", f"Task '{title}' created")
         task = connection.execute("SELECT * FROM project_tasks WHERE id=?", (cursor.lastrowid,)).fetchone()
     return jsonify({"ok": True, "task": row_dict(task)}), 201
 
@@ -313,6 +318,8 @@ def update_task(project_id, task_id):
             connection.execute("UPDATE project_tasks SET title=?, updated_at=CURRENT_TIMESTAMP WHERE id=?", (str(data["title"]).strip(), task_id))
         if "completed" in data:
             connection.execute("UPDATE project_tasks SET completed=?, updated_at=CURRENT_TIMESTAMP WHERE id=?", (1 if data["completed"] else 0, task_id))
+        connection.execute("UPDATE projects SET updated_at=CURRENT_TIMESTAMP WHERE id=?", (project_id,))
+        log_event(connection, project_id, "task.updated", f"Task {task_id} updated")
         task = connection.execute("SELECT * FROM project_tasks WHERE id=?", (task_id,)).fetchone()
     return jsonify({"ok": True, "task": row_dict(task)})
 
