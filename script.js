@@ -35,6 +35,7 @@ applyButton?.addEventListener("click",()=>{
 [animated,grid,intensity].filter(Boolean).forEach(x=>x.addEventListener("input",()=>effects(true)));
  document.querySelectorAll("[data-background-preset]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.backgroundPreset;if(k==="reset"){base.value="#020617";glow.value="#253b9a";range.value=45}else if(presets[k]){base.value=presets[k][0];glow.value=presets[k][1];range.value=55}apply(true);window.cmbEvent?.("Background changed","CMB AI background updated.","🎨")}));
  load();
+ loadEffects();
 })();
 
 function reactorThinking(){setReactorState("thinking")}
