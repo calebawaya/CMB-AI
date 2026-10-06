@@ -1803,19 +1803,62 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  check();
 })();
 
-/* Live health monitor */
+/* Live health monitor + deployment status */
 (()=>{
  const btn=document.getElementById("runHealthCheck"),wrap=document.getElementById("healthChecks");
  if(!btn||!wrap)return;
  const card=(name,ok,detail)=>'<div class="lh-card '+(ok?"ok":"bad")+'"><i>'+(ok?"✓":"!")+'</i><b>'+name+'</b><span>'+detail+'</span></div>';
+ const deploymentCard=(status,detail)=>{
+   const ok=status==="success", bad=status==="failed", cls=ok?"ok":bad?"bad":"";
+   const icon=ok?"✓":bad?"!":"●";
+   return '<div class="lh-card '+cls+'"><i>'+icon+'</i><b>Deployment</b><span>'+detail+'</span></div>';
+ };
+ async function getDeployment(){
+   try{
+     if(window.CMBAIBackend?.deploymentStatus){
+       const d=await window.CMBAIBackend.deploymentStatus("calebawaya/CMB-AI","main");
+       return d.status||"not_started";
+     }
+   }catch(_){}
+   return "unavailable";
+ }
  async function check(){
   btn.disabled=true;btn.textContent="Checking…";
   const backend=await fetch("http://127.0.0.1:5000/api/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
   const workspace=!!window.localStorage&&!!document.querySelector("#code");
-  wrap.innerHTML=card("Frontend",true,"Interface loaded")+card("Backend",backend,backend?"API online":"API offline")+card("Workspace",workspace,"Editor and local storage ready");
+  const deployment=await getDeployment();
+  const deploymentText={success:"Successful",failed:"Failed",running:"Deploying…",not_started:"No active run",unavailable:"Status unavailable"}[deployment]||deployment;
+  wrap.innerHTML=card("Frontend",true,"Interface loaded")+card("Backend",backend,backend?"API online":"API offline")+card("Workspace",workspace,"Editor and local storage ready")+deploymentCard(deployment,deploymentText);
   btn.disabled=false;btn.textContent="Check again";
+  window.CMBAIDeploymentStatus=deployment;
  }
  btn.addEventListener("click",check);
+ document.addEventListener("cmb:deployment-status",check);
+ setTimeout(check,900);
+})();
+
+/* GitHub Pages deployment monitor */
+(()=>{
+ const state=document.getElementById("deploymentControlState"),txt=document.getElementById("deploymentControlText"),btn=document.getElementById("prepareDeployment");
+ if(!state||!txt)return;
+ let timer=null,active=false;
+ const labels={not_started:["WAITING","No active GitHub Pages workflow run.","●"],running:["DEPLOYING","GitHub Actions is currently deploying CMB AI…","→"],success:["SUCCESSFUL","GitHub Pages deployment completed successfully.","✓"],failed:["FAILED","GitHub Actions reported a deployment failure. Open Actions for the run details.","!"],unavailable:["UNKNOWN","Deployment status is unavailable. Check the backend connection and GITHUB_TOKEN.","?"]};
+ const render=d=>{
+   const key=d?.status||"unavailable", v=labels[key]||labels.unavailable;
+   state.textContent=v[0];state.className=key==="success"?"ready":key==="failed"?"locked":"";
+   if(active && key==="running")txt.textContent=v[1];
+   else if(key!=="not_started")txt.textContent=v[1];
+   if(key==="success"){active=false;window.cmbEvent?.("Deployment successful",v[1],"✓");if(btn){btn.textContent="Deployment Successful";btn.disabled=true;}}
+   if(key==="failed"){active=false;window.cmbEvent?.("Deployment failed",v[1],"!");if(btn){btn.textContent="Deployment Failed";btn.disabled=false;}}
+   document.dispatchEvent(new CustomEvent("cmb:deployment-status",{detail:d}));
+ };
+ const poll=async()=>{
+   if(!window.CMBAIBackend?.deploymentStatus)return;
+   try{const d=await window.CMBAIBackend.deploymentStatus("calebawaya/CMB-AI","main");render(d);if(active && (d.status==="running"||d.status==="not_started")) timer=setTimeout(poll,8000);}catch(e){render({status:"unavailable"});}
+ };
+ document.addEventListener("cmb:deployment-monitor",()=>{active=true;clearTimeout(timer);state.textContent="DEPLOYING";txt.textContent="Checking GitHub Actions…";poll();});
+ document.addEventListener("cmb:backend-status",e=>{if(e.detail?.online)poll();});
+ poll();
 })();
 
 /* Real-time workspace event stream */
