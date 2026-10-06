@@ -287,7 +287,26 @@ b.onclick=async()=>{b.disabled=true;s.textContent="CHECKING";l.innerHTML="";wind
 (()=>{const score=document.getElementById("readinessScore"),mil=document.querySelectorAll("#aiMilestones [data-milestone]");if(!score)return;const update=()=>{const done=[...mil].filter(x=>x.checked).length;const pct=Math.round(done/Math.max(mil.length,1)*100);score.textContent=pct+"%";const map=[["readyFiles",done>=2],["readyBuild",done>=4],["readyAI",done>=3],["readyDeploy",done>=5]];map.forEach(([id,ok])=>{const d=document.getElementById(id);if(d){d.className=ok?"ready":"";d.parentElement.querySelector("b").textContent=ok?"Ready":"Waiting"}})};mil.forEach(x=>x.addEventListener("change",update));update();})();
 </script>
 <script>
-(()=>{const b=document.getElementById("runReleaseCheck"),l=document.getElementById("releaseCheckList");if(!b||!l)return;b.onclick=()=>{const checks=[["Files",[...document.querySelectorAll("#buildArtifacts .ba-item.ok")].length>0],["Build",document.getElementById("buildState")?.textContent==="BUILD READY"],["AI Review",[...document.querySelectorAll("#aiMilestones [data-milestone]")].find(x=>x.dataset.milestone==="AI review completed")?.checked],["Ready to deploy",[...document.querySelectorAll("#aiMilestones [data-milestone]")].find(x=>x.dataset.milestone==="Ready to deploy")?.checked]];l.innerHTML=checks.map(([name,ok])=>"<div class='rc-item "+(ok?"ok":"bad")+"'><i>"+(ok?"✓":"!")+"</i><b>"+name+"</b><span>"+(ok?"Passed":"Needs attention")+"</span></div>").join("");const good=checks.every(x=>x[1]);window.cmbEvent?.("Release check completed",good?"All release checks passed.":"Some release checks need attention.",good?"✓":"!");};})();
+(()=>{const b=document.getElementById("runReleaseCheck"),l=document.getElementById("releaseCheckList");if(!b||!l)return;
+const render=(checks)=>{l.innerHTML=checks.map(([name,ok,detail])=>"<div class='rc-item "+(ok?"ok":"bad")+"'><i>"+(ok?"✓":"!")+"</i><b>"+name+"</b><span>"+detail+"</span></div>").join("")};
+b.onclick=async()=>{b.disabled=true;b.textContent="Checking…";
+const files=window.state?.files||{};
+let pre=null;
+try{pre=await window.CMBAIBackend?.preflight(files)}catch(e){pre={ok:false,error:"CMB AI backend preflight is unavailable."}}
+const preflightReady=!!pre?.ok&&pre?.ready;
+const checks=[
+["Files",Object.keys(files).length>0,Object.keys(files).length?"Project files detected":"No project files are loaded."],
+["Preflight",preflightReady,preflightReady?"No blocking preflight errors detected":(pre?.summary?.errors?pre.summary.errors+" preflight error(s) found":"Backend preflight could not complete")],
+["Build",document.getElementById("buildState")?.textContent==="BUILD READY","Run the Build Center check until it reports BUILD READY."],
+["AI Review",[...document.querySelectorAll("#aiMilestones [data-milestone]")].find(x=>x.dataset.milestone==="AI review completed")?.checked,"Complete the AI review milestone."],
+["Ready to deploy",[...document.querySelectorAll("#aiMilestones [data-milestone]")].find(x=>x.dataset.milestone==="Ready to deploy")?.checked,"Complete the Ready to deploy milestone."]
+];
+render(checks);
+const good=checks.every(x=>x[1]);
+window.cmbEvent?.("Release check completed",good?"All release checks passed.":"Some release checks need attention.",good?"✓":"!");
+if(pre?.warnings?.length)window.cmbEvent?.("Preflight warnings",pre.warnings.length+" warning(s) found. Review before deployment.","!");
+b.disabled=false;b.textContent="Run Release Check";
+};})();
 </script>
 <script>
 (()=>{const b=document.getElementById("runReleaseCheck"),decision=document.getElementById("releaseDecision"),txt=document.getElementById("releaseSummaryText"),list=document.getElementById("releaseCheckList");if(!b)return;b.addEventListener("click",()=>{setTimeout(()=>{const bad=list?.querySelectorAll(".rc-item.bad").length||0;const good=!bad&&list?.children.length;decision.textContent=good?"RELEASE READY":"BLOCKED";decision.className=good?"ready":"blocked";txt.textContent=good?"All final release checks passed. The project is ready for the deployment workflow.":bad+" release check(s) need attention before deployment.";},0)});})();
