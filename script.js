@@ -1924,7 +1924,11 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
  async function check(){
   btn.disabled=true;btn.textContent="Checking…";
   healthState.frontend=true;
-  healthState.backend=await fetch((window.CMB_API_BASE||"http://127.0.0.1:5000/api")+"/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
+  try{
+    healthState.backend=!!(await window.CMBAIBackend?.health());
+  }catch(_){
+    healthState.backend=false;
+  }
   healthState.workspace=!!window.localStorage&&!!document.querySelector("#code");
   healthState.deployment=await getDeployment();
   renderHealth();
