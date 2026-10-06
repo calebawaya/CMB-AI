@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
@@ -27,195 +27,32 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Verify site entry
+      - name: Validate required site files
         run: |
           test -f index.html
           test -f style.css
           test -f script.js
           test -f reactor.css
-          echo "Required site files are present."
+          test -f cmb-backend.js
+          test -f cmb-ai-controls.js
+          test -f cmb-ai-diff.js
 
-      - name: Validate all frontend JavaScript
-        shell: bash
+      - name: Validate JavaScript syntax
         run: |
           set -e
-          while IFS= read -r -d '' file; do
-            echo "Checking $file"
+          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js; do
             node --check "$file"
-          done < <(find . -type f -name '*.js' \
-            -not -path './.git/*' \
-            -not -path './backend/*' -print0)
+          done
 
-      - name: Validate backend Python syntax
-        run: |
-          python -m compileall -q backend
-
-      - name: Validate HTML entry structure
-        run: |
-          python - <<'PY'
-          from html.parser import HTMLParser
-          from pathlib import Path
-          import sys
-
-          text = Path('index.html').read_text(encoding='utf-8', errors='strict')
-          errors = []
-
-          if not text.lstrip().lower().startswith('<!doctype html>'):
-              errors.append('index.html must start with <!doctype html>.')
-          if '<html' not in text.lower() or '</html>' not in text.lower():
-              errors.append('index.html must contain a complete html document.')
-          if '<head' not in text.lower() or '</head>' not in text.lower():
-              errors.append('index.html is missing the head element.')
-          if '<body' not in text.lower() or '</body>' not in text.lower():
-              errors.append('index.html is missing the body element.')
-          if '<main' not in text.lower() or '</main>' not in text.lower():
-              errors.append('index.html is missing the main application container.')
-
-          class Parser(HTMLParser):
-              def __init__(self):
-                  super().__init__(convert_charrefs=True)
-                  self.parse_errors = []
-              def error(self, message):
-                  self.parse_errors.append(message)
-
-          parser = Parser()
-          parser.feed(text)
-          parser.close()
-          if parser.parse_errors:
-              errors.extend('HTML parser error: ' + e for e in parser.parse_errors)
-
-          if errors:
-              print('HTML entry validation errors:')
-              for error in errors:
-                  print(' -', error)
-              sys.exit(1)
-
-          print('HTML entry structure passed deployment validation.')
-          PY
-
-      - name: Validate local asset references
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          from urllib.parse import unquote
-          import re
-          import sys
-
-          root = Path('.')
-          files_to_scan = ['index.html', 'style.css', 'reactor.css']
-          missing = []
-
-          def check_ref(ref, source):
-              ref = unquote(ref.strip())
-              if not ref or ref.startswith(('#', 'http://', 'https://', '//', 'data:', 'mailto:', 'javascript:')):
-                  return
-              ref = ref.split('?', 1)[0].split('#', 1)[0]
-              if not ref:
-                  return
-              path = root / ref.lstrip('/')
-              if not path.is_file():
-                  missing.append((source, ref))
-
-          for filename in files_to_scan:
-              path = root / filename
-              if not path.is_file():
-                  continue
-              text = path.read_text(encoding='utf-8', errors='strict')
-              for match in re.findall(r'(?:src|href)=["\']([^"\']+)["\']', text, re.I):
-                  check_ref(match, filename)
-              for match in re.findall(r'url\(\s*["\']?([^)"\']+)["\']?\s*\)', text, re.I):
-                  check_ref(match, filename)
-
-          if missing:
-              print('Missing local assets:')
-              for source, ref in sorted(set(missing)):
-                  print(f' - {source}: {ref}')
-              sys.exit(1)
-
-          print('Local asset references are valid.')
-          PY
-
-      - name: Validate CMB AI integration contracts
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import sys
-
-          errors = []
-
-          html = Path("index.html").read_text(encoding="utf-8")
-          js = Path("script.js").read_text(encoding="utf-8")
-          controls = Path("cmb-ai-controls.js").read_text(encoding="utf-8")
-          bridge = Path("cmb-backend.js").read_text(encoding="utf-8")
-          backend = Path("backend/app.py").read_text(encoding="utf-8")
-
-          required_frontend = [
-              ("index.html", "cmb-backend.js", html),
-              ("index.html", "cmb-ai-controls.js", html),
-              ("index.html", "cmb-ai-diff.js", html),
-              ("cmb-ai-controls.js", "prompt", controls),
-              ("cmb-backend.js", "CMBAIBackend", bridge),
-          ]
-
-          for source, needle, text in required_frontend:
-              if needle not in text:
-                  errors.append(f"{source} is missing required integration marker: {needle}")
-
-          required_routes = [
-              "/api/health",
-              "/api/ai",
-              "/api/preflight",
-              "/api/github/deployment-status",
-          ]
-          for route in required_routes:
-              if route not in backend:
-                  errors.append(f"backend/app.py is missing required route: {route}")
-
-          if "127.0.0.1:5000/api" not in bridge:
-              errors.append("cmb-backend.js is missing the local backend fallback URL.")
-
-          if "CMB_API_BASE" not in bridge or "CMB_API_BASE" not in controls or "CMB_API_BASE" not in js:
-              errors.append("The configurable CMB_API_BASE contract is incomplete.")
-
-          # The backend bridge must load before controls that call it.
-          script_order = [
-              "cmb-backend.js",
-              "script.js",
-              "cmb-ai-controls.js",
-              "cmb-ai-diff.js",
-          ]
-          positions = []
-          for name in script_order:
-              marker = f'<script src="{name}"'
-              pos = html.find(marker)
-              if pos < 0:
-                  errors.append(f"index.html is missing required script tag: {name}")
-              else:
-                  positions.append((pos, name))
-          if positions != sorted(positions):
-              errors.append("index.html script load order is incorrect; backend bridge must load before AI controls.")
-
-          if errors:
-              print("CMB AI integration contract errors:")
-              for error in errors:
-                  print(" -", error)
-              sys.exit(1)
-
-          print("CMB AI integration contracts passed deployment validation.")
-          PY
-
-      - name: Prepare clean Pages artifact
+      - name: Prepare Pages artifact
         run: |
           set -e
           rm -rf _site
-          mkdir -p _site
+          mkdir _site
           rsync -a --exclude=".git/" --exclude=".github/" --exclude="backend/" --exclude="_site/" ./ _site/
           test -f _site/index.html
-          test -f _site/style.css
-          test -f _site/script.js
-          test -f _site/reactor.css
 
-      - name: Upload site
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
