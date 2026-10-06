@@ -277,6 +277,7 @@ def delete_project_file(project_id):
         )
         if result.rowcount == 0:
             return jsonify({"ok": False, "error": "File not found"}), 404
+        connection.execute("UPDATE projects SET updated_at=CURRENT_TIMESTAMP WHERE id=?", (project_id,))
         log_event(connection, project_id, "file.deleted", f"Deleted {path}")
     return jsonify({"ok": True, "deleted": path})
 
