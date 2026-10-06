@@ -96,7 +96,8 @@ def health():
         "database_file": DB_FILE.name,
         "project_count": project_count,
         "ai_package": OpenAI is not None,
-        "ai_configured": bool(os.getenv("OPENAI_API_KEY")),\n        "ai_model": AI_MODEL,
+        "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
+        "ai_model": AI_MODEL,
         "github_configured": bool(os.getenv("GITHUB_TOKEN")),
     })
 
@@ -119,7 +120,8 @@ def system_status():
         "flask": True,
         "sqlite": DB_FILE.exists(),
         "openai_package": OpenAI is not None,
-        "openai_configured": bool(os.getenv("OPENAI_API_KEY")),\n        "openai_model": AI_MODEL,
+        "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+        "openai_model": AI_MODEL,
         "github_configured": bool(os.getenv("GITHUB_TOKEN")),
         "database": DB_FILE.name,
         "tables": counts,
