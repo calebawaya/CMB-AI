@@ -186,5 +186,5 @@ html,body{
 
 
 /* User-selected background glow drives the reactor visual */
-#cmbReactor .reactor-core{filter:drop-shadow(0 0 18px var(--reactor-glow,.95)) drop-shadow(0 0 55px var(--reactor-glow,.75)) drop-shadow(0 0 110px var(--reactor-glow,.45))}
-#cmbReactor .reactor-triangle{filter:drop-shadow(0 0 12px var(--reactor-glow,1)) drop-shadow(0 0 45px var(--reactor-glow,.85))}
+#cmbReactor .reactor-core{filter:drop-shadow(0 0 18px var(--reactor-glow)) drop-shadow(0 0 55px var(--reactor-glow)) drop-shadow(0 0 110px var(--reactor-glow))}
+#cmbReactor .reactor-triangle{filter:drop-shadow(0 0 12px var(--reactor-glow)) drop-shadow(0 0 45px var(--reactor-glow))}
