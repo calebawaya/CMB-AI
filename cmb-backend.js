@@ -15,6 +15,7 @@
     aiStatus(){ return this.request("/ai/status"); },
     ai(prompt, projectId){ return this.request("/ai", {method:"POST",body:JSON.stringify({prompt,project_id:projectId||null})}); },
     preflight(files){ return this.request("/preflight", {method:"POST",body:JSON.stringify({files})}); },
+    deploymentStatus(repo="calebawaya/CMB-AI", branch="main"){ return this.request("/github/deployment-status?repo="+encodeURIComponent(repo)+"&branch="+encodeURIComponent(branch)); },
     databaseStatus(){ return this.request("/db/status"); },
     projects(){ return this.request("/projects"); },
     project(id){ return this.request(`/project/${encodeURIComponent(id)}`); },
