@@ -1825,18 +1825,62 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
 })();
 
 
-/* Deployment Guard */
+/* Deployment Guard — release-gate aware */
 (()=>{
  const el=document.getElementById("deploymentGuard");if(!el)return;
- const small=el.querySelector("small"),required=["index.html","style.css","script.js"];
- function check(){
-  const missing=required.filter(f=>!(state.files&&state.files[f]!==undefined));
-  if(missing.length){small.textContent="Missing: "+missing.join(", ");el.classList.add("guard-error");}
-  else{small.textContent="Required site files detected • safe to deploy";el.classList.remove("guard-error");}
- }
- document.addEventListener("cmb:editor-refresh",check);
- document.addEventListener("cmb:workspace-sync",check);
- check();
+ const small=el.querySelector("small"),required=["index.html","style.css","script.js","reactor.css","cmb-ai-controls.js","cmb-ai-diff.js"];
+ let deployment="unknown";
+ const render=()=>{
+   const missing=required.filter(f=>!(state.files&&state.files[f]!==undefined));
+   const release=document.getElementById("releaseDecision")?.textContent||"NOT CHECKED";
+   const failed=document.querySelectorAll("#releaseCheckList .rc-item.bad").length;
+   const build=document.getElementById("buildState")?.textContent||"READY";
+   if(missing.length){
+     small.textContent="BLOCKED • Missing: "+missing.join(", ");
+     el.classList.add("guard-error");el.classList.remove("guard-ready");
+     return;
+   }
+   if(release==="BLOCKED"||failed>0){
+     small.textContent="BLOCKED • "+failed+" release check(s) need attention";
+     el.classList.add("guard-error");el.classList.remove("guard-ready");
+     return;
+   }
+   if(release!=="RELEASE READY"){
+     small.textContent="LOCKED • Run the Final Release Check first";
+     el.classList.remove("guard-error","guard-ready");
+     return;
+   }
+   if(build!=="BUILD READY"){
+     small.textContent="BLOCKED • Build check is not ready";
+     el.classList.add("guard-error");el.classList.remove("guard-ready");
+     return;
+   }
+   if(deployment==="failed"){
+     small.textContent="BLOCKED • Latest GitHub Pages deployment failed";
+     el.classList.add("guard-error");el.classList.remove("guard-ready");
+     return;
+   }
+   if(deployment==="running"){
+     small.textContent="DEPLOYING • GitHub Pages workflow is running";
+     el.classList.remove("guard-error","guard-ready");
+     return;
+   }
+   if(deployment==="success"){
+     small.textContent="DEPLOYED • GitHub Pages deployment succeeded";
+     el.classList.remove("guard-error");el.classList.add("guard-ready");
+     return;
+   }
+   small.textContent="READY • Release gate passed; deployment status not confirmed";
+   el.classList.remove("guard-error");el.classList.add("guard-ready");
+ };
+ const setDeployment=e=>{deployment=e.detail?.status||"unknown";render()};
+ document.addEventListener("cmb:editor-refresh",render);
+ document.addEventListener("cmb:workspace-sync",render);
+ document.addEventListener("cmb:preflight",render);
+ document.addEventListener("cmb:deployment-status",setDeployment);
+ document.addEventListener("cmb:release-gate",render);
+ new MutationObserver(render).observe(document.body,{subtree:true,childList:true,characterData:true});
+ check=render;render();
 })();
 
 /* Live health monitor + deployment status */
