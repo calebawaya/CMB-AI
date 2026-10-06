@@ -82,7 +82,7 @@
 
 /* CMB AI — live task progress sync */
 (()=>{
- const fill=document.getElementById("progressFill"),textEl=document.getElementById("progressText"),meta=document.getElementById("progressMeta");
+ const fill=document.getElementById("progressFill"),textEl=document.getElementById("aiProgressText"),meta=document.getElementById("progressMeta");
  if(!fill&&!textEl&&!meta)return;
  document.addEventListener("cmb:task-progress",event=>{
    const d=event.detail||{},percent=Number(d.percent)||0,total=Number(d.total)||0,done=Number(d.completed)||0;
