@@ -48,7 +48,7 @@ jobs:
 
       - name: Validate backend Python syntax
         run: |
-          python -m py_compile backend/app.py
+          python -m compileall -q backend
 
       - name: Validate HTML entry structure
         run: |
