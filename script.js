@@ -1905,19 +1905,28 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    }catch(_){}
    return "unavailable";
  }
+ const renderHealth=(d)=>{
+   const backend=!!d.backend,workspace=!!d.workspace,frontend=d.frontend!==false;
+   const deployment=d.deployment||window.CMBAIDeploymentStatus||"unavailable";
+   const deploymentText={success:"Successful",failed:"Failed",running:"Deploying…",not_started:"No active run",unavailable:"Status unavailable"}[deployment]||deployment;
+   wrap.innerHTML=card("Frontend",frontend,frontend?"Interface loaded":"Interface unavailable")
+     +card("Backend",backend,backend?"API online":"API offline")
+     +card("Workspace",workspace,workspace?"Editor and local storage ready":"Workspace unavailable")
+     +deploymentCard(deployment,deploymentText);
+ };
  async function check(){
   btn.disabled=true;btn.textContent="Checking…";
-  const backend=await fetch( (window.CMB_API_BASE || "http://127.0.0.1:5000/api")+"/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
+  const backend=await fetch((window.CMB_API_BASE||"http://127.0.0.1:5000/api")+"/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
   const workspace=!!window.localStorage&&!!document.querySelector("#code");
   const deployment=await getDeployment();
-  const deploymentText={success:"Successful",failed:"Failed",running:"Deploying…",not_started:"No active run",unavailable:"Status unavailable"}[deployment]||deployment;
-  wrap.innerHTML=card("Frontend",true,"Interface loaded")+card("Backend",backend,backend?"API online":"API offline")+card("Workspace",workspace,"Editor and local storage ready")+deploymentCard(deployment,deploymentText);
+  renderHealth({frontend:true,backend,workspace,deployment});
   btn.disabled=false;btn.textContent="Check again";
   window.CMBAIDeploymentStatus=deployment;
   document.dispatchEvent(new CustomEvent("cmb:health",{detail:{frontend:true,backend,workspace,deployment}}));
  }
  btn.addEventListener("click",check);
- document.addEventListener("cmb:deployment-status",check);
+ document.addEventListener("cmb:health",e=>renderHealth(e.detail||{}));
+ document.addEventListener("cmb:deployment-status",e=>{const d=e.detail||{};renderHealth({frontend:true,backend:!!document.querySelector("#healthChecks .lh-card:nth-child(2).ok"),workspace:!!document.querySelector("#healthChecks .lh-card:nth-child(3).ok"),deployment:d.status});});
  setTimeout(check,900);
 })();
 
