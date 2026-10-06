@@ -25,7 +25,13 @@ function effects(save=true){
   if(save)localStorage.setItem("cmbai_background_effects",JSON.stringify({animated:animated?.checked!==false,grid:grid?.checked!==false,intensity:intensity?.value||80}));
 }
 function loadEffects(){try{const x=JSON.parse(localStorage.getItem("cmbai_background_effects")||"null");if(x){if(animated)animated.checked=x.animated!==false;if(grid)grid.checked=x.grid!==false;if(intensity)intensity.value=x.intensity||80}}catch{}effects(false)}
-[base,glow,range].forEach(x=>x.addEventListener("input",()=>apply(true)));
+[base,glow,range].forEach(x=>x.addEventListener("input",()=>apply(false)));
+const applyButton=document.getElementById("applyBackgroundSettings"),applyStatus=document.getElementById("backgroundApplyStatus");
+applyButton?.addEventListener("click",()=>{
+  apply(true); effects(true);
+  if(applyStatus){applyStatus.textContent="✓ Background applied and saved.";setTimeout(()=>applyStatus.textContent="Changes are previewed live.",1800)}
+  window.cmbEvent?.("Background applied","Your CMB AI visual settings were saved.","✓");
+});
 [animated,grid,intensity].filter(Boolean).forEach(x=>x.addEventListener("input",()=>effects(true)));
  document.querySelectorAll("[data-background-preset]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.backgroundPreset;if(k==="reset"){base.value="#020617";glow.value="#253b9a";range.value=45}else if(presets[k]){base.value=presets[k][0];glow.value=presets[k][1];range.value=55}apply(true);window.cmbEvent?.("Background changed","CMB AI background updated.","🎨")}));
  load();
