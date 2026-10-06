@@ -134,7 +134,7 @@ def ai_status():
     key_configured = bool(os.getenv("OPENAI_API_KEY"))
     ready = package_ready and key_configured
     return jsonify({
-        "ok": ready,
+        "ok": True,
         "service": "CMB-AI AI backend",
         "status": "ready" if ready else "not_ready",
         "openai_package": package_ready,
