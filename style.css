@@ -594,3 +594,5 @@ body.light-theme .health-dashboard{background:rgba(255,255,255,.86);border-color
 .cmb-no-grid #cmbVisibleBackground::after{display:none!important}
 #cmbReactor .reactor-core,#cmbReactor .reactor-triangle{opacity:var(--cmb-reactor-opacity,.8)}
 @media(max-width:700px){.background-effects{grid-template-columns:1fr}.background-effects label:last-child{grid-column:auto}}
+
+.background-apply-row{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}.background-apply-row .primary{min-width:160px}.background-apply-row span{font-size:12px;color:var(--muted)}
