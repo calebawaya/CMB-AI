@@ -137,21 +137,6 @@
     setTimeout(syncActiveProject,1800);
   });
 
-  async function hydrateProjects(){
-    if(!window.CMBAIBackendConnected || !window.state) return;
-    try{
-      const result=await client.projects();
-      const remote=result.projects||[];
-      remote.forEach(remoteProject=>{
-        const local=window.state.projects.find(p=>String(p.backendId)===String(remoteProject.id));
-        if(local){ local.name=remoteProject.name; local.idea=remoteProject.description||""; local.progress=remoteProject.progress||0; local.files=remoteProject.files||local.files; }
-        else window.state.projects.push({backendId:remoteProject.id,id:"backend-"+remoteProject.id,name:remoteProject.name,idea:remoteProject.description||"",progress:remoteProject.progress||0,created:remoteProject.created_at,updatedAt:Date.now(),files:remoteProject.files||{}});
-      });
-      localStorage.setItem("cmbai_projects",JSON.stringify(window.state.projects));
-      if(typeof window.renderProjects==="function") window.renderProjects();
-      document.dispatchEvent(new CustomEvent("cmb:database-hydrated",{detail:{count:remote.length}}));
-    }catch(error){ console.warn("CMB AI database hydration failed:",error); }
-  }
   async function persistCurrentFile(){
     const state=window.state;
     if(!state?.active?.backendId || !state.currentFile) return;
