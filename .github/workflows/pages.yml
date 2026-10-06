@@ -36,11 +36,12 @@ jobs:
           test -f cmb-backend.js
           test -f cmb-ai-controls.js
           test -f cmb-ai-diff.js
+          test -f cmb-ai-health-sync.js
 
       - name: Validate JavaScript syntax
         run: |
           set -e
-          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js; do
+          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js cmb-ai-health-sync.js; do
             node --check "$file"
           done
 
@@ -50,7 +51,20 @@ jobs:
           rm -rf _site
           mkdir _site
           rsync -a --exclude=".git/" --exclude=".github/" --exclude="backend/" --exclude="_site/" ./ _site/
+          python - <<'PY'
+          from pathlib import Path
+          index = Path("_site/index.html")
+          text = index.read_text(encoding="utf-8")
+          tag = '<script src="cmb-ai-health-sync.js"></script>'
+          if tag not in text:
+              marker = "</body>"
+              if marker not in text:
+                  raise SystemExit("index.html has no closing body tag")
+              text = text.replace(marker, tag + "\n" + marker, 1)
+              index.write_text(text, encoding="utf-8")
+          PY
           test -f _site/index.html
+          test -f _site/cmb-ai-health-sync.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
