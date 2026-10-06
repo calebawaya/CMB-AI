@@ -1890,11 +1890,17 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
 (()=>{
  const btn=document.getElementById("runHealthCheck"),wrap=document.getElementById("healthChecks");
  if(!btn||!wrap)return;
+ const healthState={frontend:true,backend:false,workspace:false,preflight:null,preflightFailed:0,deployment:"unavailable"};
  const card=(name,ok,detail)=>'<div class="lh-card '+(ok?"ok":"bad")+'"><i>'+(ok?"✓":"!")+'</i><b>'+name+'</b><span>'+detail+'</span></div>';
  const deploymentCard=(status,detail)=>{
    const ok=status==="success", bad=status==="failed", cls=ok?"ok":bad?"bad":"";
    const icon=ok?"✓":bad?"!":"●";
    return '<div class="lh-card '+cls+'"><i>'+icon+'</i><b>Deployment</b><span>'+detail+'</span></div>';
+ };
+ const preflightCard=(status,failed)=>{
+   const ok=status===true, bad=status===false;
+   const detail=ok?"Passed":bad?(failed+" check(s) failed"):"Not checked";
+   return '<div class="lh-card '+(ok?"ok":bad?"bad":"")+'"><i>'+(ok?"✓":bad?"!":"●")+'</i><b>Preflight</b><span>'+detail+'</span></div>';
  };
  async function getDeployment(){
    try{
@@ -1905,28 +1911,44 @@ $("#createNamedSnapshot")?.addEventListener("click",createNamedSnapshot);
    }catch(_){}
    return "unavailable";
  }
- const renderHealth=(d)=>{
-   const backend=!!d.backend,workspace=!!d.workspace,frontend=d.frontend!==false;
-   const deployment=d.deployment||window.CMBAIDeploymentStatus||"unavailable";
+ const renderHealth=()=>{
+   const d=healthState;
+   const deployment=d.deployment||"unavailable";
    const deploymentText={success:"Successful",failed:"Failed",running:"Deploying…",not_started:"No active run",unavailable:"Status unavailable"}[deployment]||deployment;
-   wrap.innerHTML=card("Frontend",frontend,frontend?"Interface loaded":"Interface unavailable")
-     +card("Backend",backend,backend?"API online":"API offline")
-     +card("Workspace",workspace,workspace?"Editor and local storage ready":"Workspace unavailable")
+   wrap.innerHTML=card("Frontend",d.frontend,d.frontend?"Interface loaded":"Interface unavailable")
+     +card("Backend",d.backend,d.backend?"API online":"API offline")
+     +card("Workspace",d.workspace,d.workspace?"Editor and local storage ready":"Workspace unavailable")
+     +preflightCard(d.preflight,d.preflightFailed)
      +deploymentCard(deployment,deploymentText);
  };
  async function check(){
   btn.disabled=true;btn.textContent="Checking…";
-  const backend=await fetch((window.CMB_API_BASE||"http://127.0.0.1:5000/api")+"/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
-  const workspace=!!window.localStorage&&!!document.querySelector("#code");
-  const deployment=await getDeployment();
-  renderHealth({frontend:true,backend,workspace,deployment});
+  healthState.frontend=true;
+  healthState.backend=await fetch((window.CMB_API_BASE||"http://127.0.0.1:5000/api")+"/health",{cache:"no-store"}).then(r=>r.ok).catch(()=>false);
+  healthState.workspace=!!window.localStorage&&!!document.querySelector("#code");
+  healthState.deployment=await getDeployment();
+  renderHealth();
   btn.disabled=false;btn.textContent="Check again";
-  window.CMBAIDeploymentStatus=deployment;
-  document.dispatchEvent(new CustomEvent("cmb:health",{detail:{frontend:true,backend,workspace,deployment}}));
+  window.CMBAIDeploymentStatus=healthState.deployment;
+  document.dispatchEvent(new CustomEvent("cmb:health",{detail:{...healthState}}));
  }
  btn.addEventListener("click",check);
- document.addEventListener("cmb:health",e=>renderHealth(e.detail||{}));
- document.addEventListener("cmb:deployment-status",e=>{const d=e.detail||{};renderHealth({frontend:true,backend:!!document.querySelector("#healthChecks .lh-card:nth-child(2).ok"),workspace:!!document.querySelector("#healthChecks .lh-card:nth-child(3).ok"),deployment:d.status});});
+ document.addEventListener("cmb:health",e=>{
+   const d=e.detail||{};
+   Object.assign(healthState,d);
+   renderHealth();
+ });
+ document.addEventListener("cmb:preflight",e=>{
+   const d=e.detail||{};
+   if(d.ok!==undefined)healthState.preflight=!!d.ok;
+   healthState.preflightFailed=Number(d.failed)||0;
+   renderHealth();
+ });
+ document.addEventListener("cmb:deployment-status",e=>{
+   const d=e.detail||{};
+   if(d.status)healthState.deployment=d.status;
+   renderHealth();
+ });
  setTimeout(check,900);
 })();
 
