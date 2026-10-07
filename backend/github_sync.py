@@ -146,12 +146,34 @@ def register_github_sync(app):
                 method="POST",
                 payload={"message": message, "tree": tree["sha"], "parents": [head_sha]},
             )
-            _github_request(
-                f"{api_root}/git/refs/heads/{urllib.parse.quote(branch, safe='')}",
-                token,
-                method="PATCH",
-                payload={"sha": commit["sha"], "force": False},
-            )
+            try:
+                _github_request(
+                    f"{api_root}/git/refs/heads/{urllib.parse.quote(branch, safe='')}",
+                    token,
+                    method="PATCH",
+                    payload={"sha": commit["sha"], "force": False},
+                )
+            except urllib.error.HTTPError as exc:
+                # The branch may have moved after we read head_sha. Never force-push
+                # or overwrite a newer commit; report a safe conflict instead.
+                try:
+                    latest_ref = _github_request(
+                        f"{api_root}/git/ref/heads/{urllib.parse.quote(branch, safe='')}",
+                        token,
+                    )
+                    latest_sha = latest_ref.get("object", {}).get("sha")
+                except Exception:
+                    latest_sha = None
+                if latest_sha and latest_sha != head_sha:
+                    print(f"GitHub sync conflict: branch moved from {head_sha} to {latest_sha}")
+                    return jsonify({
+                        "ok": False,
+                        "conflict": True,
+                        "error": "GitHub branch changed during sync",
+                        "message": "The main branch changed while syncing. No branch update was forced.",
+                        "current_commit": latest_sha,
+                    }), 409
+                raise
 
             return jsonify({
                 "ok": True,
