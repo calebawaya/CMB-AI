@@ -6,6 +6,7 @@ server-side in Render and is never returned to the browser.
 
 from flask import jsonify, request
 import base64
+import hashlib
 import json
 import os
 import urllib.error
@@ -106,17 +107,32 @@ def register_github_sync(app):
             base_tree = head["tree"]["sha"]
 
             tree_entries = []
+            changed_files = []
+            current_tree = _github_request(f"{api_root}/git/trees/{base_tree}?recursive=1", token)
+            current_blobs = {item.get("path"): item.get("sha") for item in current_tree.get("tree", []) if item.get("type") == "blob"}
             for path, content in safe_files.items():
+                raw = content.encode("utf-8")
+                blob_sha = hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw).hexdigest()
+                if current_blobs.get(path) == blob_sha:
+                    continue
                 blob = _github_request(
                     f"{api_root}/git/blobs",
                     token,
                     method="POST",
                     payload={
-                        "content": base64.b64encode(content.encode("utf-8")).decode("ascii"),
+                        "content": base64.b64encode(raw).decode("ascii"),
                         "encoding": "base64",
                     },
                 )
                 tree_entries.append({"path": path, "mode": "100644", "type": "blob", "sha": blob["sha"]})
+                changed_files.append(path)
+
+            if not changed_files:
+                return jsonify({
+                    "ok": True, "noop": True, "repo": repo, "branch": branch,
+                    "commit": head_sha, "files": [], "count": 0, "token_exposed": False,
+                    "message": "Workspace already matches the GitHub branch",
+                })
 
             tree = _github_request(
                 f"{api_root}/git/trees",
@@ -142,8 +158,8 @@ def register_github_sync(app):
                 "repo": repo,
                 "branch": branch,
                 "commit": commit["sha"],
-                "files": sorted(safe_files),
-                "count": len(safe_files),
+                "files": sorted(changed_files),
+                "count": len(changed_files),
                 "token_exposed": False,
             })
         except urllib.error.HTTPError as exc:
