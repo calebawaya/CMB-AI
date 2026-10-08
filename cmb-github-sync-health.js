@@ -59,7 +59,6 @@
           verify.textContent="↻ Verifying…";
           verify.disabled=true;
           setTimeout(render,150);
-          setTimeout(render,900);
         }
       });
     }
@@ -120,7 +119,7 @@
     state("VERIFY NEEDED","action","Run remote verification to confirm the GitHub branch state.");
     renderDiag(s,r);
   }
-  ["cmb:open-project","cmb:project-open","cmb:project-closed","cmb:workspace-change","cmb:workspace-sync","cmb:editor-refresh"].forEach(function(e){
+  ["cmb:open-project","cmb:project-open","cmb:project-closed","cmb:workspace-change","cmb:workspace-sync","cmb:editor-refresh","cmb:remote-verification-complete"].forEach(function(e){
     document.addEventListener(e,function(){setTimeout(render,0)});
   });
   new MutationObserver(render).observe(document.body,{childList:true,subtree:true});
