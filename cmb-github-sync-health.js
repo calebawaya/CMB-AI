@@ -66,8 +66,18 @@
   }
   let lastEventKey="";
   let lastHealthClass="";
+  const healthTimeKey=()=>`cmbGithubHealth:${name()}`;
   let healthChangedAt=Date.now();
   let healthAgeTimer=null;
+  function loadHealthTime(){
+    try{
+      const value=Number(localStorage.getItem(healthTimeKey()));
+      if(Number.isFinite(value)&&value>0)healthChangedAt=value;
+    }catch{}
+  }
+  function saveHealthTime(){
+    try{if(name())localStorage.setItem(healthTimeKey(),String(healthChangedAt));}catch{}
+  }
   function healthAge(){
     return healthChangedAt?Math.max(0,Date.now()-healthChangedAt):0;
   }
@@ -91,7 +101,7 @@
     if(key!==lastEventKey){
       const previous=lastHealthClass;
       lastEventKey=key;
-      if(previous!==text)healthChangedAt=Date.now();
+      if(previous!==text){healthChangedAt=Date.now();saveHealthTime();}
       lastHealthClass=text;
       try{
         const icon=text==="HEALTHY"?"✓":text==="REMOTE OFFLINE"?"!":text==="ACTION NEEDED"?"⚠":"●";
@@ -144,6 +154,7 @@
   }
   function render(){
     if(!ensure())return;
+    loadHealthTime();
     const p=project(),s=syncState(),r=remoteState();
     if(!p){state("NO PROJECT","","Open a project before syncing.");renderDiag(s,r);return}
     if(!s||!s.lastSuccessful||!s.lastSuccessful.commit){state("NOT SYNCED","action","No successful GitHub sync exists for this project.");renderDiag(s,r);return}
