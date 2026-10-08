@@ -2,7 +2,8 @@
 (()=>{
   const API_BASE=()=>String(window.CMB_API_BASE||"http://127.0.0.1:5000/api").replace(/\/$/,"");
   const repo="calebawaya/CMB-AI",branch="main";
-  let button,status,checkedAt,verifyTimer=0,checking=false;
+  const AUTO_VERIFY_MS=5*60*1000;
+  let button,status,checkedAt,verifyTimer=0,checking=false,interval=0;
   const project=()=>window.state?.active||null;
   const projectName=()=>String(project()?.name||"").trim();
   const storageKey=()=>`cmbGithubRemote:${projectName()}`;
@@ -119,13 +120,32 @@
     clearTimeout(verifyTimer);
     verifyTimer=setTimeout(()=>verify(true),delay);
   }
+  function shouldAutoVerify(){
+    const state=remoteSaved(),sha=commit();
+    if(!project()||!sha)return false;
+    if(!state||state.commit!==sha)return true;
+    if(!state.at)return true;
+    return Date.now()-new Date(state.at).getTime()>=AUTO_VERIFY_MS;
+  }
+  function scheduleIfStale(delay=500){
+    if(shouldAutoVerify())scheduleAutoVerify(delay);
+  }
+  function stopInterval(){clearInterval(interval);interval=0;}
+  function startInterval(){
+    stopInterval();
+    interval=setInterval(()=>{
+      if(document.hidden||checking)return;
+      if(shouldAutoVerify())verify(true);
+    },AUTO_VERIFY_MS);
+  }
   const projectEvents=["cmb:open-project","cmb:project-open"];
-  projectEvents.forEach(event=>document.addEventListener(event,()=>{setTimeout(ensureUI,0);scheduleAutoVerify(500)}));
-  document.addEventListener("cmb:workspace-sync",()=>{setTimeout(()=>{ensureUI();scheduleAutoVerify(700)},0)});
-  document.addEventListener("cmb:project-closed",()=>setTimeout(ensureUI,0));
+  projectEvents.forEach(event=>document.addEventListener(event,()=>{setTimeout(ensureUI,0);scheduleIfStale(500);startInterval()}));
+  document.addEventListener("cmb:workspace-sync",()=>{setTimeout(()=>{ensureUI();scheduleAutoVerify(700)},0);startInterval()});
+  document.addEventListener("cmb:project-closed",()=>{stopInterval();setTimeout(ensureUI,0)});
   document.addEventListener("cmb:workspace-change",()=>setTimeout(refresh,0));
   document.addEventListener("cmb:editor-refresh",()=>setTimeout(refresh,0));
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)scheduleIfStale(250)});
   const observer=new MutationObserver(()=>ensureUI());
   observer.observe(document.body,{childList:true,subtree:true});
-  setTimeout(ensureUI,0);
+  setTimeout(()=>{ensureUI();scheduleIfStale(800);startInterval()},0);
 })();
