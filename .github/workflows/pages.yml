@@ -38,11 +38,12 @@ jobs:
           test -f cmb-ai-diff.js
           test -f cmb-ai-health-sync.js
           test -f cmb-github-sync.js
+          test -f cmb-github-commit-link.js
 
       - name: Validate JavaScript syntax
         run: |
           set -e
-          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js cmb-ai-health-sync.js cmb-github-sync.js; do
+          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js cmb-ai-health-sync.js cmb-github-sync.js cmb-github-commit-link.js; do
             node --check "$file"
           done
 
@@ -57,38 +58,37 @@ jobs:
           index = Path("_site/index.html")
           text = index.read_text(encoding="utf-8")
           health = '<script src="cmb-ai-health-sync.js"></script>'
-          controls = '<script src="cmb-ai-controls.js"></script>'
           github = '<script src="cmb-github-sync.js"></script>'
-          if health not in text:
-              marker = controls
-              if marker not in text:
-                  raise SystemExit("cmb-ai-controls.js script tag not found")
-              text = text.replace(marker, health + "\n" + marker, 1)
-          elif text.index(health) > text.index(controls):
-              text = text.replace(health, "", 1)
-              text = text.replace(controls, health + "\n" + controls, 1)
-          if github not in text:
-              marker = controls
-              if marker not in text:
-                  raise SystemExit("cmb-ai-controls.js script tag not found")
-              text = text.replace(marker, github + "\n" + marker, 1)
-          elif text.index(github) > text.index(controls):
-              text = text.replace(github, "", 1)
-              text = text.replace(controls, github + "\n" + controls, 1)
+          commit_link = '<script src="cmb-github-commit-link.js"></script>'
+          controls = '<script src="cmb-ai-controls.js"></script>'
+          for script in (health, github, commit_link):
+              if script not in text:
+                  marker = controls
+                  if marker not in text:
+                      raise SystemExit("cmb-ai-controls.js script tag not found")
+                  text = text.replace(marker, script + "\n" + marker, 1)
+          for script in (health, github, commit_link):
+              if text.index(script) > text.index(controls):
+                  text = text.replace(script, "", 1)
+                  text = text.replace(controls, script + "\n" + controls, 1)
           index.write_text(text, encoding="utf-8")
           PY
           test -f _site/index.html
           test -f _site/cmb-ai-health-sync.js
           test -f _site/cmb-github-sync.js
+          test -f _site/cmb-github-commit-link.js
           python - <<'PY'
           from pathlib import Path
           text = Path("_site/index.html").read_text(encoding="utf-8")
           health = text.index('<script src="cmb-ai-health-sync.js"></script>')
           github = text.index('<script src="cmb-github-sync.js"></script>')
+          commit_link = text.index('<script src="cmb-github-commit-link.js"></script>')
           controls = text.index('<script src="cmb-ai-controls.js"></script>')
-          if health >= controls or github >= controls:
-              raise SystemExit("AI health sync and GitHub sync must load before AI controls")
-          print("Verified: AI health sync and GitHub sync load before AI controls")
+          if health >= controls or github >= controls or commit_link >= controls:
+              raise SystemExit("AI health sync, GitHub sync, and commit link must load before AI controls")
+          if not (health < github < commit_link < controls):
+              raise SystemExit("CMB AI script order is invalid")
+          print("Verified: AI health sync, GitHub sync, and commit link load before AI controls")
           PY
 
       - name: Upload Pages artifact
