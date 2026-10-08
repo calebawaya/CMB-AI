@@ -65,14 +65,21 @@
     return true;
   }
   let lastEventKey="";
+  let lastHealthClass="";
   function state(text,cls,message){
     badge.textContent=text;
     badge.className="cgs-sync-health-badge"+(cls?" "+cls:"");
     detail.textContent=message;
     const key=name()+"|"+text+"|"+message;
     if(key!==lastEventKey){
+      const previous=lastHealthClass;
       lastEventKey=key;
-      try{window.cmbEvent?.("GitHub sync health",message,text==="HEALTHY"?"✓":text==="REMOTE OFFLINE"?"!":"●")}catch{}
+      lastHealthClass=text;
+      try{
+        const icon=text==="HEALTHY"?"✓":text==="REMOTE OFFLINE"?"!":text==="ACTION NEEDED"?"⚠":"●";
+        const transition=previous&&previous!==text?"State changed: ":"";
+        window.cmbEvent?.("GitHub sync health",transition+message,icon);
+      }catch{}
     }
   }
   function safe(value){
