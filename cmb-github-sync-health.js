@@ -125,10 +125,10 @@
       if(previous!==text){
         healthChangedAt=Date.now();
         transitionCount++;
+        lastHealthClass=text;
         saveHealthMeta();
         if(previous&&text==="HEALTHY")window.cmbEvent?.("GitHub sync recovered","GitHub sync health recovered to HEALTHY.","✓");
       }
-      lastHealthClass=text;
       try{
         const icon=text==="HEALTHY"?"✓":text==="REMOTE OFFLINE"?"!":text==="ACTION NEEDED"?"⚠":"●";
         const transition=previous&&previous!==text?"State changed: ":"";
@@ -217,7 +217,11 @@
       +'<span>Remote checked</span><b>'+safe(r&&r.at?new Date(r.at).toLocaleString():"—")+'</b>'
       +'<span>Remote result</span><b>'+safe(r&&r.status)+'</b>'
       +'<span>Health state</span><b>'+safe(lastHealthClass||"—")+'</b>'
+      +'<span>Health summary</span><b>'+safe(healthSummary())+'</b>'
       +'<span>State changed</span><b>'+safe(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—")+'</b>'
+      +'<span>Health transitions</span><b>'+safe(transitionCount)+'</b>'
+      +'<span>Current state duration</span><b>'+safe(stateDurationLabel())+'</b>'
+      +'<span>Preflight</span><b>'+safe(lastHealthClass==="HEALTHY"?"READY":"ACTION REQUIRED")+'</b>'
       +'</div>';
     if(copy)copy.disabled=!name();
     updateHealthAge();
