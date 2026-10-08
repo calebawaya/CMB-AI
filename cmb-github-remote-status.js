@@ -3,7 +3,7 @@
   const API_BASE=()=>String(window.CMB_API_BASE||"http://127.0.0.1:5000/api").replace(/\/$/,"");
   const repo="calebawaya/CMB-AI",branch="main";
   const AUTO_VERIFY_MS=5*60*1000;
-  let button,status,checkedAt,verifyTimer=0,checking=false,interval=0;
+  let button,status,checkedAt,age,verifyTimer=0,checking=false,interval=0;
   const project=()=>window.state?.active||null;
   const projectName=()=>String(project()?.name||"").trim();
   const storageKey=()=>`cmbGithubRemote:${projectName()}`;
@@ -23,10 +23,23 @@
     status.textContent=text;
     status.className="cgs-remote-status"+(kind?" "+kind:"");
   };
+  const formatAge=(value)=>{
+    if(!value)return "—";
+    const ms=Date.now()-new Date(value).getTime();
+    if(!Number.isFinite(ms)||ms<0)return "—";
+    const sec=Math.floor(ms/1000);
+    if(sec<60)return "just now";
+    const min=Math.floor(sec/60);
+    if(min<60)return `${min}m ago`;
+    const hr=Math.floor(min/60);
+    if(hr<24)return `${hr}h ${min%60}m ago`;
+    const day=Math.floor(hr/24);
+    return `${day}d ${hr%24}h ago`;
+  };
   const setCheckedTime=()=>{
-    if(!checkedAt)return;
     const value=remoteSaved()?.at;
-    checkedAt.textContent=value?new Date(value).toLocaleString():"—";
+    if(checkedAt)checkedAt.textContent=value?new Date(value).toLocaleString():"—";
+    if(age)age.textContent=value?formatAge(value):"—";
   };
   const restoreRemoteState=()=>{
     const state=remoteSaved();
@@ -42,8 +55,8 @@
     const hasProject=!!project();
     const hasCommit=!!commit();
     if(button)button.disabled=!hasCommit||checking;
-    if(!hasProject){setStatus("Open a project to begin");if(checkedAt)checkedAt.textContent="—";}
-    else if(!hasCommit){setStatus("No successful sync yet");if(checkedAt)checkedAt.textContent="—";}
+    if(!hasProject){setStatus("Open a project to begin");if(checkedAt)checkedAt.textContent="—";if(age)age.textContent="—";}
+    else if(!hasCommit){setStatus("No successful sync yet");if(checkedAt)checkedAt.textContent="—";if(age)age.textContent="—";}
     else restoreRemoteState();
   };
   const ensureUI=()=>{
@@ -62,6 +75,12 @@
       checkedAt.id="cgsRemoteCheckedAt";
       checkedAt.className="cgs-remote-checked-at";
       grid.append(timeLabel,checkedAt);
+      const ageLabel=document.createElement("span");
+      ageLabel.textContent="Verification age";
+      age=document.createElement("b");
+      age.id="cgsRemoteAge";
+      age.className="cgs-remote-age";
+      grid.append(ageLabel,age);
     }
     if(!button){
       button=document.createElement("button");
