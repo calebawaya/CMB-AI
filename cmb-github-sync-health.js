@@ -64,10 +64,16 @@
     }
     return true;
   }
+  let lastEventKey="";
   function state(text,cls,message){
     badge.textContent=text;
     badge.className="cgs-sync-health-badge"+(cls?" "+cls:"");
     detail.textContent=message;
+    const key=name()+"|"+text+"|"+message;
+    if(key!==lastEventKey){
+      lastEventKey=key;
+      try{window.cmbEvent?.("GitHub sync health",message,text==="HEALTHY"?"✓":text==="REMOTE OFFLINE"?"!":"●")}catch{}
+    }
   }
   function safe(value){
     return String(value==null?"—":value).replace(/[&<>"]/g,function(m){
