@@ -51,3 +51,6 @@
 
 /* Batch 4 loader — isolated smart editor tools. */
 (()=>{const load=()=>{if(document.querySelector('script[data-cmb-batch4]'))return;const s=document.createElement("script");s.src="cmb-batch4-smart-editor.js";s.async=false;s.dataset.cmbBatch4="true";s.onerror=()=>window.cmbEvent?.("Smart editor unavailable","Batch 4 could not be loaded on this page.","!");document.body.appendChild(s);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();})();
+
+/* Batch 5 loader — isolated editor interaction tools. */
+(()=>{const load=()=>{if(document.querySelector('script[data-cmb-batch5]'))return;const s=document.createElement("script");s.src="cmb-batch5-workspace.js";s.async=false;s.dataset.cmbBatch5="true";s.onerror=()=>window.cmbEvent?.("Editor interaction unavailable","Batch 5 could not be loaded on this page.","!");document.body.appendChild(s);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();})();
