@@ -66,3 +66,6 @@
 
 /* Batch 9 loader — isolated project safety and session tools. */
 (()=>{const load=()=>{if(document.querySelector('script[data-cmb-batch9]'))return;const s=document.createElement("script");s.src="cmb-batch9-workspace.js";s.async=false;s.dataset.cmbBatch9="true";s.onerror=()=>window.cmbEvent?.("Project safety layer unavailable","Batch 9 could not be loaded on this page.","!");document.body.appendChild(s);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();})();
+
+/* Batch 10 loader — isolated navigation and workspace organization tools. */
+(()=>{const load=()=>{if(document.querySelector('script[data-cmb-batch10]'))return;const s=document.createElement("script");s.src="cmb-batch10-workspace.js";s.async=false;s.dataset.cmbBatch10="true";s.onerror=()=>window.cmbEvent?.("Navigation layer unavailable","Batch 10 could not be loaded on this page.","!");document.body.appendChild(s);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();})();
