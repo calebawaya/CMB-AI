@@ -17,7 +17,7 @@
       box=document.createElement("div");
       box.id="cgsSyncHealth";
       box.className="cgs-sync-health";
-      box.innerHTML='<strong>SYNC HEALTH</strong><div><b id="cgsSyncHealthBadge">NOT SYNCED</b><span id="cgsSyncHealthDetail">Open a project and sync it to GitHub.</span></div><button id="cgsSyncHealthDetails" type="button">Show diagnostics</button><button id="cgsCopySyncDiagnostics" type="button" disabled>Copy diagnostics</button><button id="cgsVerifyHealth" type="button" disabled>↻ Verify now</button><div id="cgsSyncDiagnostics" hidden></div>';
+      box.innerHTML='<strong>SYNC HEALTH</strong><div><b id="cgsSyncHealthBadge">NOT SYNCED</b><span id="cgsSyncHealthDetail">Open a project and sync it to GitHub.</span></div><small id="cgsHealthAge">State changed just now</small><button id="cgsSyncHealthDetails" type="button">Show diagnostics</button><button id="cgsCopySyncDiagnostics" type="button" disabled>Copy diagnostics</button><button id="cgsVerifyHealth" type="button" disabled>↻ Verify now</button><div id="cgsSyncDiagnostics" hidden></div>';
       panel.appendChild(box);
     }
     badge=box.querySelector("#cgsSyncHealthBadge");
@@ -67,6 +67,22 @@
   let lastEventKey="";
   let lastHealthClass="";
   let healthChangedAt=Date.now();
+  let healthAgeTimer=null;
+  function healthAge(){
+    return healthChangedAt?Math.max(0,Date.now()-healthChangedAt):0;
+  }
+  function formatAge(ms){
+    const s=Math.floor(ms/1000);
+    if(s<60)return s+"s ago";
+    const m=Math.floor(s/60);
+    if(m<60)return m+"m "+(s%60)+"s ago";
+    const h=Math.floor(m/60);
+    return h+"h "+(m%60)+"m ago";
+  }
+  function updateHealthAge(){
+    const age=document.getElementById("cgsHealthAge");
+    if(age)age.textContent="State changed "+formatAge(healthAge());
+  }
   function state(text,cls,message){
     badge.textContent=text;
     badge.className="cgs-sync-health-badge"+(cls?" "+cls:"");
@@ -122,6 +138,7 @@
       +'<span>State changed</span><b>'+safe(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—")+'</b>'
       +'</div>';
     if(copy)copy.disabled=!name();
+    updateHealthAge();
     if(verify)verify.disabled=!name()||!success?.commit||!document.getElementById("cgsVerifyRemote")||document.getElementById("cgsVerifyRemote").disabled;
     if(verify&&!verify.disabled)verify.textContent="↻ Verify now";
   }
@@ -142,5 +159,6 @@
     document.addEventListener(e,function(){setTimeout(render,0)});
   });
   new MutationObserver(render).observe(document.body,{childList:true,subtree:true});
+  if(!healthAgeTimer)healthAgeTimer=setInterval(updateHealthAge,30000);
   setTimeout(render,0);
 })();
