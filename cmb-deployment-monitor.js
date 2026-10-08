@@ -19,6 +19,15 @@
       const runs=(data.workflow_runs||[]).slice(0,5);
       const latest=runs[0];
       if(state)state.textContent=label(latest);
+      let detail=document.getElementById("cmbDeployMonitorDetails");
+      if(!detail){
+        detail=document.createElement("div");
+        detail.id="cmbDeployMonitorDetails";
+        box.appendChild(detail);
+      }
+      detail.innerHTML=latest
+        ? "<div class='cdm-detail'><b>Latest release</b><span>"+esc(latest.display_title||latest.head_commit?.message||"GitHub Pages workflow")+"</span><small>"+esc(latest.head_sha?.slice(0,7)||"")+" · "+esc(latest.event||"push")+" · "+esc(new Date(latest.created_at||Date.now()).toLocaleString())+"</small></div>"
+        : "<div class='cdm-detail'>No deployment run is available yet.</div>";
       if(list)list.innerHTML=runs.length?runs.map(r=>{
         const status=label(r);
         const cls=status==="DEPLOYED"?"ok":status==="FAILED"?"bad":"wait";
