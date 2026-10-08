@@ -78,3 +78,17 @@
   };
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();
 })();
+
+/* Batch 3 loader — isolated editor operations. */
+(()=>{
+  const load=()=>{
+    if(document.querySelector('script[data-cmb-batch3]'))return;
+    const s=document.createElement("script");
+    s.src="cmb-batch3-editor-operations.js";
+    s.async=false;
+    s.dataset.cmbBatch3="true";
+    s.onerror=()=>window.cmbEvent?.("Editor operations unavailable","Batch 3 could not be loaded on this page.","!");
+    document.body.appendChild(s);
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();
+})();
