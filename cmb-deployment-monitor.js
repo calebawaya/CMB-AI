@@ -50,3 +50,17 @@
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",wire,{once:true});else wire();
 })();
+
+/* Batch 1 loader — keep the productivity layer isolated from the deployment monitor. */
+(()=>{
+  const load=()=>{
+    if(document.querySelector('script[data-cmb-batch1]'))return;
+    const s=document.createElement("script");
+    s.src="cmb-batch1-productivity.js";
+    s.async=false;
+    s.dataset.cmbBatch1="true";
+    s.onerror=()=>window.cmbEvent?.("Productivity layer unavailable","Batch 1 could not be loaded on this page.","!");
+    document.body.appendChild(s);
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();
+})();
