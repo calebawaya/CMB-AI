@@ -41,11 +41,12 @@ jobs:
           test -f cmb-github-commit-link.js
           test -f cmb-github-remote-status.js
           test -f cmb-github-sync-health.js
+          test -f cmb-ai-project-diagnostics.js
 
       - name: Validate JavaScript syntax
         run: |
           set -e
-          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js cmb-ai-health-sync.js cmb-github-sync.js cmb-github-commit-link.js cmb-github-remote-status.js cmb-github-sync-health.js; do
+          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js cmb-ai-health-sync.js cmb-github-sync.js cmb-github-commit-link.js cmb-github-remote-status.js cmb-github-sync-health.js cmb-ai-project-diagnostics.js; do
             node --check "$file"
           done
 
@@ -64,8 +65,9 @@ jobs:
           commit_link = '<script src="cmb-github-commit-link.js"></script>'
           remote_status = '<script src="cmb-github-remote-status.js"></script>'
           sync_health = '<script src="cmb-github-sync-health.js"></script>'
+          diagnostics = '<script src="cmb-ai-project-diagnostics.js"></script>'
           controls = '<script src="cmb-ai-controls.js"></script>'
-          for script in (health, github, commit_link, remote_status, sync_health):
+          for script in (health, github, commit_link, remote_status, sync_health, diagnostics):
               if script not in text:
                   marker = controls
                   if marker not in text:
@@ -83,6 +85,7 @@ jobs:
           test -f _site/cmb-github-commit-link.js
           test -f _site/cmb-github-remote-status.js
           test -f _site/cmb-github-sync-health.js
+          test -f _site/cmb-ai-project-diagnostics.js
           python - <<'PY'
           from pathlib import Path
           text = Path("_site/index.html").read_text(encoding="utf-8")
@@ -91,12 +94,13 @@ jobs:
           commit_link = text.index('<script src="cmb-github-commit-link.js"></script>')
           remote_status = text.index('<script src="cmb-github-remote-status.js"></script>')
           sync_health = text.index('<script src="cmb-github-sync-health.js"></script>')
+          diagnostics = text.index('<script src="cmb-ai-project-diagnostics.js"></script>')
           controls = text.index('<script src="cmb-ai-controls.js"></script>')
-          if any(pos >= controls for pos in (health, github, commit_link, remote_status, sync_health)):
+          if any(pos >= controls for pos in (health, github, commit_link, remote_status, sync_health, diagnostics)):
               raise SystemExit("CMB AI support scripts must load before AI controls")
-          if not (health < github < commit_link < remote_status < sync_health < controls):
+          if not (health < github < commit_link < remote_status < sync_health < diagnostics < controls):
               raise SystemExit("CMB AI script order is invalid")
-          print("Verified: AI health, GitHub sync, commit link, remote status, and sync health load before AI controls")
+          print("Verified: AI health, GitHub sync, commit link, remote status, sync health, and project diagnostics load before AI controls")
           PY
 
       - name: Upload Pages artifact
