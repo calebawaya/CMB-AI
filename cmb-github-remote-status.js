@@ -3,6 +3,7 @@
   const API_BASE=()=>String(window.CMB_API_BASE||"http://127.0.0.1:5000/api").replace(/\/$/,"");
   const repo="calebawaya/CMB-AI",branch="main";
   const AUTO_VERIFY_MS=5*60*1000;
+  const AGE_REFRESH_MS=30*1000;
   let button,status,checkedAt,age,verifyTimer=0,checking=false,interval=0;
   const project=()=>window.state?.active||null;
   const projectName=()=>String(project()?.name||"").trim();
@@ -39,7 +40,11 @@
   const setCheckedTime=()=>{
     const value=remoteSaved()?.at;
     if(checkedAt)checkedAt.textContent=value?new Date(value).toLocaleString():"—";
-    if(age)age.textContent=value?formatAge(value):"—";
+    if(age){
+      age.textContent=value?formatAge(value):"—";
+      age.className="cgs-remote-age"+(value&&Date.now()-new Date(value).getTime()>=AUTO_VERIFY_MS?" stale":"");
+      age.title=value&&Date.now()-new Date(value).getTime()>=AUTO_VERIFY_MS?"Verification is older than 5 minutes. A fresh check is needed.":"Verification is fresh.";
+    }
   };
   const restoreRemoteState=()=>{
     const state=remoteSaved();
@@ -154,8 +159,9 @@
     stopInterval();
     interval=setInterval(()=>{
       if(document.hidden||checking)return;
+      setCheckedTime();
       if(shouldAutoVerify())verify(true);
-    },AUTO_VERIFY_MS);
+    },AGE_REFRESH_MS);
   }
   const projectEvents=["cmb:open-project","cmb:project-open"];
   projectEvents.forEach(event=>document.addEventListener(event,()=>{setTimeout(ensureUI,0);scheduleIfStale(500);startInterval()}));
