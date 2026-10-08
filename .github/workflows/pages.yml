@@ -40,11 +40,12 @@ jobs:
           test -f cmb-github-sync.js
           test -f cmb-github-commit-link.js
           test -f cmb-github-remote-status.js
+          test -f cmb-github-sync-health.js
 
       - name: Validate JavaScript syntax
         run: |
           set -e
-          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js cmb-ai-health-sync.js cmb-github-sync.js cmb-github-commit-link.js cmb-github-remote-status.js; do
+          for file in script.js cmb-backend.js cmb-ai-controls.js cmb-ai-diff.js cmb-ai-health-sync.js cmb-github-sync.js cmb-github-commit-link.js cmb-github-remote-status.js cmb-github-sync-health.js; do
             node --check "$file"
           done
 
@@ -62,14 +63,15 @@ jobs:
           github = '<script src="cmb-github-sync.js"></script>'
           commit_link = '<script src="cmb-github-commit-link.js"></script>'
           remote_status = '<script src="cmb-github-remote-status.js"></script>'
+          sync_health = '<script src="cmb-github-sync-health.js"></script>'
           controls = '<script src="cmb-ai-controls.js"></script>'
-          for script in (health, github, commit_link, remote_status):
+          for script in (health, github, commit_link, remote_status, sync_health):
               if script not in text:
                   marker = controls
                   if marker not in text:
                       raise SystemExit("cmb-ai-controls.js script tag not found")
                   text = text.replace(marker, script + "\n" + marker, 1)
-          for script in (health, github, commit_link, remote_status):
+          for script in (health, github, commit_link, remote_status, sync_health):
               if text.index(script) > text.index(controls):
                   text = text.replace(script, "", 1)
                   text = text.replace(controls, script + "\n" + controls, 1)
@@ -80,6 +82,7 @@ jobs:
           test -f _site/cmb-github-sync.js
           test -f _site/cmb-github-commit-link.js
           test -f _site/cmb-github-remote-status.js
+          test -f _site/cmb-github-sync-health.js
           python - <<'PY'
           from pathlib import Path
           text = Path("_site/index.html").read_text(encoding="utf-8")
@@ -87,12 +90,13 @@ jobs:
           github = text.index('<script src="cmb-github-sync.js"></script>')
           commit_link = text.index('<script src="cmb-github-commit-link.js"></script>')
           remote_status = text.index('<script src="cmb-github-remote-status.js"></script>')
+          sync_health = text.index('<script src="cmb-github-sync-health.js"></script>')
           controls = text.index('<script src="cmb-ai-controls.js"></script>')
-          if any(pos >= controls for pos in (health, github, commit_link, remote_status)):
+          if any(pos >= controls for pos in (health, github, commit_link, remote_status, sync_health)):
               raise SystemExit("CMB AI support scripts must load before AI controls")
-          if not (health < github < commit_link < remote_status < controls):
+          if not (health < github < commit_link < remote_status < sync_health < controls):
               raise SystemExit("CMB AI script order is invalid")
-          print("Verified: AI health sync, GitHub sync, commit link, and remote status load before AI controls")
+          print("Verified: AI health, GitHub sync, commit link, remote status, and sync health load before AI controls")
           PY
 
       - name: Upload Pages artifact
