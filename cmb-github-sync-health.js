@@ -66,18 +66,30 @@
   }
   let lastEventKey="";
   let lastHealthClass="";
+  let transitionCount=0;
   const healthTimeKey=()=>`cmbGithubHealth:${name()}`;
-  let healthChangedAt=Date.now();
-  let healthAgeTimer=null;
-  function loadHealthTime(){
+  const healthCountKey=()=>`cmbGithubHealthTransitions:${name()}`;
+  function loadHealthMeta(){
     try{
-      const value=Number(localStorage.getItem(healthTimeKey()));
-      if(Number.isFinite(value)&&value>0)healthChangedAt=value;
+      const saved=JSON.parse(localStorage.getItem(healthTimeKey())||"null");
+      if(saved&&typeof saved==="object"){
+        const changed=Number(saved.changedAt);
+        if(Number.isFinite(changed)&&changed>0)healthChangedAt=changed;
+        lastHealthClass=String(saved.state||"");
+        transitionCount=Number(saved.count)||0;
+        return;
+      }
+      const legacy=Number(localStorage.getItem(healthTimeKey()));
+      if(Number.isFinite(legacy)&&legacy>0)healthChangedAt=legacy;
+      transitionCount=Number(localStorage.getItem(healthCountKey()))||0;
     }catch{}
   }
-  function saveHealthTime(){
-    try{if(name())localStorage.setItem(healthTimeKey(),String(healthChangedAt));}catch{}
+  function saveHealthMeta(){
+    try{if(name())localStorage.setItem(healthTimeKey(),JSON.stringify({state:lastHealthClass,changedAt:healthChangedAt,count:transitionCount}));}catch{}
   }
+  let healthChangedAt=Date.now();
+  let healthAgeTimer=null;
+
   function healthAge(){
     return healthChangedAt?Math.max(0,Date.now()-healthChangedAt):0;
   }
@@ -101,7 +113,7 @@
     if(key!==lastEventKey){
       const previous=lastHealthClass;
       lastEventKey=key;
-      if(previous!==text){healthChangedAt=Date.now();saveHealthTime();}
+      if(previous!==text){healthChangedAt=Date.now();transitionCount++;saveHealthMeta();}
       lastHealthClass=text;
       try{
         const icon=text==="HEALTHY"?"✓":text==="REMOTE OFFLINE"?"!":text==="ACTION NEEDED"?"⚠":"●";
@@ -129,7 +141,8 @@
       "Remote checked: "+(r&&r.at?new Date(r.at).toLocaleString():"—"),
       "Remote result: "+(r&&r.status||"—"),
       "Health state: "+(lastHealthClass||"—"),
-      "Health state changed: "+(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—")
+      "Health state changed: "+(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—"),
+      "Health transitions: "+transitionCount
     ].join("\n");
   }
   function renderDiag(s,r){
@@ -154,7 +167,7 @@
   }
   function render(){
     if(!ensure())return;
-    loadHealthTime();
+    loadHealthMeta();
     const p=project(),s=syncState(),r=remoteState();
     if(!p){state("NO PROJECT","","Open a project before syncing.");renderDiag(s,r);return}
     if(!s||!s.lastSuccessful||!s.lastSuccessful.commit){state("NOT SYNCED","action","No successful GitHub sync exists for this project.");renderDiag(s,r);return}
