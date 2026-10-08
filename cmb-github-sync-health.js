@@ -8,7 +8,7 @@
   };
   const syncState=()=>read("cmbGithubSync:");
   const remoteState=()=>read("cmbGithubRemote:");
-  let badge,detail,diag;
+  let badge,detail,diag,copy;
   function ensure(){
     const panel=document.querySelector(".cgs-history");
     if(!panel)return false;
@@ -17,12 +17,13 @@
       box=document.createElement("div");
       box.id="cgsSyncHealth";
       box.className="cgs-sync-health";
-      box.innerHTML='<strong>SYNC HEALTH</strong><div><b id="cgsSyncHealthBadge">NOT SYNCED</b><span id="cgsSyncHealthDetail">Open a project and sync it to GitHub.</span></div><button id="cgsSyncHealthDetails" type="button">Show diagnostics</button><div id="cgsSyncDiagnostics" hidden></div>';
+      box.innerHTML='<strong>SYNC HEALTH</strong><div><b id="cgsSyncHealthBadge">NOT SYNCED</b><span id="cgsSyncHealthDetail">Open a project and sync it to GitHub.</span></div><button id="cgsSyncHealthDetails" type="button">Show diagnostics</button><button id="cgsCopySyncDiagnostics" type="button" disabled>Copy diagnostics</button><div id="cgsSyncDiagnostics" hidden></div>';
       panel.appendChild(box);
     }
     badge=box.querySelector("#cgsSyncHealthBadge");
     detail=box.querySelector("#cgsSyncHealthDetail");
     diag=box.querySelector("#cgsSyncDiagnostics");
+    copy=box.querySelector("#cgsCopySyncDiagnostics");
     const toggle=box.querySelector("#cgsSyncHealthDetails");
     if(toggle&&!toggle.dataset.bound){
       toggle.dataset.bound="1";
@@ -31,6 +32,21 @@
         diag.hidden=!opening;
         toggle.textContent=opening?"Hide diagnostics":"Show diagnostics";
         renderDiag(syncState(),remoteState());
+      });
+    }
+    if(copy&&!copy.dataset.bound){
+      copy.dataset.bound="1";
+      copy.addEventListener("click",async()=>{
+        const text=diagnosticText(syncState(),remoteState());
+        if(!text)return;
+        try{
+          await navigator.clipboard.writeText(text);
+          copy.textContent="✓ Copied";
+          setTimeout(()=>{if(copy)copy.textContent="Copy diagnostics"},1200);
+        }catch{
+          copy.textContent="Copy unavailable";
+          setTimeout(()=>{if(copy)copy.textContent="Copy diagnostics"},1200);
+        }
       });
     }
     return true;
@@ -45,6 +61,21 @@
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m];
     });
   }
+  function diagnosticText(s,r){
+    const success=s&&s.lastSuccessful;
+    if(!name()&&!success&&!r)return "";
+    return [
+      "CMB AI GitHub Sync Diagnostics",
+      "Project: "+(name()||"—"),
+      "Last successful commit: "+(success&&success.commit||"—"),
+      "Synced at: "+(success&&success.at?new Date(success.at).toLocaleString():"—"),
+      "Files changed: "+(success&&success.files!=null?success.files:"—"),
+      "Verified commit: "+(r&&r.commit||"—"),
+      "Remote main: "+(r&&r.headCommit||"—"),
+      "Remote checked: "+(r&&r.at?new Date(r.at).toLocaleString():"—"),
+      "Remote result: "+(r&&r.status||"—")
+    ].join("\n");
+  }
   function renderDiag(s,r){
     if(!diag)return;
     const success=s&&s.lastSuccessful;
@@ -58,6 +89,7 @@
       +'<span>Remote checked</span><b>'+safe(r&&r.at?new Date(r.at).toLocaleString():"—")+'</b>'
       +'<span>Remote result</span><b>'+safe(r&&r.status)+'</b>'
       +'</div>';
+    if(copy)copy.disabled=!name();
   }
   function render(){
     if(!ensure())return;
