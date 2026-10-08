@@ -57,6 +57,7 @@
       lastReport="CMB AI PROJECT DIAGNOSTIC REPORT\nProject: "+(project.name||"Untitled Project")+"\nSeverity: "+severity+"\nSummary: "+(data.summary||"No summary provided.")+"\nIssues found: "+issues.length+"\n\n"+issues.map((x,i)=>(i+1)+". "+(x.file||"unknown")+":"+(x.line||"?")+" — "+(x.title||"Issue")+"\n   "+(x.detail||"")+"\n   Fix: "+(x.fix||"Review this issue.")).join("\n\n");
       out.textContent=lastReport;copy.disabled=false;
       window.cmbEvent?.("Project diagnostics complete",issues.length?issues.length+" issue(s) detected.":"No high-confidence issues detected.",issues.length?"!":"✓");
+      document.dispatchEvent(new CustomEvent("cmb:diagnostics-complete",{detail:{issues:issues.length,severity}}));
     }catch(e){
       summary.textContent="FAILED";issuesBox.innerHTML="";out.textContent="Project diagnostic scan failed. Make sure the CMB AI backend is online and try again.";
       window.cmbEvent?.("Project diagnostics failed","The diagnostic scan could not complete.","!");
