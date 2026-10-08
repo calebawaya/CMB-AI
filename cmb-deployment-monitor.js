@@ -3,7 +3,7 @@
   const repo="calebawaya/CMB-AI";
   const api="https://api.github.com/repos/"+repo+"/actions/runs?per_page=5";
   const root=()=>document.getElementById("cmbDeploymentMonitor");
-  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  const esc=v=>String(v??"").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
   const label=r=>r?.conclusion==="success"?"DEPLOYED":r?.status==="in_progress"?"RUNNING":r?.status==="queued"?"QUEUED":r?.conclusion==="failure"?"FAILED":(r?.conclusion||r?.status||"UNKNOWN").toUpperCase();
   async function refresh(){
     const box=root(); if(!box)return;
@@ -60,6 +60,20 @@
     s.async=false;
     s.dataset.cmbBatch1="true";
     s.onerror=()=>window.cmbEvent?.("Productivity layer unavailable","Batch 1 could not be loaded on this page.","!");
+    document.body.appendChild(s);
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();
+})();
+
+/* Batch 2 loader — isolated workspace controls and tools. */
+(()=>{
+  const load=()=>{
+    if(document.querySelector('script[data-cmb-batch2]'))return;
+    const s=document.createElement("script");
+    s.src="cmb-batch2-workspace.js";
+    s.async=false;
+    s.dataset.cmbBatch2="true";
+    s.onerror=()=>window.cmbEvent?.("Workspace layer unavailable","Batch 2 could not be loaded on this page.","!");
     document.body.appendChild(s);
   };
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();
