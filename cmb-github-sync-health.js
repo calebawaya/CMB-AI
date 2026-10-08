@@ -93,6 +93,14 @@
   function healthAge(){
     return healthChangedAt?Math.max(0,Date.now()-healthChangedAt):0;
   }
+  function stateDurationLabel(){
+    const ms=healthAge(),s=Math.floor(ms/1000);
+    if(s<60)return "Healthy for less than a minute";
+    const m=Math.floor(s/60);
+    if(m<60)return "Current state for "+m+"m";
+    const h=Math.floor(m/60);
+    return "Current state for "+h+"h "+(m%60)+"m";
+  }
   function formatAge(ms){
     const s=Math.floor(ms/1000);
     if(s<60)return s+"s ago";
@@ -103,7 +111,7 @@
   }
   function updateHealthAge(){
     const age=document.getElementById("cgsHealthAge");
-    if(age)age.textContent="State changed "+formatAge(healthAge());
+    if(age){age.textContent="State changed "+formatAge(healthAge());age.title=stateDurationLabel();}
   }
   function state(text,cls,message){
     badge.textContent=text;
@@ -142,7 +150,8 @@
       "Remote result: "+(r&&r.status||"—"),
       "Health state: "+(lastHealthClass||"—"),
       "Health state changed: "+(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—"),
-      "Health transitions: "+transitionCount
+      "Health transitions: "+transitionCount,
+      "Current state duration: "+stateDurationLabel()
     ].join("\n");
   }
   function renderDiag(s,r){
