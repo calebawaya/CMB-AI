@@ -8,7 +8,7 @@
   };
   const syncState=()=>read("cmbGithubSync:");
   const remoteState=()=>read("cmbGithubRemote:");
-  let badge,detail,diag,copy;
+  let badge,detail,diag,copy,verify;
   function ensure(){
     const panel=document.querySelector(".cgs-history");
     if(!panel)return false;
@@ -17,13 +17,14 @@
       box=document.createElement("div");
       box.id="cgsSyncHealth";
       box.className="cgs-sync-health";
-      box.innerHTML='<strong>SYNC HEALTH</strong><div><b id="cgsSyncHealthBadge">NOT SYNCED</b><span id="cgsSyncHealthDetail">Open a project and sync it to GitHub.</span></div><button id="cgsSyncHealthDetails" type="button">Show diagnostics</button><button id="cgsCopySyncDiagnostics" type="button" disabled>Copy diagnostics</button><div id="cgsSyncDiagnostics" hidden></div>';
+      box.innerHTML='<strong>SYNC HEALTH</strong><div><b id="cgsSyncHealthBadge">NOT SYNCED</b><span id="cgsSyncHealthDetail">Open a project and sync it to GitHub.</span></div><button id="cgsSyncHealthDetails" type="button">Show diagnostics</button><button id="cgsCopySyncDiagnostics" type="button" disabled>Copy diagnostics</button><button id="cgsVerifyHealth" type="button" disabled>↻ Verify now</button><div id="cgsSyncDiagnostics" hidden></div>';
       panel.appendChild(box);
     }
     badge=box.querySelector("#cgsSyncHealthBadge");
     detail=box.querySelector("#cgsSyncHealthDetail");
     diag=box.querySelector("#cgsSyncDiagnostics");
     copy=box.querySelector("#cgsCopySyncDiagnostics");
+    verify=box.querySelector("#cgsVerifyHealth");
     const toggle=box.querySelector("#cgsSyncHealthDetails");
     if(toggle&&!toggle.dataset.bound){
       toggle.dataset.bound="1";
@@ -46,6 +47,19 @@
         }catch{
           copy.textContent="Copy unavailable";
           setTimeout(()=>{if(copy)copy.textContent="Copy diagnostics"},1200);
+        }
+      });
+    }
+    if(verify&&!verify.dataset.bound){
+      verify.dataset.bound="1";
+      verify.addEventListener("click",()=>{
+        const remoteButton=document.getElementById("cgsVerifyRemote");
+        if(remoteButton&&!remoteButton.disabled){
+          remoteButton.click();
+          verify.textContent="↻ Verifying…";
+          verify.disabled=true;
+          setTimeout(render,150);
+          setTimeout(render,900);
         }
       });
     }
@@ -90,6 +104,8 @@
       +'<span>Remote result</span><b>'+safe(r&&r.status)+'</b>'
       +'</div>';
     if(copy)copy.disabled=!name();
+    if(verify)verify.disabled=!name()||!success?.commit||!document.getElementById("cgsVerifyRemote")||document.getElementById("cgsVerifyRemote").disabled;
+    if(verify&&!verify.disabled)verify.textContent="↻ Verify now";
   }
   function render(){
     if(!ensure())return;
