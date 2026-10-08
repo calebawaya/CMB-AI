@@ -107,6 +107,14 @@
   <div class="rh-head"><div><small>RELEASE HISTORY</small><strong>Deployment Gate History</strong><span>Keep the latest release decisions visible.</span></div><button class="small" id="clearReleaseHistory">Clear</button></div>
   <div id="releaseHistoryList" class="rh-list"><div class="rh-empty">No release checks recorded yet.</div></div>
 </section>
+<section id="cmbDeploymentMonitor" class="panel" style="margin-top:16px">
+  <div class="dc-head"><div><small>LIVE DEPLOYMENT MONITOR</small><strong>GitHub Pages Workflow</strong><span>Read the latest public GitHub Actions deployment status.</span></div><strong id="cmbDeployMonitorState">CHECKING</strong></div>
+  <div style="display:flex;gap:10px;align-items:center;margin:12px 0">
+    <button class="small" id="cmbDeployMonitorRefresh">Refresh status</button>
+    <span style="font-size:12px;opacity:.7">Updates automatically every 60 seconds.</span>
+  </div>
+  <div id="cmbDeployMonitorList"><div class="cdm-empty">Checking GitHub Actions…</div></div>
+</section>
 <section id="deploymentControl" class="deployment-control panel">
   <div class="dc-head"><div><small>DEPLOYMENT CONTROL</small><strong>GitHub Pages Release</strong><span>Deployment is locked until every release check passes.</span></div><strong id="deploymentControlState">LOCKED</strong></div>
   <div class="dc-actions">
@@ -359,6 +367,6 @@ const update=()=>{const items=[...document.querySelectorAll("#releaseCheckList .
 run?.addEventListener("click",()=>setTimeout(update,50));update();
 })();
 </script>
-<script src="cmb-ai-fix-verification.js"></script>
+<script src="cmb-ai-fix-verification.js"></script>\n<script src="cmb-deployment-monitor.js"></script>
 </body>
 </html>
