@@ -135,6 +135,18 @@
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m];
     });
   }
+  function stateClass(text){
+    return text==="HEALTHY"?"healthy":text==="REMOTE OFFLINE"?"offline":text==="ACTION NEEDED"?"attention":"neutral";
+  }
+  function healthSummary(){
+    if(!lastHealthClass)return "Waiting for first health evaluation.";
+    if(lastHealthClass==="HEALTHY")return "GitHub sync is healthy and aligned with main.";
+    if(lastHealthClass==="REMOTE OFFLINE")return "Remote verification is unavailable; check the backend connection.";
+    if(lastHealthClass==="ACTION NEEDED")return "GitHub main moved ahead of the last successful project sync.";
+    if(lastHealthClass==="VERIFY NEEDED")return "A fresh remote verification is required.";
+    if(lastHealthClass==="NOT SYNCED")return "This project has not completed a successful GitHub sync.";
+    return "No project is currently selected.";
+  }
   function diagnosticText(s,r){
     const success=s&&s.lastSuccessful;
     if(!name()&&!success&&!r)return "";
@@ -149,6 +161,7 @@
       "Remote checked: "+(r&&r.at?new Date(r.at).toLocaleString():"—"),
       "Remote result: "+(r&&r.status||"—"),
       "Health state: "+(lastHealthClass||"—"),
+      "Health summary: "+healthSummary(),
       "Health state changed: "+(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—"),
       "Health transitions: "+transitionCount,
       "Current state duration: "+stateDurationLabel()
