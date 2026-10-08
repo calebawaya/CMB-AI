@@ -57,3 +57,6 @@
 
 /* Batch 6 loader — isolated code quality and workspace tools. */
 (()=>{const load=()=>{if(document.querySelector('script[data-cmb-batch6]'))return;const s=document.createElement("script");s.src="cmb-batch6-workspace.js";s.async=false;s.dataset.cmbBatch6="true";s.onerror=()=>window.cmbEvent?.("Code quality layer unavailable","Batch 6 could not be loaded on this page.","!");document.body.appendChild(s);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();})();
+
+/* Batch 7 loader — isolated workspace intelligence tools. */
+(()=>{const load=()=>{if(document.querySelector('script[data-cmb-batch7]'))return;const s=document.createElement("script");s.src="cmb-batch7-workspace.js";s.async=false;s.dataset.cmbBatch7="true";s.onerror=()=>window.cmbEvent?.("Workspace intelligence unavailable","Batch 7 could not be loaded on this page.","!");document.body.appendChild(s);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();})();
