@@ -72,3 +72,6 @@
 
 /* Batch 11 loader — isolated navigation, project switching, and accessibility tools. */
 (()=>{const load=()=>{if(document.querySelector('script[data-cmb-batch11]'))return;const s=document.createElement("script");s.src="cmb-batch11-workspace.js";s.async=false;s.dataset.cmbBatch11="true";s.onerror=()=>window.cmbEvent?.("Batch 11 unavailable","The workspace navigation layer could not be loaded.","!");document.body.appendChild(s);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();})();
+
+/* Batch 12 loader — isolated workspace control tools. */
+(()=>{const load=()=>{if(document.querySelector('script[data-cmb-batch12]'))return;const s=document.createElement("script");s.src="cmb-batch12-workspace.js";s.async=false;s.dataset.cmbBatch12="true";s.onerror=()=>window.cmbEvent?.("Batch 12 unavailable","The workspace control layer could not be loaded.","!");document.body.appendChild(s);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();})();
