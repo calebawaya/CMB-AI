@@ -138,6 +138,7 @@
     }finally{
       checking=false;
       refresh();
+      document.dispatchEvent(new CustomEvent("cmb:remote-verification-complete"));
     }
   }
   function scheduleAutoVerify(delay=350){
