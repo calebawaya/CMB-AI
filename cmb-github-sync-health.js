@@ -101,7 +101,9 @@
       "Verified commit: "+(r&&r.commit||"—"),
       "Remote main: "+(r&&r.headCommit||"—"),
       "Remote checked: "+(r&&r.at?new Date(r.at).toLocaleString():"—"),
-      "Remote result: "+(r&&r.status||"—")
+      "Remote result: "+(r&&r.status||"—"),
+      "Health state: "+(lastHealthClass||"—"),
+      "Health state changed: "+(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—")
     ].join("\n");
   }
   function renderDiag(s,r){
@@ -116,6 +118,8 @@
       +'<span>Remote main</span><b>'+safe(r&&r.headCommit)+'</b>'
       +'<span>Remote checked</span><b>'+safe(r&&r.at?new Date(r.at).toLocaleString():"—")+'</b>'
       +'<span>Remote result</span><b>'+safe(r&&r.status)+'</b>'
+      +'<span>Health state</span><b>'+safe(lastHealthClass||"—")+'</b>'
+      +'<span>State changed</span><b>'+safe(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—")+'</b>'
       +'</div>';
     if(copy)copy.disabled=!name();
     if(verify)verify.disabled=!name()||!success?.commit||!document.getElementById("cgsVerifyRemote")||document.getElementById("cgsVerifyRemote").disabled;
