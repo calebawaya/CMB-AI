@@ -2,12 +2,19 @@
 (()=>{
   const API_BASE=()=>String(window.CMB_API_BASE||"http://127.0.0.1:5000/api").replace(/\/$/,"");
   const repo="calebawaya/CMB-AI",branch="main";
-  let button,status,verifyTimer=0,checking=false;
+  let button,status,checkedAt,verifyTimer=0,checking=false;
   const project=()=>window.state?.active||null;
+  const projectName=()=>String(project()?.name||"").trim();
+  const storageKey=()=>`cmbGithubRemote:${projectName()}`;
   const saved=()=>{
-    const name=String(project()?.name||"").trim();
+    const name=projectName();
     if(!name)return null;
-    try{return JSON.parse(localStorage.getItem("cmbGithubSync:"+name)||"null")}catch{return null}
+    try{return JSON.parse(localStorage.getItem(`cmbGithubSync:${name}`)||"null")}catch{return null}
+  };
+  const remoteSaved=()=>{
+    const name=projectName();
+    if(!name)return null;
+    try{return JSON.parse(localStorage.getItem(storageKey())||"null")}catch{return null}
   };
   const commit=()=>saved()?.lastSuccessful?.commit||null;
   const setStatus=(text,kind="")=>{
@@ -15,12 +22,28 @@
     status.textContent=text;
     status.className="cgs-remote-status"+(kind?" "+kind:"");
   };
+  const setCheckedTime=()=>{
+    if(!checkedAt)return;
+    const value=remoteSaved()?.at;
+    checkedAt.textContent=value?new Date(value).toLocaleString():"—";
+  };
+  const restoreRemoteState=()=>{
+    const state=remoteSaved();
+    if(!state){setStatus("Not checked");setCheckedTime();return}
+    if(state.commit!==commit()){setStatus("Needs verification");setCheckedTime();return}
+    if(state.matchesHead)setStatus("REMOTE VERIFIED","verified");
+    else if(state.status==="branch_ahead")setStatus("BRANCH AHEAD","ahead");
+    else if(state.status==="unavailable")setStatus("REMOTE UNAVAILABLE","error");
+    else setStatus("Not checked");
+    setCheckedTime();
+  };
   const refresh=()=>{
     const hasProject=!!project();
     const hasCommit=!!commit();
     if(button)button.disabled=!hasCommit||checking;
-    if(!hasProject)setStatus("Open a project to begin");
-    else if(!hasCommit)setStatus("No successful sync yet");
+    if(!hasProject){setStatus("Open a project to begin");if(checkedAt)checkedAt.textContent="—";}
+    else if(!hasCommit){setStatus("No successful sync yet");if(checkedAt)checkedAt.textContent="—";}
+    else restoreRemoteState();
   };
   const ensureUI=()=>{
     const grid=document.querySelector(".cgs-history-grid"),tools=document.querySelector(".cgs-history-tools");
@@ -31,8 +54,13 @@
       status=document.createElement("b");
       status.id="cgsRemoteStatus";
       status.className="cgs-remote-status";
-      status.textContent="Not checked";
       grid.append(label,status);
+      const timeLabel=document.createElement("span");
+      timeLabel.textContent="Remote checked";
+      checkedAt=document.createElement("b");
+      checkedAt.id="cgsRemoteCheckedAt";
+      checkedAt.className="cgs-remote-checked-at";
+      grid.append(timeLabel,checkedAt);
     }
     if(!button){
       button=document.createElement("button");
@@ -60,6 +88,14 @@
       });
       const data=await response.json().catch(()=>({}));
       if(!response.ok||!data.ok)throw new Error(data.error||"Remote verification failed");
+      const at=new Date().toISOString();
+      localStorage.setItem(storageKey(),JSON.stringify({
+        commit:sha,
+        headCommit:data.head_commit||null,
+        matchesHead:!!data.matches_head,
+        status:data.matches_head?"verified":"branch_ahead",
+        at
+      }));
       if(data.matches_head){
         setStatus("REMOTE VERIFIED","verified");
         window.cmbEvent?.("Remote GitHub sync verified",{commit:sha,branch,automatic:auto});
@@ -67,8 +103,12 @@
         setStatus("BRANCH AHEAD","ahead");
         window.cmbEvent?.("Remote GitHub branch is ahead of last successful sync",{commit:sha,head:data.head_commit||null,branch,automatic:auto});
       }
+      setCheckedTime();
     }catch(error){
+      const at=new Date().toISOString();
+      localStorage.setItem(storageKey(),JSON.stringify({commit:sha,status:"unavailable",matchesHead:false,at}));
       setStatus("REMOTE UNAVAILABLE","error");
+      setCheckedTime();
       window.cmbEvent?.("Remote GitHub sync verification failed",{error:String(error?.message||error),automatic:auto});
     }finally{
       checking=false;
