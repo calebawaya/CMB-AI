@@ -66,6 +66,7 @@
   }
   let lastEventKey="";
   let lastHealthClass="";
+  let healthChangedAt=Date.now();
   function state(text,cls,message){
     badge.textContent=text;
     badge.className="cgs-sync-health-badge"+(cls?" "+cls:"");
@@ -74,6 +75,7 @@
     if(key!==lastEventKey){
       const previous=lastHealthClass;
       lastEventKey=key;
+      if(previous!==text)healthChangedAt=Date.now();
       lastHealthClass=text;
       try{
         const icon=text==="HEALTHY"?"✓":text==="REMOTE OFFLINE"?"!":text==="ACTION NEEDED"?"⚠":"●";
