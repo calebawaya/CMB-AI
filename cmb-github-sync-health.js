@@ -8,7 +8,7 @@
   };
   const syncState=()=>read("cmbGithubSync:");
   const remoteState=()=>read("cmbGithubRemote:");
-  let badge,detail,diag,copy,verify;
+  let badge,detail,diag,copy,verify,preflight;
   function ensure(){
     const panel=document.querySelector(".cgs-history");
     if(!panel)return false;
@@ -17,7 +17,7 @@
       box=document.createElement("div");
       box.id="cgsSyncHealth";
       box.className="cgs-sync-health";
-      box.innerHTML='<strong>SYNC HEALTH</strong><div><b id="cgsSyncHealthBadge">NOT SYNCED</b><span id="cgsSyncHealthDetail">Open a project and sync it to GitHub.</span></div><small id="cgsHealthAge">State changed just now</small><button id="cgsSyncHealthDetails" type="button">Show diagnostics</button><button id="cgsCopySyncDiagnostics" type="button" disabled>Copy diagnostics</button><button id="cgsVerifyHealth" type="button" disabled>↻ Verify now</button><div id="cgsSyncDiagnostics" hidden></div>';
+      box.innerHTML='<strong>SYNC HEALTH</strong><div><b id="cgsSyncHealthBadge">NOT SYNCED</b><span id="cgsSyncHealthDetail">Open a project and sync it to GitHub.</span></div><small id="cgsHealthAge">State changed just now</small><button id="cgsSyncHealthDetails" type="button">Show diagnostics</button><button id="cgsCopySyncDiagnostics" type="button" disabled>Copy diagnostics</button><button id="cgsVerifyHealth" type="button" disabled>↻ Verify now</button><button id="cgsRunPreflight" type="button">✓ Run preflight</button><div id="cgsSyncDiagnostics" hidden></div>';
       panel.appendChild(box);
     }
     badge=box.querySelector("#cgsSyncHealthBadge");
@@ -25,6 +25,7 @@
     diag=box.querySelector("#cgsSyncDiagnostics");
     copy=box.querySelector("#cgsCopySyncDiagnostics");
     verify=box.querySelector("#cgsVerifyHealth");
+    preflight=box.querySelector("#cgsRunPreflight");
     const toggle=box.querySelector("#cgsSyncHealthDetails");
     if(toggle&&!toggle.dataset.bound){
       toggle.dataset.bound="1";
@@ -121,7 +122,12 @@
     if(key!==lastEventKey){
       const previous=lastHealthClass;
       lastEventKey=key;
-      if(previous!==text){healthChangedAt=Date.now();transitionCount++;saveHealthMeta();}
+      if(previous!==text){
+        healthChangedAt=Date.now();
+        transitionCount++;
+        saveHealthMeta();
+        if(previous&&text==="HEALTHY")window.cmbEvent?.("GitHub sync recovered","GitHub sync health recovered to HEALTHY.","✓");
+      }
       lastHealthClass=text;
       try{
         const icon=text==="HEALTHY"?"✓":text==="REMOTE OFFLINE"?"!":text==="ACTION NEEDED"?"⚠":"●";
@@ -134,6 +140,36 @@
     return String(value==null?"—":value).replace(/[&<>"]/g,function(m){
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m];
     });
+  }
+  async function runPreflight(){
+    if(!ensure())return;
+    if(preflight){preflight.disabled=true;preflight.textContent="✓ Checking…";}
+    const p=project(),s=syncState(),r=remoteState(),checks=[];
+    checks.push(["Project open",!!p]);
+    checks.push(["Successful sync",!!s?.lastSuccessful?.commit]);
+    const commit=s?.lastSuccessful?.commit||null;
+    checks.push(["Remote verification matches sync",!!r&&r.commit===commit&&r.matchesHead===true]);
+    checks.push(["Sync controls loaded",!!document.getElementById("cgsSync")&&!!document.getElementById("cgsVerifyRemote")]);
+    checks.push(["Workspace clean",!document.getElementById("workspaceSyncStatus")?.classList.contains("unsaved")]);
+    let backend=false;
+    try{
+      const base=String(window.CMB_API_BASE||"").replace(/\/$/,"");
+      if(base){
+        const response=await fetch(base+"/health",{method:"GET",cache:"no-store"});
+        backend=response.ok;
+      }
+    }catch{}
+    checks.push(["Backend reachable",backend]);
+    const passed=checks.filter(x=>x[1]).length;
+    const failed=checks.length-passed;
+    const summary=checks.map(x=>(x[1]?"✓ ":"✕ ")+x[0]).join(" | ");
+    const messageText=failed?"Preflight found "+failed+" issue(s). "+summary:"Preflight passed all "+checks.length+" checks. "+summary;
+    messageText&&window.cmbEvent?.("CMB AI preflight",messageText,failed?"⚠":"✓");
+    if(preflight){
+      preflight.textContent=failed?"⚠ Preflight issues":"✓ Preflight passed";
+      setTimeout(()=>{if(preflight){preflight.disabled=false;preflight.textContent="✓ Run preflight"}},1800);
+    }
+    return {passed,failed,checks};
   }
   function stateClass(text){
     return text==="HEALTHY"?"healthy":text==="REMOTE OFFLINE"?"offline":text==="ACTION NEEDED"?"attention":"neutral";
@@ -164,7 +200,8 @@
       "Health summary: "+healthSummary(),
       "Health state changed: "+(healthChangedAt?new Date(healthChangedAt).toLocaleString():"—"),
       "Health transitions: "+transitionCount,
-      "Current state duration: "+stateDurationLabel()
+      "Current state duration: "+stateDurationLabel(),
+      "Preflight: "+(lastHealthClass==="HEALTHY"?"READY":"ACTION REQUIRED")
     ].join("\n");
   }
   function renderDiag(s,r){
