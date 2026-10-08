@@ -2,7 +2,7 @@
 (()=>{
   const API_BASE=()=>String(window.CMB_API_BASE||"http://127.0.0.1:5000/api").replace(/\/$/,"");
   const repo="calebawaya/CMB-AI",branch="main";
-  let button,status;
+  let button,status,verifyTimer=0,checking=false;
   const project=()=>window.state?.active||null;
   const saved=()=>{
     const name=String(project()?.name||"").trim();
@@ -18,7 +18,7 @@
   const refresh=()=>{
     const hasProject=!!project();
     const hasCommit=!!commit();
-    if(button)button.disabled=!hasCommit;
+    if(button)button.disabled=!hasCommit||checking;
     if(!hasProject)setStatus("Open a project to begin");
     else if(!hasCommit)setStatus("No successful sync yet");
   };
@@ -41,17 +41,18 @@
       button.textContent="↻ Verify remote";
       button.title="Verify whether the last successful commit is still the remote main branch head";
       tools.appendChild(button);
-      button.addEventListener("click",verify);
+      button.addEventListener("click",()=>verify(false));
     }
     refresh();
     return true;
   };
-  async function verify(){
-    if(!ensureUI())return;
+  async function verify(auto=false){
+    if(!ensureUI()||checking)return;
     const sha=commit();
     if(!sha){refresh();return}
-    button.disabled=true;
-    setStatus("Checking…");
+    checking=true;
+    refresh();
+    setStatus(auto?"Auto-checking…":"Checking…");
     try{
       const response=await fetch(API_BASE()+"/github/sync/verify",{
         method:"POST",headers:{"Content-Type":"application/json"},
@@ -61,18 +62,29 @@
       if(!response.ok||!data.ok)throw new Error(data.error||"Remote verification failed");
       if(data.matches_head){
         setStatus("REMOTE VERIFIED","verified");
-        window.cmbEvent?.("Remote GitHub sync verified",{commit:sha,branch});
+        window.cmbEvent?.("Remote GitHub sync verified",{commit:sha,branch,automatic:auto});
       }else{
         setStatus("BRANCH AHEAD","ahead");
-        window.cmbEvent?.("Remote GitHub branch is ahead of last successful sync",{commit:sha,head:data.head_commit||null,branch});
+        window.cmbEvent?.("Remote GitHub branch is ahead of last successful sync",{commit:sha,head:data.head_commit||null,branch,automatic:auto});
       }
     }catch(error){
       setStatus("REMOTE UNAVAILABLE","error");
-      window.cmbEvent?.("Remote GitHub sync verification failed",{error:String(error?.message||error)});
-    }finally{button.disabled=!commit()}
+      window.cmbEvent?.("Remote GitHub sync verification failed",{error:String(error?.message||error),automatic:auto});
+    }finally{
+      checking=false;
+      refresh();
+    }
   }
-  const events=["cmb:open-project","cmb:project-open","cmb:project-closed","cmb:workspace-change","cmb:workspace-sync","cmb:editor-refresh"];
-  events.forEach(event=>document.addEventListener(event,()=>setTimeout(ensureUI,0)));
+  function scheduleAutoVerify(delay=350){
+    clearTimeout(verifyTimer);
+    verifyTimer=setTimeout(()=>verify(true),delay);
+  }
+  const projectEvents=["cmb:open-project","cmb:project-open"];
+  projectEvents.forEach(event=>document.addEventListener(event,()=>{setTimeout(ensureUI,0);scheduleAutoVerify(500)}));
+  document.addEventListener("cmb:workspace-sync",()=>{setTimeout(()=>{ensureUI();scheduleAutoVerify(700)},0)});
+  document.addEventListener("cmb:project-closed",()=>setTimeout(ensureUI,0));
+  document.addEventListener("cmb:workspace-change",()=>setTimeout(refresh,0));
+  document.addEventListener("cmb:editor-refresh",()=>setTimeout(refresh,0));
   const observer=new MutationObserver(()=>ensureUI());
   observer.observe(document.body,{childList:true,subtree:true});
   setTimeout(ensureUI,0);
