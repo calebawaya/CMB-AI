@@ -609,3 +609,9 @@ body.light-theme .health-dashboard{background:rgba(255,255,255,.86);border-color
 #cmbDeploymentMonitor .cdm-item.bad i{box-shadow:0 0 12px rgba(248,113,113,.35)}
 #cmbDeploymentMonitor .cdm-empty{padding:12px 0;font-size:12px;opacity:.7}
 #cmbDeploymentMonitor .bad-text{opacity:.9}
+
+/* Deployment monitor details */
+#cmbDeploymentMonitor .cdm-detail{margin-top:10px;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.025)}
+#cmbDeploymentMonitor .cdm-detail b,#cmbDeploymentMonitor .cdm-detail span,#cmbDeploymentMonitor .cdm-detail small{display:block}
+#cmbDeploymentMonitor .cdm-detail span{margin-top:4px;font-size:12px}
+#cmbDeploymentMonitor .cdm-detail small{margin-top:5px;font-size:10px;opacity:.58}
