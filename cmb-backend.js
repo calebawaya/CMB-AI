@@ -1,6 +1,19 @@
 /* CMB AI Frontend ↔ Backend ↔ SQLite bridge */
 (function(){
-  const API = window.CMB_API_BASE || "http://127.0.0.1:5000/api";
+  const LIVE_API = "https://cmb-ai-backend.onrender.com/api";
+  const API = window.CMB_API_BASE || LIVE_API;
+  if(!window.CMB_API_BASE) window.CMB_API_BASE = LIVE_API;
+
+  // Some older inline CMB AI controls still use the old local development URL.
+  // Rewrite only that legacy API base so GitHub Pages always reaches Render.
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = function(input, options){
+    if(typeof input === "string" && input.indexOf("http://127.0.0.1:5000/api") === 0){
+      input = LIVE_API + input.slice("http://127.0.0.1:5000/api".length);
+    }
+    return nativeFetch(input, options);
+  };
+
   const client = {
     async request(path, options={}){
       const response = await fetch(API + path, {
@@ -183,7 +196,7 @@
   }
   async function loadChatHistory(projectId){
     if(!projectId) return [];
-    try{const result=await client.request("/project/"+encodeURIComponent(projectId)+"/chat"); return result.messages||[];}catch(error){console.warn("CMB AI chat history failed:",error);return [];}
+    try{const result=await client.request("/project/"+encodeURIComponent(projectId)+"/chat"); return result.messages||[];}catch(error){console.warn("CMB AI chat history failed:",error);return[];}
   }
   async function logAIEvent(projectId,type,message){
     if(!projectId) return;
